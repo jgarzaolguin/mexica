@@ -184,7 +184,6 @@ int input(double *z,
 
      scanf("%s %lf", opt, &temp);
      *step = temp;            // Exponents optimization starting the changes in step
-
      strcpy(elemento, symbol[z_temp - 1]);
      printf("Atom : %s\n", elemento);
      printf("Alpha and beta : %d, %d\n", alfa, beta);
@@ -280,6 +279,12 @@ int input(double *z,
      }
      }
      }
+
+     printf("Exponents optimization : ");
+     if ((strcmp(opt,"opt") == 0) || (strcmp(opt,"OPT") == 0) || (strcmp(opt,"Opt") == 0))
+       printf("yes\n");
+     else
+       printf("no\n");
 
      scanf("%s", read_base);
 

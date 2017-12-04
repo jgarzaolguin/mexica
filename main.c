@@ -4,10 +4,10 @@
 #include <stdlib.h>
 // MEXICA-C code to study free atoms or atoms confined
 // by penetrable or impenetrable walls.
-// Authors: Mariano Rodriguez-Bautista (marianorodbau@gmail.com)
-//          Jorge Garza (jgo@xanum.uam.mx)
+// Authors: Jorge Garza (jgo@xanum.uam.mx)
+//          Mariano Rodriguez-Bautista (marianorodbau@gmail.com)
 // Version 1.0. Sept, 2015.
-// Please site this work as:
+// Please cite this work as:
 //--------------------------------------------------------------------------------------------------
 //            Jorge Garza, Julio M. Hern\'ande-P\'erez, Jos\'e-Zeferino Ram\'irez and Rubicelia Vargas.
 //            Basis set effects on the Hartree-Fock description of confined many-electron atoms.
