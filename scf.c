@@ -2011,14 +2011,14 @@ extern int ep2_cpu(char   *espin,
    
 // Writting XC potential. Check it!
    if (revisa == 0 && revisa1 == 0) {
-     char name_out[50];
-     if(flag_dft != 2) {
-       sprintf(name_out,"Vxc_%s_%3.5lf_%3.5lf", bound, Rc, epsilon);
-       write_out = fopen(name_out,"w");
-       for (i = 0; i < n_points; i++)
-         fprintf(write_out,"%16.12f %16.12f \n", grid[i], grid_rho[i]);
-       fclose(write_out);
-     }
+//jgo     char name_out[50];
+//jgo     if(flag_dft != 2) {
+//jgo       sprintf(name_out,"Vxc_%s_%3.5lf_%3.5lf", bound, Rc, epsilon);
+//jgo       write_out = fopen(name_out,"w");
+//jgo       for (i = 0; i < n_points; i++)
+//jgo         fprintf(write_out,"%16.12f %16.12f \n", grid[i], grid_rho[i]);
+//jgo       fclose(write_out);
+//jgo     }
    
   // Fermi-Hole function in this point for closed-shell atoms
 

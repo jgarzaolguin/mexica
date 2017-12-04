@@ -47,7 +47,7 @@ int wf_closed_shell(int z, char *using_gamma, int compara, char *bound, int nt, 
              arreglo_factorial, arreglo_inv_factorial);
 
  int h, mu, nu, elemento1, elemento2, selected_orb;
- double sum, rho_0, drho_0, SHAN, Pi;
+ double sum, rho_0, drho_0, SHAN, Pi, ckf, kf;
  double *array_i;
 
  array_i = NULL;
@@ -98,16 +98,21 @@ int wf_closed_shell(int z, char *using_gamma, int compara, char *bound, int nt, 
    char nameout[200];
 
    if (strcmp(bound, "free") == 0 && Rc == 0.f)
-     sprintf(nameout, "%s_%s_rho_drho_+drho_rdf_divdrhorho", bound, tipo);
+     sprintf(nameout, "%s_%s_rho_and_der", bound, tipo);
    else
-     sprintf(nameout, "%3.3f_%s_%s_rho_drho_+drho_rdf_divdrhorho", Rc, bound, tipo);
+     sprintf(nameout, "%3.3f_%s_%s_rho_and_der", Rc, bound, tipo);
    workout = fopen(nameout, "w");
 
-   for (h = 0; h < n_points; h++)
-      if(grid_rho[h] > 1e-16)
-        fprintf(workout,"%5.4f  %24.14f  %24.14f  %24.14f  %24.14f %24.14f %24.14f\n", grid[h], grid_rho[h],
-                grid_der[h], -1.f*grid_der[h], 4.f*Pi*grid[h]*grid[h]*grid_rho[h], grid_der[h]/grid_rho[h],
-                -1.f*grid_der[h]/(2.f*z*grid_rho[h]));
+   ckf = pow(3.f*Pi*Pi,1.f/3.f);
+   for (h = 0; h < n_points; h++) {
+     if(grid_rho[h] > 1e-16) {
+       kf = ckf*pow(grid_rho[h],1.f/3.f);
+       kf = kf*grid_rho[h];
+       kf = fabs(grid_der[h])/kf;
+     } else kf = 1.e20;
+     fprintf(workout,"%8.6f  %24.14f  %24.14f %24.14f %24.14f\n", grid[h], grid_rho[h],
+             grid_der[h], 4.f*Pi*grid[h]*grid[h]*grid_rho[h], kf);
+   }
 
     fclose(workout);
 

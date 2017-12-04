@@ -153,28 +153,17 @@ void expected_value_r(int     nt,
       for (i = 0; i < points; i++) {
         r = grid[i];
         if (r < Rc )
-          partial = finite_orbital_int(using_gamma,
-                                       nt,
-                                       orbital,
-                                       r,
-                                       Rc,
-                                       expo,
-                                       np,
-                                       vectsfin,
-                                       gamma_couple,
-                                       NC_minus);
+          partial = finite_orbital_int(using_gamma, nt, orbital, r, Rc, expo, np,
+                                       vectsfin, gamma_couple, NC_minus);
         else
-          partial = finite_orbital_ext(nt,
-                                       orbital,
-                                       r,
-                                       Rc,
-                                       zeta,
-                                       mang,
-                                       vectsfin,
-                                       gamma_couple,
-                                       NC_plus);
+          partial = finite_orbital_ext(nt, orbital, r, Rc, zeta, mang, vectsfin,
+                                       gamma_couple, NC_plus);
 
-        array_temp[i] = pow(r,(double) r_exp)*partial*partial;
+        if (i == 0) 
+          array_temp[i] = 0.f;
+        else
+          array_temp[i] = pow(r,(double) r_exp)*partial*partial; //This array will be multiplied by r^2 in
+                                                                 //numerical_int function
    }
    suma = numerical_int(grid, array_temp, points);
    printf("Orbital %d, <r^%d>=%10.5f\n", orbital, r_exp, suma);

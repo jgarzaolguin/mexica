@@ -67,7 +67,7 @@
         rho_ini   = 1e12;
 
  if (compara == 0) {//label 2
-      sprintf(name, "confined_rhf_rho_drho_+drho_rdf_divdrhorho_Rc_%.4f", Rc);
+   sprintf(name, "confined_rhf_rho_drho_+drho_rdf_divdrhorho_Rc_%.4f", Rc);
    write_out = fopen(name, "w");
 
    do{
