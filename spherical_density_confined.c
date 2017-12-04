@@ -35,10 +35,10 @@
        if (np[mu] == 1)
          total = total;
        else
-        total = total*pow(r,(double) (np[mu] - 1));   //Aqui total = N[mu]*r^(np[mu] - 1)* exp(-expo[mu]*r)* }
+        total = total*pow(r,(double) (np[mu] - 1));   //Aqui total = N[mu]*r^(np[mu] - 1)* exp(-expo[mu]*r)
+  }
 
   return (total);
-}  
 }
 ///////////////////////////////////////////////////
 //Primera derivada del msto
@@ -138,10 +138,9 @@
                      double *arreglo_factorial, double *arreglo_inv_factorialp);
 
   suma = 0.f;
-  for (i = 0; i < nt; i++) {
+  for (i = 0; i < nt; i++) 
     suma = suma + vectors[i*nt + orbital]*msto(i, r, Rc, expo, np, arreglo_factorial,
                                                arreglo_inv_factorial);
-  }
 
   return (suma);
   }

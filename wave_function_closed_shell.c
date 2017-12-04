@@ -50,8 +50,6 @@ int wf_closed_shell(int z, char *using_gamma, int compara, char *bound, int nt, 
  double sum, rho_0, drho_0, SHAN, Pi;
  double *array_i;
 
- printf("jgo: rho, drho = %f, %f, %f, %f\n", grid_rho[0], grid_rho[1], grid_der[0], grid_der[1]);
-
  array_i = NULL;
  memoria_double_uni(n_points*(sizeof(double)), &array_i, "Array_i");
 
@@ -90,11 +88,11 @@ int wf_closed_shell(int z, char *using_gamma, int compara, char *bound, int nt, 
    SHAN = 4.f*Pi*numerical_int(grid, array_i, n_points);
 
    if(strcmp(bound,"free") == 0 && Rc == 0.f)
-      printf("\n%s %s Shannon entropy  %5.4lf\n", tipo, bound, SHAN);
+      printf("\nShannon entropy(%s,%s)= %5.4lf\n", tipo, bound, SHAN);
    else
-      printf("\n%s %s Shannon entropy %3.3lf %5.4lf\n", tipo, bound, Rc, SHAN);
+      printf("\nShannon entropy(%s,%s,Rc: %3.3lf)= %5.4lf\n", tipo, bound, Rc, SHAN);
 
-   printf("\nNumber electrons from integral rho %5.8lf\n\n", 4.f*Pi*numerical_int(grid, grid_rho, n_points));
+   printf("\nElectrons from numerical integration= %5.8lf\n\n", 4.f*Pi*numerical_int(grid, grid_rho, n_points));
 
    FILE *workout;
    char nameout[200];
@@ -122,24 +120,8 @@ int wf_closed_shell(int z, char *using_gamma, int compara, char *bound, int nt, 
  if (-grid_der[0]/(2.f*z*grid_rho[0])  < 0.98 || -grid_der[0]/(2.f*z*grid_rho[0]) > 1.20)
     *iter = 1e7;
 
- sum = 0.f;
- for (selected_orb = 0; selected_orb < elecalfa; selected_orb++) {
-    grid_rhorad_orbital(z, using_gamma, compara, bound, nt, elecalfa, 0, Rc, expo,
-                        np, zetas, mang, vectsfinalfa, NULL, tipo, NC_minus, NC_plus, gamma_couple,
-                        grid, grid_rho, grid_rho_beta, n_points, save_i, arreglo_factorial, 
-                        arreglo_inv_factorial, selected_orb);
-    for(h = 0; h < n_points; h++) array_i[h] = 0.f;
-    array_i[0] = 0.f;
-    array_i[n_points - 1] = 0.f;
-    for(h = 1; h < n_points - 1; h++) {
-          if(grid_rho[h] > 1e-20)
-             array_i[h] = grid[h]*grid[h]*grid_rho[h];
-    }
-    sum = sum + 4.f*Pi*numerical_int(grid, array_i, n_points);
-  }
-  printf("<r^2>(total) = %10.4lf\n", sum);
-  free(array_i);
-  array_i = 0;
+ free(array_i);
+ array_i = 0;
 
  return 0;
 }

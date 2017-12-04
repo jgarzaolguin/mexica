@@ -61,7 +61,6 @@ extern  int bielectronicas_CPU(char   *using_gamma,
   cubo = cuad*nt;
   cuart = cubo*nt;
   inv_Rc = 1.f/Rc;
-//jgo  for (i = 0; i < nt; i++) printf("jgo 2: %f, %f, %f\n", zeta[i], N_minus[i], N_plus[i]);
   #pragma omp parallel shared(integrales_bie, Rc, bound, expo, np, mang, ncm, cuad, cubo, cuart, nt, gamma_couple) private(i, indice_i,indice_j, indice_k, indice_l, integral_cpu)
   {
     #pragma omp for
@@ -725,10 +724,6 @@ extern int ep2_cpu(char   *espin,
                                 double **arreglo,
                                 char    *titulo);
 
-
-//jgo extern double bielectronic_integral_free(int ang, int mu, int nu, int lam, int sig, int *np, double *expo);
-//jgo extern double doselec(int mu, int nu, int lam, int sig, double Rc, char* bound,
-//jgo                       double *expo, int *np, int *ang, int *ncm);
  extern int bielectronicas_CPU(char   *using_gamma,
                                int     nt, 
                                int    *np, 
@@ -745,13 +740,6 @@ extern int ep2_cpu(char   *espin,
                                double *arreglo_factorial, 
                                double *arreglo_inv_factorial);
  extern double factorial(int);
-// extern void genera_grid(int* , double* , double* , int* ,
-//                         double* , int* , int* , int* ,
-//                         double* , int* , int* );
-// extern void matrixg_ks(int* , double* , double* , double* ,
-//                        int* , double* ,
-//                        int* , int* , int* , double* ,
-//                        int* , double* , int* );
 
  extern int grid_rhorad(int           z,
                         char         *using_gamma,
@@ -909,6 +897,13 @@ extern int ep2_cpu(char   *espin,
                            double       *arreglo_inv_factorial,
                            double       *nolocal_pot_array);
 
+ extern int wf_closed_shell(int z, char *using_gamma, int compara, char *bound, int nt, int elecalfa, int elecbeta,
+                            double Rc, double *expo, int *np, double *zetas, int *mang, int *ncm, double *vectsfinalfa,
+                            double *vectsfinbeta, char *tipo, double *NC_minus, double *NC_plus, double gamma_couple,
+                            double *grid, double *grid_rho, double *grid_rho_beta, double *grid_der, double *grid_der_beta,
+                            int n_points, 
+                            double *arreglo_factorial, double *arreglo_inv_factorial,
+                            double *matp, double *mats, int *iter, int save_i, int print_vectors, double *cusp_kato);
 
 
 
@@ -979,29 +974,12 @@ extern int ep2_cpu(char   *espin,
 
  save_i = 0;
 
-// mrb  if(strcmp(bound, "dielectricnc") == 0) 
-// mrb    building_grid(z,
-// mrb                  "free",
-// mrb                  Rc,
-// mrb                  grid,
-// mrb                  n_points,
-// mrb                  &save_i);
-// mrb else
-// mrb  if(strcmp(bound, "dielectricc") == 0) 
-// mrb     building_grid(z,
-// mrb                   "finite",
-// mrb                   Rc,
-// mrb                   grid,
-// mrb                   n_points,
-// mrb                   &save_i);
-// mrb else
-     building_grid(z,
-                   bound,
-                   Rc,
-                   grid,
-                   n_points,
-                   &save_i);
-
+ building_grid(z,
+              bound,
+              Rc,
+              grid,
+              n_points,
+              &save_i);
 
  if(strcmp(bound,"confined") == 0)  n_points = save_i + 1;
 
@@ -1190,10 +1168,6 @@ extern int ep2_cpu(char   *espin,
 
    printf("Memory to be allocated %8.2f Mb\n", (float) cuart*sizeof(double)/(1024*1024));
 
-//   if (strcmp(bound,"free") == 0) bandera_GPU = 1;
-//   else bandera_GPU = 0;
-
-
   for (i = 0; i < 100; i++) {
     arreglo_factorial[i] = factorial(i);
     arreglo_inv_factorial[i] = 1.f/arreglo_factorial[i];
@@ -1209,7 +1183,6 @@ extern int ep2_cpu(char   *espin,
      printf("---------------------------------------------------\n");
      printf("External exponents\n");
      for (i = 0; i < nt; i++){
-//   bandera_GPU =   
        constants_normalization_finite(i, 
                                       np, 
                                       mang, 
@@ -1238,8 +1211,6 @@ extern int ep2_cpu(char   *espin,
  charge_int = 0.f;
  iter_pol   = 0;
  
- printf("\nBANDERA %s\n", bound);
-
  potencial(using_gamma,
            nt, 
            z, 
@@ -1456,10 +1427,8 @@ extern int ep2_cpu(char   *espin,
 
            
          } else {
-             printf("jgo: No polarization\n");
              eigensystem_matdens(nt, tipo, elec, matx, matfock, valores,
                                  vectsfin, matp, &revisa);
-             printf("jgo, salgo de eigensystem, revisa = %d\n", revisa);
          }
        
 
@@ -1599,7 +1568,6 @@ extern int ep2_cpu(char   *espin,
                        nolocal_pot_array);
          }
 
-         printf("jgo, salgo de RHF\n");
        } else { //ELSE COMPARA
            for (i = 0; i < cuad; i++) {
               matg_exch_alfa[i] = (double) 0.0;
@@ -1607,7 +1575,6 @@ extern int ep2_cpu(char   *espin,
            }
 
          if (strcmp(bound_pol,"polarization") == 0 && iter_pol > 1) {
-           printf("jgo, entro a polarization\n");
            eigensystem_matdens(nt, tipo, elecalfa, matx, matfockalfa, valoresalfa,
                                vectsfinalfa, matpalfa, &revisa);
            eigensystem_matdens(nt, tipo, elecbeta, matx, matfockbeta, valoresbeta,
@@ -1834,7 +1801,6 @@ extern int ep2_cpu(char   *espin,
                              nolocal_pot_array);
                 }
          } //ELSE COMPARA
-       printf("\njgo revisa %d %d\n", revisa, revisa1);
        if (revisa == 0 && revisa1 == 0) {
           //mrb  printf("\nSOY_YO2 %d %d\n", revisa, revisa1);
           matrixg_coul(nt, matp, matg_coul, np, mang, ncm, expo, Rc, bound,
@@ -1887,21 +1853,20 @@ extern int ep2_cpu(char   *espin,
                 temp_xcmat = coef_HF*matg_exch[i] + mat_ks[i];
                 matg_exch[i] = temp_xcmat;
              }
-            } else {
-                   for (i = 0; i < cuad; i++) {
-                       temp_xcmat = 0.f;
-                       temp_xcmat = coef_HF*matg_exch_alfa[i] + mat_ks[i];
-                       matg_exch_alfa[i] = temp_xcmat;
-                       temp_xcmat = 0.f;
-                       temp_xcmat = coef_HF*matg_exch_beta[i] + mat_ks_beta[i];
-                       matg_exch_beta[i] = temp_xcmat;
-                    }
-              }
-          }
+           } else {
+               for (i = 0; i < cuad; i++) {
+                 temp_xcmat = 0.f;
+                 temp_xcmat = coef_HF*matg_exch_alfa[i] + mat_ks[i];
+                 matg_exch_alfa[i] = temp_xcmat;
+                 temp_xcmat = 0.f;
+                 temp_xcmat = coef_HF*matg_exch_beta[i] + mat_ks_beta[i];
+                 matg_exch_beta[i] = temp_xcmat;
+               }
+           }
+        }
 
           if (iter <= 7)
             energia_prueba = energia;
-
 
           if (fabs(energia) < 2000.f && fabs(energia_prueba - energia) < 0.25) {
             printf("Iter=%5d---Energy=%14.8f", iter, energia);
@@ -1912,36 +1877,33 @@ extern int ep2_cpu(char   *espin,
               //   DIIS para capa cerrada
               summat(dim, coef1, matg_coul, coef1, matg_exch, matg);
               summat(dim, coef1, matcore, coef1, matg, matfock);
-              diis_check(nt, 
-                         matp, 
-                         mats, 
-                         matfock, 
-                         matx, 
-                         mat_temp_2, 
-                         &max_e);
-              if ( max_e >= (double) 0.1) {
-                  printf("\n");
-                  iter_inter = 0;
-                  bandera = 0;
-                } else {
-                    printf("  DIIS = %10.6f\n", max_e);
-                    bandera = 1;
-                    iter_inter ++;
-                    if (abre == 0) {
-                     mat_f_store[iter_inter] = NULL;
-                     memoria_double_uni(sizebi, &mat_f_store[iter_inter], "Mat_f_store");
-                     mat_e_store[iter_inter] = NULL;
-                     memoria_double_uni(sizebi, &mat_e_store[iter_inter], "Mat_e_store");
-                    }
-                    for ( i = 0; i < nt*nt; i++) {
-                      mat_f_store[iter_inter][i] = matfock[i];
-                      mat_e_store[iter_inter][i] = mat_temp_2[i];
-                    }
-                }
+              printf("\n");
+              if (iter > 1000) {
+                diis_check(nt, matp, mats, matfock, matx, mat_temp_2, &max_e);
+                if ( max_e >= (double) 0.1) {
+                    printf("\n");
+                    iter_inter = 0;
+                    bandera = 0;
+                  } else {
+                      printf("  DIIS = %10.6f\n", max_e);
+                      bandera = 1;
+                      iter_inter ++;
+                      if (abre == 0) {
+                       mat_f_store[iter_inter] = NULL;
+                       memoria_double_uni(sizebi, &mat_f_store[iter_inter], "Mat_f_store");
+                       mat_e_store[iter_inter] = NULL;
+                       memoria_double_uni(sizebi, &mat_e_store[iter_inter], "Mat_e_store");
+                      }
+                      for ( i = 0; i < nt*nt; i++) {
+                        mat_f_store[iter_inter][i] = matfock[i];
+                        mat_e_store[iter_inter][i] = mat_temp_2[i];
+                      }
+                  }
+              }
           
-                if(iter > 1) {
-                  if (bandera == 1 && iter_inter > 1) {
-                    main_diis(nt, 
+              if(iter > 1000) {
+                if (bandera == 1 && iter_inter > 1) {
+                  main_diis(nt, 
                               iter_inter, 
                               mat_temp_1, 
                               mat_temp_2, 
@@ -1949,16 +1911,11 @@ extern int ep2_cpu(char   *espin,
                               mat_e_store, 
                               mat_f_store, 
                               matfock);
-                  } else {
-                /*
-                       summat(dim, difmezcla, matg, mezcla, matgvieja, matg);
-                       summat(dim, coef1, matcore, coef1, matg, matfock);
-                       copiamat(dim, matg, matgvieja);
-                */
-                       summat(dim, difmezcla, matfock, mezcla, matgvieja, matfock);
-                       copiamat(dim, matfock, matgvieja);
-                    }
-                }
+                } else {
+                    summat(dim, difmezcla, matfock, mezcla, matgvieja, matfock);
+                    copiamat(dim, matfock, matgvieja);
+                  }
+              }
                 
             } else {// DIIS para capa abierta
                  summat(dim, coef1, matg_coul, coef1, matg_exch_alfa, matg_alfa);
@@ -2040,270 +1997,30 @@ extern int ep2_cpu(char   *espin,
                 
             energiavieja = e_check;
            } else {
-                printf("jgo revisa 1 en else = %d, %d\n", revisa, revisa1);
+                printf("Iter=%5d---Energy=%14.8f. BlowUP!!\n", iter, energia);
                 iter   = 1e7;
                 difer  = tol;
                 revisa = 1;
              }
          } else {
-             printf("jgo revisa 2\n");
              iter   = 1e7;
              difer  = tol;
              revisa = 1;
            }
-      printf("jgo, difer, iter: %f, %d\n", difer, iter); 
    } while(difer >= tol && iter <= maxiter);
    
+// Writting XC potential. Check it!
    if (revisa == 0 && revisa1 == 0) {
-             char name_out[50];
-              if(flag_dft != 2) {
-               sprintf(name_out,"Vxc_%s_%3.5lf_%3.5lf", bound, Rc, epsilon);
-               write_out = fopen(name_out,"w");
-               for (i = 0; i < n_points; i++)
-         // mike
-         //      fprintf(write_out,"%16.12f %16.12f \n", grid[i], array_i[i]*grid[i]);
-                 fprintf(write_out,"%16.12f %16.12f \n", grid[i], grid_rho[i]);
-               close(write_out);
-             }
+     char name_out[50];
+     if(flag_dft != 2) {
+       sprintf(name_out,"Vxc_%s_%3.5lf_%3.5lf", bound, Rc, epsilon);
+       write_out = fopen(name_out,"w");
+       for (i = 0; i < n_points; i++)
+         fprintf(write_out,"%16.12f %16.12f \n", grid[i], grid_rho[i]);
+       fclose(write_out);
+     }
    
-  //Fermi-Hole
- if(compara == 0) {//labelfermi
-
- extern double finite_orbital_int(char   *using_gamma,
-                                  int     nt,
-                                  int     orbital,
-                                  double  r,
-                                  double  Rc,
-                                  double *zeta,
-                                  int    *np,
-                                  double *vectors,
-                                  double  gamma_couple,
-                                  double *N_minus);
-
- extern double finite_orbital_ext(int     nt,
-                                  int     orbital,
-                                  double  r,
-                                  double  Rc,
-                                  double *alfa,
-                                  int    *mang,
-                                  double *vectors,
-                                  double  gamma_couple,
-                                  double *N_plus);
-        
-
-
- extern  double msto_finite_int(char   *using_gamma,
-                                int     mu,
-                                double  r,
-                                double  Rc,
-                                int    *np,
-                                double  gamma_couple,
-                                double *zeta,
-                                double *N_minus);
-
-                
- extern  double msto_finite_ext(int     mu,
-                                double  r,
-                                double  Rc,
-                                int    *mang,
-                                double  gamma_couple,
-                                double *alfa,
-                                double *N_plus);
-
- extern double rho_radial_finite_int(char   *using_gamma,
-                                     int     nt,
-                                     int     elec,
-                                     double  r,
-                                     double  Rc,
-                                     double *zeta,
-                                     int    *np,
-                                     double *vectors,
-                                     char   *tipo,
-                                     double  gamma_couple,
-                                     double *N_minus);
-
-extern double rho_radial_finite_ext(int     nt,
-                                    int     elec,
-                                    double  r,
-                                    double  Rc,
-                                    double *alfa,
-                                    int    *mang,
-                                    double *vectors,
-                                    char   *tipo,
-                                    double  gamma_couple,
-                                    double *N_plus);
-
-
- double mston1_r2;
- int mu;
- double mston2_r2;
- double rho_r2;
- double radii2;
- mston1_r2 = 0.f;
- mston2_r2 = 0.f;
- rho_r2    = 0.f;
- FILE* fermi_salida;
- char  fermi[90];
- radii2 = 2.f;
- 
- sprintf(fermi,"Fermi-Hole_%3.4lf_%3.4lf_radii2_%3.2lf",Rc, epsilon, radii2); 
- fermi_salida = fopen(fermi,"w");
-
-// printf("\n\nHOLA kA\n\n");
- 
- if (radii2 < Rc) {
-                  mston1_r2 =  finite_orbital_int(using_gamma,
-                                                      nt,
-                                                      0,
-                                                      radii2,
-                                                      Rc,
-                                                      expo,
-                                                      np,
-                                                      vectsfin,
-                                                      gamma_couple,
-                                                      NC_minus);
-
-                  mston2_r2 =  finite_orbital_int(using_gamma,
-                                                      nt,
-                                                      1,
-                                                      radii2,
-                                                      Rc,
-                                                      expo,
-                                                      np,
-                                                      vectsfin,
-                                                      gamma_couple,
-                                                      NC_minus);
-        //mrb    rho_r2 = rho_radial_finite_int(using_gamma,
-        //mrb                                   nt,
-        //mrb                                   elecalfa,
-        //mrb                                   radii2,
-        //mrb                                   Rc,
-        //mrb                                   expo,
-        //mrb                                   np,
-        //mrb                                   vectsfin,
-        //mrb                                   tipo,
-        //mrb                                   gamma_couple,
-        //mrb                                   NC_minus);
-
-
-
- }
- else {
-
-                   mston1_r2 = finite_orbital_ext(nt,
-                                                      0,
-                                                      radii2,
-                                                      Rc,
-                                                      zetas,
-                                                      mang,
-                                                      vectsfin,
-                                                      gamma_couple,
-                                                      NC_plus);
-
-                   mston2_r2 = finite_orbital_ext(nt,
-                                                      1,
-                                                      radii2,
-                                                      Rc,
-                                                      zetas,
-                                                      mang,
-                                                      vectsfin,
-                                                      gamma_couple,
-                                                      NC_plus);
-         //mrb   rho_r2 = rho_radial_finite_ext(nt,
-         //mrb                                  elecalfa,
-         //mrb                                  radii2,
-         //mrb                                  Rc,
-         //mrb                                  zetas,
-         //mrb                                  mang,
-         //mrb                                  vectsfin,
-         //mrb                                  tipo,
-         //mrb                                  gamma_couple,
-         //mrb                                  NC_plus);
-
-             }
-
-
-   double factor;
-   double radii1;
-   double mston1_r1;
-   double mston2_r1;
-   double nume;
-   double fermi_hole;
-
-   rho_r2 = mston1_r2*mston1_r2 + mston2_r2*mston2_r2;
-   
-   factor = 1.f/(4.f*Pi*rho_r2);
-   //mrb factor = (1.f/rho_r2);
-
-      for (i = 0; i < (n_points/2); i++) {
-          radii1 = grid[i];
-          mston1_r1 = 0.f;
-          mston2_r1 = 0.f;
-    
-       if (radii1 < Rc) {
-
-                  mston1_r1 =  finite_orbital_int(using_gamma,
-                                                      nt,
-                                                      0,
-                                                      radii1,
-                                                      Rc,
-                                                      expo,
-                                                      np,
-                                                      vectsfin,
-                                                      gamma_couple,
-                                                      NC_minus);
-
-                  mston2_r1 =  finite_orbital_int(using_gamma,
-                                                      nt,
-                                                      1,
-                                                      radii1,
-                                                      Rc,
-                                                      expo,
-                                                      np,
-                                                      vectsfin,
-                                                      gamma_couple,
-                                                      NC_minus);
-
-    
-       }
-       else {
-                   mston1_r1 = finite_orbital_ext(nt,
-                                                      0,
-                                                      radii1,
-                                                      Rc,
-                                                      zetas,
-                                                      mang,
-                                                      vectsfin,
-                                                      gamma_couple,
-                                                      NC_plus);
-
-                   mston2_r1 = finite_orbital_ext(nt,
-                                                      1,
-                                                      radii1,
-                                                      Rc,
-                                                      zetas,
-                                                      mang,
-                                                      vectsfin,
-                                                      gamma_couple,
-                                                      NC_plus);
-
-       
-            }
-       
- //mrb         nume = mston1_r1*mston1_r2 + mston2_r1*mston2_r2;
-         nume = mston1_r1*mston1_r1*mston1_r2*mston1_r2 + mston2_r1*mston2_r1*mston2_r2*mston2_r2;
-         nume = nume + mston1_r1*mston1_r2*mston2_r1*mston2_r2 + mston2_r1*mston2_r2*mston1_r1*mston1_r2;
- //mrb        fermi_hole = factor*nume*nume;
-         fermi_hole = nume*factor;
- //mrb2      nume = mston1_r1*mston1_r2 + mston2_r1*mston2_r2;
- //mrb2      fermi_hole = factor*nume*nume;
-         fprintf(fermi_salida, "%lf %lf\n", radii1 - radii2, fermi_hole);
-    
-      }
-   fclose(fermi_salida);
-} //labelfermi
-                
-
+  // Fermi-Hole function in this point for closed-shell atoms
 
              if (compara == 0) {
              double v_e;
@@ -2362,267 +2079,14 @@ extern double rho_radial_finite_ext(int     nt,
                for (i = 0; i < nt; i++) 
                  printf("Eigenvalue %d: %8.5f\n", i, valores[i]);
 
-               grid_rhorad(z,
-                           using_gamma,
-                           compara,
-                           bound,
-                           nt,
-                           elecalfa,
-                           0,
-                           Rc,
-                           expo,
-                           np,
-                           zetas,
-                           mang,
-                           vectsfin,
-                           NULL,
-                           tipo,
-                           NC_minus,
-                           NC_plus,
-                           gamma_couple,
-                           grid,
-                           grid_rho,
-                           grid_rho_beta,
-                           n_points,
-                           save_i,
-                           arreglo_factorial,
-                           arreglo_inv_factorial);
-              grid_derrad(z,
-                          using_gamma,
-                          compara,
-                          bound,
-                          nt,
-                          elecalfa,
-                          0,
-                          Rc,
-                          expo,
-                          np,
-                          zetas,
-                          mang,
-                          vectsfin,
-                          NULL,
-                          tipo,
-                          NC_minus,
-                          NC_plus,
-                          gamma_couple,
-                          grid,
-                          grid_der,
-                          grid_der_beta,
-                          n_points,
-                          save_i,
-                          arreglo_factorial,
-                          arreglo_inv_factorial);
-
-               if (print_vectors == 1) {
-                 int mu, nu, elemento1, elemento2;
-                 double suma, rho_0, drho_0;
-                 suma = 0.f;
-                 for (mu = 0; mu < nt; mu++) {
-                   for (nu = 0; nu < nt; nu++) {
-                     elemento1 = mu*nt + nu;
-                     elemento2 = nu*nt + mu;
-                     suma = suma + matp[elemento1]*mats[elemento2];
-                   }
-                 }
-                 printf("---------------------------\n");
-                 printf("Number of electrons: = %f\n", suma);
-                 printf("---------------------------\n");
-                 expected_value_r(nt, 
-                  		-1, 
-                  		np, 
-                  		mang, 
-                  		ncm, 
-                  		expo, 
-                  		Rc, 
-                  		bound, 
-                                vectsfin, 
-                  		elecalfa, 
-                                gamma_couple,
-                                NC_minus,
-                  		NC_plus,
-                  		arreglo_factorial,
-                                arreglo_inv_factorial,
-                                using_gamma,
-                                zetas,
-                                grid);
-                 printf("---------------------------\n");
-                 expected_value_r(nt, 
-                  		1, 
-                  		np, 
-                  		mang, 
-                  		ncm, 
-                  		expo, 
-                  		Rc, 
-                  		bound, 
-                                vectsfin, 
-                  		elecalfa, 
-                                gamma_couple,
-                                NC_minus,
-                  		NC_plus,
-                  		arreglo_factorial,
-                                arreglo_inv_factorial,
-                                using_gamma,
-                                zetas,
-                                grid);
-                 printf("---------------------------\n");
-                 expected_value_r(nt, 
-                  		2, 
-                  		np, 
-                  		mang, 
-                  		ncm, 
-                  		expo, 
-                  		Rc, 
-                  		bound, 
-                                vectsfin, 
-                  		elecalfa,
-                                gamma_couple,
-                                NC_minus,
-                  		NC_plus,
-                  	        arreglo_factorial,
-                                arreglo_inv_factorial,
-                                using_gamma,
-                                zetas,
-                                grid);
-                 printf("---------------------------\n");
-
-
-                //mrb              sprintf(name_file_vectors, "vectors_file_%2.5f_%2.3fRHF", Rc, epsilon);
-                //mrb              vectors_file = fopen(name_file_vectors,"w");
-                //mrb              for (i = 0; i < nt; i++) {
-                //mrb                 for (j = 0; j < nt; j++) {
-                //mrb                fprintf(vectors_file,"%26.12f",vectsfin[i*nt + j]);
-                //mrb                } 
-                //mrb                fprintf(vectors_file,"\n");
-                //mrb              }
-                //mrb              fclose(vectors_file);
-
-
-
-                   for(h = 0; h < n_points; h++)
-                      array_i[h] = 0.f;
-                   array_i[0] = 0.f;
-                   array_i[n_points - 1] = 0.f;
-                   for(h = 1; h < n_points - 1; h++) {
-                       if(grid_rho[h] > 1e-20) 
-                        array_i[h] = -1.f*grid_rho[h]*log(grid_rho[h]);
-                   }
-
-                   SHAN = 4.f*Pi*numerical_int(grid,
-                                               array_i,
-                                               n_points);
-
-                   if(strcmp(bound,"free") == 0 && Rc == 0.f)
-                    printf("\n%s %s Shannon entropy  %5.4lf\n", tipo, bound, SHAN);
-                   else
-                    printf("\n%s %s Shannon entropy %3.3lf %5.4lf\n", tipo, bound, Rc, SHAN);
-
-                   SHAN = 4.f*Pi*numerical_int(grid,
-                                               grid_rho,
-                                               n_points);
-
-                   printf("\nNumber electrons from integral rho %5.8lf\n\n", SHAN);
-
-                   FILE *workout;
-                   char nameout[200];
-
-                   if (strcmp(bound, "free") == 0 && Rc == 0.f)                                          
-                    sprintf(nameout, "%s_%s_rho_drho_+drho_rdf_divdrhorho", bound, tipo);
-                   else 
-                    sprintf(nameout, "%3.3f_%s_%s_rho_drho_+drho_rdf_divdrhorho", Rc, bound, tipo);
-                    workout = fopen(nameout, "w");
-
-
-
-                   for (h = 0; h < n_points; h++)
-                     if(grid_rho[h] > 1e-16)
-                     fprintf(workout,"%5.4f  %24.14f  %24.14f  %24.14f  %24.14f %24.14f %24.14f\n", grid[h],
-                                                                                                    grid_rho[h],
-                                                                                                    grid_der[h],
-                                                                                                   -1.f*grid_der[h],
-                                                                                                    4.f*Pi*grid[h]*grid[h]*grid_rho[h],
-                                                                                                    grid_der[h]/grid_rho[h],
-                                                                                                   -1.f*grid_der[h]/(2.f*z*grid_rho[h]));
-
-                   fclose(workout);
-
-               } //imprime full
-
-
-   //mrb       //mrb vectores      sprintf(name_file_vectors, "vectors_file_%2.5f_%2.3f", Rc, epsilon);
-   //mrb       //mrb vectores      vectors_file = fopen(name_file_vectors,"w");
-   //mrb       //mrb vectores      for (i = 0; i < nt; i++) {
-   //mrb       //mrb vectores         for (j = 0; j < nt; j++) {
-   //mrb       //mrb vectores        fprintf(vectors_file,"%26.12f",vectsfin[i*nt + j]);
-   //mrb       //mrb vectores        } 
-   //mrb       //mrb vectores        fprintf(vectors_file,"\n");
-   //mrb       //mrb vectores      }
-   //mrb       //mrb vectores      fclose(vectors_file);
-
-                printf("rho(0)                = %.4f\n", grid_rho[0]);
-                printf("rho'(0)               = %.4f\n", grid_der[0]);
-                printf("KATO CUSP = %4.4f\n", -grid_der[0]/(2.f*z*grid_rho[0]));
-                *cusp_kato = -grid_der[0]/(2.f*z*grid_rho[0]);
-                if (-grid_der[0]/(2.f*z*grid_rho[0])  < 0.98 || -grid_der[0]/(2.f*z*grid_rho[0]) > 1.20)
-                  iter = 1e7;
-           
-           //     analysis_vect =NULL;
-           //     memoria_double_uni(sizebi, &analysis_vect, "Analysis_vect");
-           
-           //     dgemm_ ("N", "N", &nt, &nt, &nt, &coef1, mats, &nt, vectsfin, &nt, &zero,
-           //           analysis_vect, &nt);
-           
-           //     k = -1;
-           //     for (i = 0; i < nt; i++) {
-           //       for (j = 0; j < nt; j++) {
-           //         k++;
-           //       printf("%8.4f ",analysis_vect[k]);
-           //       }
-           //     printf("\n");
-           //       }
-           //     free(analysis_vect);
-           SHAN = 0.f;
-           for (selected_orb = 0; selected_orb < elecalfa; selected_orb++) {
-             grid_rhorad_orbital(z,
-                           using_gamma,
-                           compara,
-                           bound,
-                           nt,
-                           elecalfa,
-                           0,
-                           Rc,
-                           expo,
-                           np,
-                           zetas,
-                           mang,
-                           vectsfin,
-                           NULL,
-                           tipo,
-                           NC_minus,
-                           NC_plus,
-                           gamma_couple,
-                           grid,
-                           grid_rho,
-                           grid_rho_beta,
-                           n_points,
-                           save_i,
-                           arreglo_factorial,
-                           arreglo_inv_factorial, selected_orb);
-            for(h = 0; h < n_points; h++)
-              array_i[h] = 0.f;
-            array_i[0] = 0.f;
-            array_i[n_points - 1] = 0.f;
-            for(h = 1; h < n_points - 1; h++) {
-                if(grid_rho[h] > 1e-20)
-                        array_i[h] = grid[h]*grid[h]*grid_rho[h];
-            }
-            SHAN = SHAN + 4.f*Pi*numerical_int(grid,
-                                        array_i,
-                                        n_points);
-            }
-            printf("<r^2>(total) = %10.4lf\n", SHAN);
-
-           
-/*compara*/} else {
+               wf_closed_shell(z, using_gamma, compara, bound, nt, elecalfa, elecbeta,
+                    Rc, expo, np, zetas, mang, ncm, vectsfin, NULL,
+                    tipo, NC_minus, NC_plus, gamma_couple,
+                    grid, grid_rho, NULL, grid_der, NULL,
+                    n_points, 
+                    arreglo_factorial, arreglo_inv_factorial,
+                    matp, mats, &iter, save_i, print_vectors, cusp_kato);
+/*compara*/} else { // Section for open-shell atoms
                for (i = 0; i < nt; i++) 
                  printf("Eigenvalue %d: alpha | beta = %8.5f  %8.5f\n", i, valoresalfa[i], valoresbeta[i]);
                grid_rhorad(z,
@@ -2880,24 +2344,6 @@ extern double rho_radial_finite_ext(int     nt,
                                                                                                    -1.f*(grid_der[h] + grid_der_beta[h])/(2.f*z*(grid_rho[h] + grid_rho_beta[h])));
 
                    fclose(workout);
-
-
-
-                 //mrb    sprintf(name_file_vectors, "vectors_file_%2.5f_%2.3f_alphaUHF", Rc, epsilon);
-                 //mrb    sprintf(name_file_vectors_beta, "vectors_file_%2.5f_%2.3f_betaUHF", Rc, epsilon);
-                 //mrb    vectors_file = fopen(name_file_vectors,"w");
-                 //mrb    vectors_file_beta = fopen(name_file_vectors_beta,"w");
-                 //mrb    for (i = 0; i < nt; i++) { 
-                 //mrb       for (j = 0; j < nt; j++)  {
-                 //mrb      fprintf(vectors_file,"%26.12f",vectsfinalfa[i*nt + j]);
-                 //mrb      fprintf(vectors_file_beta,"%26.12f",vectsfinbeta[i*nt + j]);
-                 //mrb     }
-                 //mrb      fprintf(vectors_file,"\n");
-                 //mrb      fprintf(vectors_file_beta,"\n");
-                 //mrb    }
-                 //mrb    fclose(vectors_file);
-                 //mrb    fclose(vectors_file_beta);
-                 
           }//End for print_vectors
               
               
@@ -3157,7 +2603,6 @@ extern double rho_radial_finite_ext(int     nt,
              matk = 0;
              free(mats);
              mats = 0;
-             printf("jgo free\n");
              free(nolocal_pot_array);
              nolocal_pot_array = 0;
              free(array_iv);

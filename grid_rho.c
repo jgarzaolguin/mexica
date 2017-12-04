@@ -93,21 +93,20 @@ int grid_rhorad(int           z,
         }
    }
  } else
-       if (strcmp(bound,"confined") == 0) { //if confined
-         for (i = 0; i < n_points; i++) { //for save_temp
-            p1 = grid[i];
-            if (compara == 0) {
-              grid_rho[i] = rho_radial_confined(nt, elecalfa, p1, Rc, expo, np, vectsfinalfa,
-                                                tipo, arreglo_factorial, arreglo_inv_factorial);
-             } else {
-                   grid_rho[i] = rho_radial_confined(nt, elecalfa, p1, Rc, expo, np, vectsfinalfa,
-                                                     tipo, arreglo_factorial, arreglo_inv_factorial);
-       
-                   grid_rho_beta[i] = rho_radial_confined(nt, elecbeta, p1, Rc, expo, np, vectsfinbeta,
-                                                          tipo, arreglo_factorial, arreglo_inv_factorial);
-               }
-         } //for save_temp
-       } else 
+ if (strcmp(bound,"confined") == 0) { //if confined
+   for (i = 0; i < n_points; i++) { //for save_temp
+      p1 = grid[i];
+      if (compara == 0) 
+        grid_rho[i] = rho_radial_confined(nt, elecalfa, p1, Rc, expo, np, vectsfinalfa,
+                                          tipo, arreglo_factorial, arreglo_inv_factorial);
+      else {
+        grid_rho[i] = rho_radial_confined(nt, elecalfa, p1, Rc, expo, np, vectsfinalfa,
+                                          tipo, arreglo_factorial, arreglo_inv_factorial);
+        grid_rho_beta[i] = rho_radial_confined(nt, elecbeta, p1, Rc, expo, np, vectsfinbeta,
+                                               tipo, arreglo_factorial, arreglo_inv_factorial);
+      }
+   }
+ } else 
              if (strcmp(bound,"finite") == 0) { //if finite
                for (i = 0; i < n_boundary; i++) { //for save_temp
                   p1 = grid[i];
