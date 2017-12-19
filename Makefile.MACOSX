@@ -8,11 +8,11 @@ CC = gcc
 DIRLIB=${HOME}/programs/lapack-3.5.0
 librerias=-L$(DIRLIB) $(DIRLIB)/liblapack.a $(DIRLIB)/librefblas.a
 
-objects = data.o optimiza.o clebsch.o integrals_free.o integrals_finite.o integrals_confined.o normalization_constants.o checkout_expotents_finite.o  main.o matrices.o traslape.o cinetica.o potencial.o scf.o matrixg_coul.o  matrixg_exch.o diis.o mp2.o basis_assigned.o basis_extern.o ep2.o shannon_entropy_finite.o shannon_entropy_confined.o main_function_global.o spherical_density_finite.o spherical_density_confined.o spherical_density_free.o print_spherical_density_finite.o check_linear_dependence.o optimiza_new.o xc_energy.o grid.o grid_der.o grid_rho.o grid_sec_der.o numerical_int.o becke_mexica.o pwl_mexica.o slater.o lypsr_mexica.o pbe_mexica.o wave_function_closed_shell.o
+objects = data.o optimiza.o clebsch.o integrals_free.o integrals_finite.o integrals_confined.o normalization_constants.o checkout_expotents_finite.o  main.o matrices.o traslape.o cinetica.o potencial.o scf.o matrixg_coul.o  matrixg_exch.o diis.o mp2.o basis_assigned.o basis_extern.o ep2.o shannon_entropy_finite.o shannon_entropy_confined.o main_function_global.o spherical_density_finite.o spherical_density_confined.o spherical_density_free.o print_spherical_density_finite.o check_linear_dependence.o optimiza_new.o xc_energy.o grid.o grid_der.o grid_rho.o grid_sec_der.o numerical_int.o becke_mexica.o pwl_mexica.o slater.o lypsr_mexica.o pbe_mexica.o wave_function_closed_shell.o elect_pot.o
 
 flags = -c -O1
 mexica : $(objects)
-	$(CC) -o mexica $(objects) $(librerias) -lm -L/usr/local/gcc/bin -lgfortran
+	$(CC) -o mexica $(objects) $(librerias) -lm -L/usr/local/gfortran/lib -lgfortran
 
 data.o : data.c
 	$(CC) $(flags) data.c
@@ -88,6 +88,8 @@ wave_function_closed_shell.o : wave_function_closed_shell.c
 	$(CC) $(flags) wave_function_closed_shell.c
 numerical_int.o : numerical_int.c
 	$(CC) $(flags) numerical_int.c
+elect_pot.o : elect_pot.c
+	$(CC) $(flags) elect_pot.c
 pwl_mexica.o : pwl_mexica.f
 	gfortran -c pwl_mexica.f
 becke_mexica.o : becke_mexica.f

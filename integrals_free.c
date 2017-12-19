@@ -1,12 +1,11 @@
-/* Integrales monoelectronicas y bielectronicas
-   para resolver las ecuaciones de Hartree-Fock
-   en sistemas atomicos libres.
-   Jorge Garza, Junio del 2006 */
+// One- and two-electron integrals
+// to solve HF equations
+// for free atoms.
+// Jorge Garza, June/2006
 #include <math.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-
 
 double bielectronic_integral_free(int     ang, 
 				  int     mu, 
@@ -108,7 +107,7 @@ double intl(int mu, int nu, int k, double* expo, int* np, double *arreglo_factor
 double int1l(int arg1, double arg2, double *arreglo_factorial)
 {
 //
-// Evaluaci'on de la integral /int_0^{R_c} dr r^a e^{-b r}
+// Evaluaci'on de la integral /int_0^{\infty} dr r^a e^{-b r}
 //
  double numerador, denominador, arg3;
  extern double factorial(int);
@@ -255,11 +254,11 @@ else
        int1 = pendiente*(w1*f1 + w2*f2 + w3*f3 + w4*f4 + w5*f5 + w6*f6 + w7*f7);
        integral = integral + int1;
      } // End For
-     dif = abs(integral - integralvieja);
+     dif = fabs(integral - integralvieja);
      integralvieja = integral;
     } while (dif >= tol1 && i < 500); //End do 1
     integralparcial = integral;
-    dif2 = abs(integralparcial - integraltotal);
+    dif2 = fabs(integralparcial - integraltotal);
     limsup = limsup + 5.f;
     integraltotal = integralparcial;
  } while (dif2 > tol2 && limsup < 120.f); //End do 2    
@@ -353,11 +352,11 @@ double use_upper_incomplete_gamma(double Rc, int a1, int a2, double b1, double b
        int1 = pendiente*(w1*f1 + w2*f2 + w3*f3 + w4*f4 + w5*f5 + w6*f6 + w7*f7);
        integral = integral + int1;
      } // End For
-     dif = abs(integral - integralvieja);
+     dif = fabs(integral - integralvieja);
      integralvieja = integral;
     } while (dif >= tol1 && i < 500); //End do 1
     integralparcial = integral;
-    dif2 = abs(integralparcial - integraltotal);
+    dif2 = fabs(integralparcial - integraltotal);
     limsup = limsup + 5.f;
     integraltotal = integralparcial;
  } while (dif2 > tol2 && limsup < 120.f); //End do 2

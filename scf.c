@@ -917,6 +917,9 @@ extern int ep2_cpu(char   *espin,
                           int     n_points,
                           int    *save_i);
 
+ extern int Evaluate_Elect_Pot(double z, int nt, double *matp, int *np, int *ang, int *ncm,
+                      double *expo, char *bound, double *arreglo_factorial,
+                      double *arreglo_inv_factorial, double *grid, int n_points, double Rc);
 
 
  time_t time_scf_ini, time_scf_fin, time_bie_ini, time_bie_fin, time_3, time_4;
@@ -2086,6 +2089,9 @@ extern int ep2_cpu(char   *espin,
                     n_points, 
                     arreglo_factorial, arreglo_inv_factorial,
                     matp, mats, &iter, save_i, print_vectors, cusp_kato);
+               Evaluate_Elect_Pot(z, nt, matp, np, mang, ncm, expo, bound,
+                                  arreglo_factorial, arreglo_inv_factorial, 
+                                  grid, n_points, Rc);
 /*compara*/} else { // Section for open-shell atoms
                for (i = 0; i < nt; i++) 
                  printf("Eigenvalue %d: alpha | beta = %8.5f  %8.5f\n", i, valoresalfa[i], valoresbeta[i]);
@@ -2548,8 +2554,6 @@ extern int ep2_cpu(char   *espin,
              free(mat_ks);
              mat_ks = 0;
            } else {
-             free(mat_ks_beta);
-             mat_ks_beta;
              free(matfockbeta);
              matfockbeta = 0;
              free(matfockalfa);
@@ -2668,20 +2672,6 @@ extern int ep2_cpu(char   *espin,
              vectsfinbeta = 0;
              free(vectsfinalfa);
              vectsfinalfa = 0;
-           }
-
-           if (compara == 0) {
-             free(matfock);
-             matfock = 0;
-             free(mat_ks);
-             mat_ks = 0;
-           } else {
-             free(mat_ks_beta);
-             mat_ks_beta;
-             free(matfockbeta);
-             matfockbeta = 0;
-             free(matfockalfa);
-             matfockalfa = 0;
            }
 
            if (compara == 0) {
