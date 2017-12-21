@@ -919,7 +919,8 @@ extern int ep2_cpu(char   *espin,
 
  extern int Evaluate_Elect_Pot(double z, int nt, double *matp, int *np, int *ang, int *ncm,
                       double *expo, char *bound, double *arreglo_factorial,
-                      double *arreglo_inv_factorial, double *grid, int n_points, double Rc);
+                      double *arreglo_inv_factorial, double *grid, int n_points, double Rc,
+                      double *NC_minus, double *NC_plus);
 
 
  time_t time_scf_ini, time_scf_fin, time_bie_ini, time_bie_fin, time_3, time_4;
@@ -2083,15 +2084,14 @@ extern int ep2_cpu(char   *espin,
                  printf("Eigenvalue %d: %8.5f\n", i, valores[i]);
 
                wf_closed_shell(z, using_gamma, compara, bound, nt, elecalfa, elecbeta,
-                    Rc, expo, np, zetas, mang, ncm, vectsfin, NULL,
-                    tipo, NC_minus, NC_plus, gamma_couple,
-                    grid, grid_rho, NULL, grid_der, NULL,
-                    n_points, 
-                    arreglo_factorial, arreglo_inv_factorial,
-                    matp, mats, &iter, save_i, print_vectors, cusp_kato);
+                               Rc, expo, np, zetas, mang, ncm, vectsfin, NULL,
+                               tipo, NC_minus, NC_plus, gamma_couple,
+                               grid, grid_rho, NULL, grid_der, NULL, n_points,
+                               arreglo_factorial, arreglo_inv_factorial,
+                               matp, mats, &iter, save_i, print_vectors, cusp_kato);
                Evaluate_Elect_Pot(z, nt, matp, np, mang, ncm, expo, bound,
                                   arreglo_factorial, arreglo_inv_factorial, 
-                                  grid, n_points, Rc);
+                                  grid, n_points, Rc, NC_minus, NC_plus);
 /*compara*/} else { // Section for open-shell atoms
                for (i = 0; i < nt; i++) 
                  printf("Eigenvalue %d: alpha | beta = %8.5f  %8.5f\n", i, valoresalfa[i], valoresbeta[i]);
