@@ -50,7 +50,8 @@ int optimiza_main(int     nt,
 		  char   *config,
                   char   *nombre, 
 		  int     imprime,
-                  int plasma)
+                  int plasma,
+                  char   *properties)
 { //Function to optimize exponents in the basis set
  int i, j;
  double maxdiff;
@@ -87,7 +88,8 @@ int optimiza_main(int     nt,
 		      int    *opt_flag,
                       double  epsilon, 
 		      int     imprime,
-                      int plasma);
+                      int plasma,
+                      char   *properties);
 
 //mrb    for (i = 0; i < nt; i++) expo_diff[i] = 0.f;
 //mrb    i = 0;
@@ -126,7 +128,8 @@ int optimiza_main(int     nt,
 	  	   opt_flag,
                    epsilon, 
 		   imprime,
-                   plasma);
+                   plasma,
+                   properties);
 
 //mrb          for (j = 0; j < nt; j++) 
 //mrb             {
@@ -170,7 +173,8 @@ int optimiza_main(int     nt,
   double energia, z, tol, Rc, step, mezcla, maxdiff, epsilon, gamma_couple;
   double x0, x1, x2, energia_0, energia_1, temp_gam;
   char config[4], read_base[10], bound[15], tipo[16],  opt[10],
-       espin[10], nombre[100], correlation[10], propagador[10], using_gamma[10];
+       espin[10], nombre[100], correlation[10], propagador[10], using_gamma[10],
+       properties[10];
   double energy_array[500], gamma_array[500];
  
   char kind_of_cal[10];
@@ -247,7 +251,8 @@ for(i=0 ; i < 80 ; i++){
                             double *count_temp, 
                             double *count_final, 
                             int    *steps,
-                            int    *plasma);
+                            int    *plasma,
+                            char   *properties);
   
  extern int           scf(int     nt, 
                            int     elecalfa, 
@@ -277,7 +282,8 @@ for(i=0 ; i < 80 ; i++){
                            double  epsilon,
                            int     imprime,
                            int     plasma,
-                           double *cusp_kato);
+                           double *cusp_kato,
+                           char   *properties);
  
  extern int optimiza_main( int     nt, 
                            char   *opt,
@@ -309,7 +315,8 @@ for(i=0 ; i < 80 ; i++){
                            char   *config,
                            char   *nombre, 
                            int     imprime,
-                           int     plasma);
+                           int     plasma,
+                           char   *properties);
 
  extern int  main_finite_global(double   z,
                                int      elecalfa,
@@ -344,7 +351,8 @@ for(i=0 ; i < 80 ; i++){
                                double   count_final,
                                int      steps,
                                double  *energia,
-                               int      plasma);
+                               int      plasma,
+                               char    *properties);
 
 
  
@@ -395,7 +403,8 @@ for(i=0 ; i < 80 ; i++){
  		  &count_temp, 
   		  &count_final, 
  		  &steps,
-                  &plasma);
+                  &plasma,
+                   properties);
 
 // for (i = 0; i < 80; i++) {
 // printf("%s %lf %d\n", save_dft[i], weight_dft[i], flag_dft);
@@ -439,7 +448,8 @@ for(i=0 ; i < 80 ; i++){
                             count_final,
                             steps,
                             &energia,
-                            plasma);
+                            plasma,
+                            properties);
       } else { //Procedure for free atoms or confinement imposed by impenetrable walls
            optimiza_main(nt, 
                          opt,
@@ -471,7 +481,8 @@ for(i=0 ; i < 80 ; i++){
                          config, 
                          nombre, 
                          0,
-                         plasma);
+                         plasma,
+                         properties);
            scf(nt, 
                elecalfa, 
                elecbeta, 
@@ -500,7 +511,8 @@ for(i=0 ; i < 80 ; i++){
                epsilon, 
                1,
                plasma,
-               &cusp_kato);
+               &cusp_kato,
+               properties);
        }
     } else { //Just one SCF calculation
        scf(nt, 
@@ -531,7 +543,8 @@ for(i=0 ; i < 80 ; i++){
            epsilon, 
            1,
            plasma,
-           &cusp_kato);
+           &cusp_kato,
+           properties);
     }
 //
 // Reporting final energy

@@ -202,7 +202,8 @@ extern  int scf(int     nt,
                 double  epsilon,
                 int     imprime,
                 int     plasma,
-                double *cusp_kato)
+                double *cusp_kato,
+                char *properties)
 {
  float          tiempo_usado;
  int i, j, selected_orb, compara, iter, iter_inter, dim, elec, valor, bandera;
@@ -2083,15 +2084,17 @@ extern int ep2_cpu(char   *espin,
                for (i = 0; i < nt; i++) 
                  printf("Eigenvalue %d: %8.5f\n", i, valores[i]);
 
-               wf_closed_shell(z, using_gamma, compara, bound, nt, elecalfa, elecbeta,
-                               Rc, expo, np, zetas, mang, ncm, vectsfin, NULL,
-                               tipo, NC_minus, NC_plus, gamma_couple,
-                               grid, grid_rho, NULL, grid_der, NULL, n_points,
-                               arreglo_factorial, arreglo_inv_factorial,
-                               matp, mats, &iter, save_i, print_vectors, cusp_kato);
-               Evaluate_Elect_Pot(z, nt, matp, np, mang, ncm, expo, bound,
-                                  arreglo_factorial, arreglo_inv_factorial, 
-                                  grid, n_points, Rc, NC_minus, NC_plus);
+               if (strcmp(properties,"property") == 0) {
+                 wf_closed_shell(z, using_gamma, compara, bound, nt, elecalfa, elecbeta,
+                                 Rc, expo, np, zetas, mang, ncm, vectsfin, NULL,
+                                 tipo, NC_minus, NC_plus, gamma_couple,
+                                 grid, grid_rho, NULL, grid_der, NULL, n_points,
+                                 arreglo_factorial, arreglo_inv_factorial,
+                                 matp, mats, &iter, save_i, print_vectors, cusp_kato);
+                 Evaluate_Elect_Pot(z, nt, matp, np, mang, ncm, expo, bound,
+                                    arreglo_factorial, arreglo_inv_factorial, 
+                                    grid, n_points, Rc, NC_minus, NC_plus);
+               }
 /*compara*/} else { // Section for open-shell atoms
                for (i = 0; i < nt; i++) 
                  printf("Eigenvalue %d: alpha | beta = %8.5f  %8.5f\n", i, valoresalfa[i], valoresbeta[i]);

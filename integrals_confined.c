@@ -56,8 +56,9 @@
   int i;
   double denom, suma, uno, total, doble1, doble2;
 
-//jgo  extern double factorial(int);
-
+//
+// Evaluati of the integral /int_0^{r} dx x^a e^{-b x}
+//
   if(a <= 0)
   {
   if(a < 0)

@@ -40,7 +40,8 @@ int input(double *z,
           double *count_temp, 
           double *count_final, 
           int    *steps,
-          int    *plasma)
+          int    *plasma,
+          char   *properties)
 {
  FILE* file_1;
  int i, j, c, d, entero1, entero2, z_temp, charge, mult, alfa, beta, prev, test_input;
@@ -280,6 +281,7 @@ int input(double *z,
      }
      }
 
+     scanf("%s", properties);
      printf("Exponents optimization : ");
      if ((strcmp(opt,"opt") == 0) || (strcmp(opt,"OPT") == 0) || (strcmp(opt,"Opt") == 0))
        printf("yes\n");

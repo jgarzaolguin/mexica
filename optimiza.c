@@ -36,7 +36,8 @@ void optimiza(int     nt,
               int    *opt_flag, 
 	      double  epsilon, 
 	      int     imprime,
-              int     plasma)
+              int     plasma,
+              char   *properties)
 {
  int i, j, k;
  int index, todos, ang_test, deg, test_scf;
@@ -106,7 +107,8 @@ void optimiza(int     nt,
                 double  epsilon, 
                 int     imprime,
                 int     plasma,
-                double *cusp_kato);
+                double *cusp_kato,
+                char   *properties);
 
 
  extern int checking_linear_dependece(int       nt,
@@ -259,7 +261,8 @@ void optimiza(int     nt,
                                     epsilon,
                                     0,
                                     plasma,
-                                   &cusp_kato);
+                                   &cusp_kato,
+                                    properties);
 
 
                      if (test_scf == 0)
@@ -300,7 +303,8 @@ void optimiza(int     nt,
                                     epsilon,
                                     0,
                                     plasma,
-                                   &cusp_kato);
+                                   &cusp_kato,
+                                    properties);
 
 
                      if (test_scf == 0)
@@ -354,7 +358,8 @@ void optimiza(int     nt,
                                         epsilon,
                                         0,
                                         plasma,
-                                       &cusp_kato);
+                                       &cusp_kato,
+                                        properties);
                            else
                             test_scf = 1;
                      } else
@@ -565,7 +570,7 @@ void optimiza(int     nt,
 //                                     0,
 //                                     epsilon,
 //                                     0,
-//                                     plasma);
+//                                     plasma,
 // 
 //                if (test_scf == 0) {
 //                  ener_array[1] = energia;

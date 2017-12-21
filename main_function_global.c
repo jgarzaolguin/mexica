@@ -37,7 +37,8 @@ int  main_finite_global(double   z,
                                double   count_final,
                                int      steps,
                                double  *energia,
-                               int      plasma)
+                               int      plasma,
+                               char    *properties)
 
 {//label 1
 
@@ -71,7 +72,8 @@ extern int optimiza_main(int     nt,
                          char   *config,
                          char   *nombre,
                          int     imprime, 
-                         int     plasma);
+                         int     plasma,
+                         char   *properties);
 
   extern int           scf(int     nt,
                            int     elecalfa,
@@ -101,7 +103,8 @@ extern int optimiza_main(int     nt,
                            double  epsilon,
                            int     imprime,
                            int     plasma,
-                           double *cusp_kato);
+                           double *cusp_kato,
+                           char   *properties);
 
 
 
@@ -185,7 +188,8 @@ extern int optimiza_main(int     nt,
                     config,
                     nombre,
                     0,
-                    plasma);
+                    plasma,
+                    properties);
       
       
       scf(nt,
@@ -216,7 +220,8 @@ extern int optimiza_main(int     nt,
           epsilon,
           1,
           plasma,
-         &cusp_kato);
+         &cusp_kato,
+          properties);
       
       
       energy_array[cont] = energia_0;
@@ -296,7 +301,8 @@ extern int optimiza_main(int     nt,
                            config,
                            nombre,
                            0, 
-                           plasma);
+                           plasma,
+                           properties);
           prue1 = scf(nt,
                          elecalfa,
                          elecbeta,
@@ -325,7 +331,8 @@ extern int optimiza_main(int     nt,
                          epsilon,
                          0, 
                          plasma,
-                         &cusp_kato);
+                         &cusp_kato,
+                         properties);
           count_temp = count_temp + add_tol;
           gamma_array[250 + 2*j + 1] = count_temp;
           x1 = count_temp;
@@ -380,7 +387,8 @@ extern int optimiza_main(int     nt,
                            config,
                            nombre,
                            0, 
-                           plasma);
+                           plasma,
+                           properties);
       
        prue2 =       scf(nt,
                          elecalfa,
@@ -410,7 +418,8 @@ extern int optimiza_main(int     nt,
                          epsilon,
                          0,
                          plasma,
-                         &cusp_kato);
+                         &cusp_kato,
+                         properties);
       
       
       if (prue1 != 0) energia_0 = 1000.f;
@@ -476,7 +485,8 @@ extern int optimiza_main(int     nt,
                              config,
                              nombre,
                              0, 
-                             plasma);
+                             plasma,
+                             properties);
       
        prue3 =        scf(nt,
                           elecalfa,
@@ -506,7 +516,8 @@ extern int optimiza_main(int     nt,
                           epsilon,
                           0,
                           plasma,
-                          &cusp_kato);
+                          &cusp_kato,
+                          properties);
       
       
       if(prue3 != 0) energia_1 = 1001.f;
@@ -565,7 +576,8 @@ extern int optimiza_main(int     nt,
                                      config,
                                      nombre,
                                      0,
-                                     plasma);
+                                     plasma,
+                                     properties);
               
                prue4 =        scf(nt,
                                   elecalfa,
@@ -595,7 +607,8 @@ extern int optimiza_main(int     nt,
                                   epsilon,
                                   0,  
                                   plasma,
-                                  &cusp_kato);
+                                  &cusp_kato,
+                                  properties);
               
               if(prue4 != 0) energia_0 = 1000.f;
               if (energia_0 < -2000.f) energia_0=1000.f;
@@ -672,7 +685,8 @@ extern int optimiza_main(int     nt,
                       epsilon ,
                       0,
                       plasma,
-                      &cusp_kato);
+                      &cusp_kato,
+                      properties);
       
                             if(prue3 != 0){ energia_0 = 1000.f;
                                   energy_array[j]=energia_0;
@@ -745,7 +759,8 @@ extern int optimiza_main(int     nt,
                                          epsilon,
                                          0,
                                          plasma,
-                                         &cusp_kato);
+                                         &cusp_kato,
+                                         properties);
       
                             if(prue4 != 0) { energia_1 = 1001.f;
                                                  energy_array[j]=energia_1;
@@ -821,7 +836,8 @@ extern int optimiza_main(int     nt,
                                epsilon,
                                1, 
                                plasma,
-                               &cusp_kato);
+                               &cusp_kato,
+                               properties);
 
                       printf("\n0 Fopt: Minimum %d ¿ Gamma %1.14f  Energy %15.4f (%15.4f Ryd) Range_of_gamma_from_%1.9f_to_%1.9f\n", minimum_j,
                                                                                                                                      gamma_array[minimum_j],
@@ -889,7 +905,8 @@ extern int optimiza_main(int     nt,
                                epsilon,
                                1,
                                plasma,
-                               &cusp_kato);
+                               &cusp_kato,
+                               properties);
 
 
                       printf("\n1 Fopt: Minimum %d ¿ Gamma %1.14f Energy %15.4f (%15.4f Ryd) Range_of_gamma_from_%1.9f_to_%1.9f\n", minimum_j, 
@@ -954,7 +971,8 @@ extern int optimiza_main(int     nt,
                                epsilon,
                                1,
                                plasma,
-                               &cusp_kato);
+                               &cusp_kato,
+                               properties);
 
 
 
@@ -1038,7 +1056,8 @@ extern int optimiza_main(int     nt,
                    config,
                    nombre,
                    0,
-                   plasma);
+                   plasma,
+                   properties);
       
       scf(nt,
          elecalfa,
@@ -1068,7 +1087,8 @@ extern int optimiza_main(int     nt,
          epsilon,
          1,
          plasma,
-         &cusp_kato);
+         &cusp_kato,
+         properties);
       
       
       energy_array[cont]=energia_0;
