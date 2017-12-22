@@ -923,6 +923,8 @@ extern int ep2_cpu(char   *espin,
                       double *arreglo_inv_factorial, double *grid, int n_points, double Rc,
                       double *NC_minus, double *NC_plus);
 
+ extern int print_out_array(int points, double *grid, double *array, char *name_file);
+
 
  time_t time_scf_ini, time_scf_fin, time_bie_ini, time_bie_fin, time_3, time_4;
  double cx_D, 
@@ -2094,6 +2096,7 @@ extern int ep2_cpu(char   *espin,
                  Evaluate_Elect_Pot(z, nt, matp, np, mang, ncm, expo, bound,
                                     arreglo_factorial, arreglo_inv_factorial, 
                                     grid, n_points, Rc, NC_minus, NC_plus);
+                 print_out_array(n_points, grid, array_i, "xc.dat");
                }
 /*compara*/} else { // Section for open-shell atoms
                for (i = 0; i < nt; i++) 

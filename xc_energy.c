@@ -3,6 +3,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+int print_out_array(int points, double *grid, double *array, char *name_file) {
+  int i;
+  FILE *target;
+
+  target = fopen(name_file,"w");
+
+  for (i = 0; i < points; i++)
+    fprintf(target,"%20.8f  %20.8f\n", grid[i], array[i]);
+
+  fclose(target);
+
+  return 0;
+}
 
 int x_slater(double  rho, 
              double *energy,
@@ -222,30 +235,23 @@ double xc_energy(double *correlationc,
  extern double numerical_int(double   *grid,
                              double   *grid_fun,
                              int       points);
-////////////////////////////////////////////////////////////////////
-//Orbital molécular tipo slater
-/////////////////////////////////////////////////////////////////// 
-/******************************************************************************************************************************/
-/*libre*/
+// Definition of different basis set fucntions
+/*free*/
  extern double sto(int mu,double r,double *expo,int *np);
 /*impenetrable*/
  extern double msto(int mu,double  r,double  Rc,double *expo,int *np,double *arreglo_factorial,double *arreglo_inv_factorial);
 /*penetrable*/
  extern double msto_finite_int(char *using_gamma,int mu,double r,double Rc,int *np,double gamma_couple,double *zeta,double *N_minus);
  extern double msto_finite_ext(int mu,double  r,double  Rc,int *mang,double  gamma_couple,double *alfa,double *N_plus);
-/******************************************************************************************************************************/
 
-/////////////////////////////////////////////////////////////////////////
-/*Derivadas */
-/////////////////////////////////////////////////////////////////////////
-/*libre*/
+// Derivatives
+/*free*/
  extern double der_sto_r(int mu, double r, double* expo, int* np);
 /*impenetrable*/ 
  extern double der_msto_r(int mu, double r, double Rc, double* expo, int* np, double *arreglo_factorial, double *arreglo_inv_factorial);
 /*penetrable(intern,extern)*/
  extern double der_msto_finite_int(char *using_gamma,int mu,double r,double Rc,int *np,double gamma_couple,double *zeta,double *N_minus);
  extern double der_msto_finite_ext(int mu,double r,double Rc,int *mang,double gamma_couple,double *alfa,double *N_plus);
-//////////////////////////////////////////////////////////////////////////
 
  extern int indexes(int, int, int*, int*);
  extern int delta_kro_(int*, int*, double*);
@@ -269,18 +275,6 @@ double xc_energy(double *correlationc,
 
  Pi = 4.f*atan(1.f);
 
-//mrb for (cont = 0; cont < points; cont++) {
-//mrb    rho_local = rho[cont];
-//mrb    drho_local = derho_alpha[cont];
-//mrb    d2rho_local = d2rho_alpha[cont];
-//mrb    ri = grid[cont];
-//mrb    r2 = grid[1];
-//mrb    x_slater(rho_local, &local_energy, &local_potential);
-//mrb    pw92sr_(&rho_local, &local_energy, &local_potential_corr);
-//mrb    becke_sr_(&ri, &r2, &rho_local, &drho_local, &d2rho_local, &local_energy, &local_potential);
-//mrb  //   pot_array[cont] = local_potential + local_potential_corr;
-//mrb    pot_array[cont] = local_potential;
-//mrb }
   double delta, delta1;
   total_elements = nt*nt;
 

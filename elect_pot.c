@@ -345,13 +345,18 @@ int Evaluate_Elect_Pot(double z, int nt, double *matp, int *np, int *mang, int *
                               double *arreglo_inv_factorial, double r, double Rc,
                               double *NC_minus, double *NC_plus);
 
+  FILE *target;
+
+  target = fopen("Elect_pot.dat","w");
   for (i = 0; i < n_points; i++) {
     r = grid[i];
     pot = Elect_Pot_RHO(nt, matp, np, mang, ncm, expo, bound,
                         arreglo_factorial, arreglo_inv_factorial, r, Rc,
                         NC_minus, NC_plus);
-    printf("%f %f\n", r, pot);
+    fprintf(target, "%20.8f  %20.8f\n", grid[i], pot/2.f);
   }
+
+  fclose(target);
 
   return 0;
 }
