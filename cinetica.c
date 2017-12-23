@@ -49,14 +49,14 @@ void cinetica(char   *using_gamma,
  extern double int1c(int, int, int, double, double* , int*, double*, double*);
  extern double intc(int, double, double, double*, double*);
  extern double constc(int, double, double*, int*, double*, double*);
-//mrb extern void memoria_double_uni(int, double**, char*);
  extern void memoria_double_uni(int      tamanio,
                                 double **arreglo,
                                 char    *titulo);
 
  extern int delta_kro_(int*, int*, double*);
  extern double upper_incomplete_gamma(double, int, double);
-//jgo extern double intc(int a, double b, double r);
+
+ printf("Kinetic contribution to hamiltonian..\n");
 
  total_elements = nt*nt;
 
@@ -93,7 +93,6 @@ void cinetica(char   *using_gamma,
    }
  }
  else if (strcmp(bound,"finite") == 0) {
-   printf("Kinetic contribution to hamiltonian..\n");
    #pragma omp for
    for (k = 0; k <  total_elements; k++) {
      indexes(nt, k, &index_i, &index_j);
