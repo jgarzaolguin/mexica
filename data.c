@@ -7,6 +7,42 @@
 
 #include <time.h>
 
+//
+// Function to check zeta and alpha exponents in basis set defined in two regions
+//
+
+int check_exponents(int nt, int *np, int *mang, double *expo, double Rc, 
+                    char *using_gamma, double gamma_couple,
+                    double *const_n_minus, double *const_n_plus, double *alphas) {
+  int i, test_input;
+  int flag_constants;
+  double arreglo_factorial[100];
+  double arreglo_inv_factorial[100];
+  double tmp1, tmp2, tmp3;
+  extern double factorial(int);
+  extern int constants_normalization_finite(int mu, int *np, int *ang, double *zetas, double Rc,
+                                           double *arreglo_factorial, double *arreglo_inv_factorial,
+                                           char *using_gamma, double gamma_couple, double *const_n_minus,
+                                           double *const_n_plus, double *alphas, int print_expo);
+
+  test_input = 0;
+  for (i = 0; i < 100; i++) {
+    arreglo_factorial[i] = factorial(i);
+    arreglo_inv_factorial[i] = 1.f/arreglo_factorial[i];
+  }
+  flag_constants = 0;
+  printf("External exponents\n");
+  for (i = 0; i < nt; i++){
+    flag_constants = constants_normalization_finite(i, np, mang, expo, Rc,
+                                                    arreglo_factorial, arreglo_inv_factorial, 
+                                                    using_gamma, gamma_couple, &tmp1, &tmp2, &tmp3, 1);
+    if (flag_constants == 1) test_input = 1;
+  }
+  printf("---------------------------------------------------\n");
+  return test_input;
+} 
+//
+
 int input(double *z, 
 	  int    *elecalfa, 
 	  int    *elecbeta, 
@@ -55,30 +91,20 @@ int input(double *z,
  time_t t;
  struct tm tstruct;
 
- extern	int input_2_int(char   *read_base,
-       		        int     base,
-                        double  Rc,
-       		        int    *np_temp,
-       		        int    *mang_temp,
-       		        int    *ncm_temp,
-       		        double *expo_temp,
-       		        int    *nt,
-       		        char   *opt,
-       		        int    *opt_flag,
-       		        FILE   *file_1,
-       		        char   *nombre);
+ extern	int input_2_int(char *read_base, int base, double Rc, int *np_temp, int *mang_temp,
+       		        int *ncm_temp, double *expo_temp, int *nt, char *opt, int *opt_flag,
+       		        FILE *file_1, char *nombre);
 
- extern	int input_2_ext(char   *read_base,
-       		        int     base,
-                        double  Rc,
-       		        int    *np_temp,
-       		        int    *mang_temp,
+ extern	int input_2_ext(char *read_base, int base, double Rc, int *np_temp, int *mang_temp,
        		        int    *ncm_temp,
        		        double *expo_temp,
        		        int    *nt,
        		        int    *opt_flag,
        		        FILE   *file_1,
        		        char   *nombre);
+ extern int check_exponents(int nt, int *np, int *mang, double *expo, double Rc, 
+                      char *using_gamma, double gamma_couple,
+                      double *const_n_minus, double *const_n_plus, double *alphas);
 
  int atomic_number[54] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
                   11, 12, 13, 14, 15, 16, 17, 18,
@@ -372,6 +398,15 @@ int input(double *z,
          }
              
      } //End If, checking intern or extern
+//
+// Checking zeta and alpha for exponents in finite potential option
+//
+
+   if (strcmp(bound,"finite") == 0 || strcmp(bound,"dielectricc") == 0 || strcmp(bound,"polarization") == 0) {
+     i = check_exponents(*base, np, mang, expo, *Rc, using_gamma, *gamma_couple, &temp1, &temp1, &temp_g);
+     if (i == 1) test_input = 1;
+   }
+//    
    }// End If, checking alpha and beta electrons
  return test_input;
  }

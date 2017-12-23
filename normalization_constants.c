@@ -39,12 +39,14 @@ int constants_normalization_finite(int     mu,
                      		   double  gamma_couple,
                      		   double *const_n_minus, 
 				   double *const_n_plus,
-                     	           double *alphas)
+                     	           double *alphas, int print_expo)
 {
  extern double intc(int a, double b, double r, double*, double*);
  extern double upper_incomplete_gamma(double Rc, int a, double b);
+ int result;
  double total, temp, temp_2, temp_3, exis, K_mu, alpha_mu, zeta_mu, factor1, factor2;
 
+ result = 0;
     if (strcmp(using_gamma,"YES") == 0){//label 1
   
 	zeta_mu = zetas[mu];
@@ -52,14 +54,16 @@ int constants_normalization_finite(int     mu,
 	factor1 = gamma_couple/((1.f - gamma_couple)*Rc) + zeta_mu;
 	factor2 = (double) (ang[mu] + np[mu])/Rc;
 	
-	if(factor1 < factor2)
-	printf("\n Problems with condition for internal exponents in the basis set\n");
+	if(factor1 < factor2) {
+	  printf("\n Problems with condition for internal exponents in the basis set\n");
+          result = 1;
+        }
 
 	temp       = (double) -1.f*(np[mu] + ang[mu]) + gamma_couple/(1.f - gamma_couple);
 	temp_2     = (double) np[mu] + ang[mu];
 	temp_3     = (double) (np[mu] + ang[mu]) + gamma_couple/(gamma_couple - 1.f);
 	alpha_mu   = zeta_mu + temp/Rc;
-        printf("alpha %lf\n", alpha_mu);
+        if (print_expo == 1) printf("alpha %lf\n", alpha_mu);
 	*alphas    = alpha_mu;
 	K_mu       = pow(Rc,-1.f*(temp_2 + 1.f))*exp(temp_3)/(1.f - gamma_couple);
 	
@@ -78,22 +82,17 @@ int constants_normalization_finite(int     mu,
    	*const_n_minus = K_mu*total;
       }//label 1
        else {//label 2
-   
            zeta_mu = zetas[mu];
-           
            temp_2 = (double) (np[mu] + ang[mu]);
-           
-           if(zeta_mu < temp_2/Rc)
-               printf("\n Problems with condition for internal exponents in the basis set\n");;
+           if(zeta_mu < temp_2/Rc) {
+             printf("\n Problems with condition for internal exponents in the basis set\n");;
+             result = 1;
+           }
            
            alpha_mu = (double) zeta_mu - temp_2/Rc;
-          
-           printf("alpha %lf\n", alpha_mu);
-           
+           if (print_expo == 1) printf("alpha %lf\n", alpha_mu);
            *alphas = alpha_mu;
-           
            K_mu = pow(Rc,-temp_2)*exp(temp_2);
-           
            total = upper_incomplete_gamma(Rc, 2*ang[mu], 2.f*alpha_mu);
            total = K_mu*K_mu*intc(2*np[mu], 2.f*zeta_mu, Rc, arreglo_factorial, arreglo_inv_factorial) + total;
            
@@ -104,6 +103,6 @@ int constants_normalization_finite(int     mu,
          
            }//label 2
  
- return 0;
+ return result;
  }
 

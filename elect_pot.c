@@ -347,6 +347,7 @@ int Evaluate_Elect_Pot(double z, int nt, double *matp, int *np, int *mang, int *
 
   FILE *target;
 
+  printf("Computing electrostatic potential..\n");
   target = fopen("Elect_pot.dat","w");
   for (i = 0; i < n_points; i++) {
     r = grid[i];

@@ -670,7 +670,7 @@ extern int ep2_cpu(char   *espin,
                              		   double  gamma_couple,
                              		   double *const_n_minus, 
 			                   double *const_n_plus, 
-			                   double *alphas);
+			                   double *alphas, int print_expo);
 
  extern double  rho_radial_finite_int(char   *using_gamma,
                                       int     nt,  
@@ -1187,26 +1187,14 @@ extern int ep2_cpu(char   *espin,
      memoria_double_uni(sizedouble, &NC_plus, "NC_plus");
      zetas = NULL;
      memoria_double_uni(sizedouble, &zetas, "zetas");
-     printf("---------------------------------------------------\n");
-     printf("External exponents\n");
      for (i = 0; i < nt; i++){
-       constants_normalization_finite(i, 
-                                      np, 
-                                      mang, 
-                                      expo, 
-                                      Rc, 
-                                      arreglo_factorial,
-                                      arreglo_inv_factorial, 
-                                      using_gamma,
-                                      gamma_couple, 
-                                      &tmp1, 
-                                      &tmp2, 
-                                      &tmp3);
+       constants_normalization_finite(i, np, mang, expo, Rc,
+                                      arreglo_factorial, arreglo_inv_factorial,
+                                      using_gamma, gamma_couple, &tmp1, &tmp2, &tmp3, 0);
        NC_minus[i] = tmp1;
        NC_plus[i] = tmp2;
        zetas[i] = tmp3;
      }
-     printf("---------------------------------------------------\n");
    }
 
  char bound_pol[80];

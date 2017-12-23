@@ -6,10 +6,9 @@ xc hf 1.0 pbe 0.00 end
 0.7
 110
 noopt 0.01
-penetrable 4.0 0.0
+penetrable 20.0 0.0
 no
 property
-thakkar
 extern
 10
   1S  2.8791000000000002145839062 1 
