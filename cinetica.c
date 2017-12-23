@@ -93,6 +93,7 @@ void cinetica(char   *using_gamma,
    }
  }
  else if (strcmp(bound,"finite") == 0) {
+   printf("Kinetic contribution to hamiltonian..\n");
    #pragma omp for
    for (k = 0; k <  total_elements; k++) {
      indexes(nt, k, &index_i, &index_j);
@@ -116,102 +117,62 @@ void cinetica(char   *using_gamma,
      else {
         
         if (strcmp(using_gamma,"YES") == 0){//label 1
-
-        //zeta_mu = alpha_mu  + (double) (n_mu + ang_i)/Rc + gamma_couple/(Rc*(gamma_couple - 1.f));
-        //zeta_nu = alpha_nu  + (double) (n_nu + ang_j)/Rc + gamma_couple/(Rc*(gamma_couple - 1.f));
          alpha_mu = zeta_mu  + (double) -1.f*(n_mu + ang_i)/Rc + gamma_couple/(Rc*(1.f - gamma_couple));
          alpha_nu = zeta_nu  + (double) -1.f*(n_nu + ang_j)/Rc + gamma_couple/(Rc*(1.f - gamma_couple));
-
          alphas = alpha_mu + alpha_nu;
          zetas = zeta_mu + zeta_nu;
          enes = n_mu + n_nu;
          eles = ang_i + ang_j;
-
          total1 = (double) (Rc*Rc*(n_nu - 1)*n_nu - Rc*Rc*ang_j*(ang_j + 1));
          total = total1*intc(enes - 2, zetas, Rc, arreglo_factorial, arreglo_inv_factorial);
-        
          total1 = (double) (-2.f*Rc*n_nu*(gamma_couple*n_nu + Rc*zeta_nu) + 2.f*Rc*gamma_couple*ang_j*(ang_j + 1));
          total = total + total1*intc(enes - 1, zetas, Rc, arreglo_factorial, arreglo_inv_factorial); 
-        
          total1 = (double) (gamma_couple*gamma_couple*n_nu*n_nu + Rc*zeta_nu*(2.f*gamma_couple + Rc*zeta_nu) +
                             gamma_couple*n_nu*(gamma_couple + 4.f*Rc*zeta_nu) - gamma_couple*gamma_couple*ang_j*(ang_j + 1));
          total = total + total1*intc(enes, zetas, Rc, arreglo_factorial, arreglo_inv_factorial);
-        
          total1 = (double) (-2.f*gamma_couple*zeta_nu*(gamma_couple + gamma_couple*n_nu + Rc*zeta_nu));
          total = total + total1*intc(enes + 1, zetas, Rc, arreglo_factorial, arreglo_inv_factorial);
-        
          total1 = gamma_couple*gamma_couple*zeta_nu*zeta_nu;
          total = total + total1*intc(enes + 2, zetas, Rc, arreglo_factorial, arreglo_inv_factorial);
-        
          total = total*NC_minus[index_i]*NC_minus[index_j];
-         
          total1 =(double) (ang_j*(1 + ang_j) - ang_j*(1 + ang_j));
          totaltemp = total1*upper_incomplete_gamma(Rc, eles + 2, alphas);
-        
          total1 = (double) 2.f*ang_j*alpha_nu;
-        
          totaltemp = totaltemp + total1*upper_incomplete_gamma(Rc, eles + 1, alphas);
-         
          total1 = alpha_nu*alpha_nu;
-        
          totaltemp = totaltemp + total1*upper_incomplete_gamma(Rc, eles, alphas);
          totaltemp = NC_plus[index_i]*NC_plus[index_j]*totaltemp;
-
          matkint[k]=-0.5*total; 
          matkext[k]=-0.5*totaltemp;
          total = -0.5*(total + totaltemp); 
-
          matk[k] = total;
-
         }//label 1
          else {//label 2
-         
-  
-             //zeta_mu = alpha_mu  + (double) (n_mu + ang_i)/Rc;
-             //zeta_nu = alpha_nu  + (double) (n_nu + ang_j)/Rc;
              alpha_mu = zeta_mu  - (double) (n_mu + ang_i)/Rc;
              alpha_nu = zeta_nu  - (double) (n_nu + ang_j)/Rc;
-
              alphas = alpha_mu + alpha_nu;
              zetas = zeta_mu + zeta_nu;
              enes = n_mu + n_nu;
              eles = ang_i + ang_j;
-
              total1 = (double) (n_nu - 1)*n_nu - ang_j*(ang_j + 1);
              total = total1*intc(enes - 2, zetas, Rc, arreglo_factorial, arreglo_inv_factorial);
-             
              total1 = (double) -2.f*n_nu*zeta_nu;
              total = total + total1*intc(enes - 1, zetas, Rc, arreglo_factorial, arreglo_inv_factorial);
-             
              total1 = (double) zeta_nu*zeta_nu;
              total = total + total1*intc(enes, zetas, Rc, arreglo_factorial, arreglo_inv_factorial);
-             
              total = total*NC_minus[index_i]*NC_minus[index_j];
-             
              total1 =(double) ang_j*(1 + ang_j) - ang_j*(1 + ang_j);
              totaltemp = total1*upper_incomplete_gamma(Rc, eles + 2, alphas);
-             
              total1 = (double) 2.f*ang_j*alpha_nu;
-             
              totaltemp = totaltemp + total1*upper_incomplete_gamma(Rc, eles + 1, alphas);
-             
              total1 = alpha_nu*alpha_nu;
-             
              totaltemp = totaltemp + total1*upper_incomplete_gamma(Rc, eles, alphas);
-             
              totaltemp = totaltemp*NC_plus[index_i]*NC_plus[index_j];
-             
              matkint[k] = -0.5*total;
              matkext[k] = -0.5*totaltemp;
-             
              total = -0.5*(total + totaltemp);
-
              matk[k] = total;
-
-
              }//label 2
-
-
      }
    }
  } else {

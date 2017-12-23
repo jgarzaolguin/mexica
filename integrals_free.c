@@ -199,8 +199,8 @@ integraltotal = exp(-b*Rc)/b;
 }
 else
 {
- tol1 = 1.0e-16;
- tol2 = 1.0e-16;
+ tol1 = 1.0e-15;
+ tol2 = 1.0e-15;
  dif2 = 100.f;
  x1 = -0.9491079123427600f;
  w1 =  0.1294849661688884f;
@@ -219,7 +219,7 @@ else
 
 
  liminf = Rc;
- limsup = Rc + 50.f;
+ limsup = Rc + 80.f;
  integraltotal = 0.f;
  double decae = -(double) a;
  do {

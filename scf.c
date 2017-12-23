@@ -1173,14 +1173,14 @@ extern int ep2_cpu(char   *espin,
 
 // End of allocation memory
 
-   printf("Memory to be allocated %8.2f Mb\n", (float) cuart*sizeof(double)/(1024*1024));
+  printf("Memory to be allocated %8.2f Mb\n", (float) cuart*sizeof(double)/(1024*1024));
 
   for (i = 0; i < 100; i++) {
     arreglo_factorial[i] = factorial(i);
     arreglo_inv_factorial[i] = 1.f/arreglo_factorial[i];
   }
 
-   if (strcmp(bound,"finite") == 0 || strcmp(bound,"dielectricc") == 0 || strcmp(bound,"polarization") == 0) {
+  if (strcmp(bound,"finite") == 0 || strcmp(bound,"dielectricc") == 0 || strcmp(bound,"polarization") == 0) {
      NC_minus = NULL;
      memoria_double_uni(sizedouble, &NC_minus, "NC_minus");
      NC_plus = NULL;
@@ -1277,15 +1277,15 @@ extern int ep2_cpu(char   *espin,
           arreglo_inv_factorial);
 
 
-       printf("Two-electron integrals on CPU\n");
-       integrales_bie = (double *)malloc(cuart*sizeof(double *));
-       if(integrales_bie == NULL) {
-         fprintf(stderr, "out of memory\n");
-         exit(1);
-       }
+ printf("Two-electron integrals on CPU\n");
+ integrales_bie = (double *)malloc(cuart*sizeof(double *));
+ if(integrales_bie == NULL) {
+    fprintf(stderr, "out of memory\n");
+    exit(1);
+ }
 
-       time_bie_ini = time(NULL);
-       bielectronicas_CPU(using_gamma,
+ time_bie_ini = time(NULL);
+ bielectronicas_CPU(using_gamma,
                           nt, 
                           np, 
                           mang, 
@@ -1300,8 +1300,8 @@ extern int ep2_cpu(char   *espin,
                           NC_plus, 
                           arreglo_factorial,
                           arreglo_inv_factorial);
-       time_bie_fin = time(NULL);
-       printf("Two-electron integrals (%g) in %.1f s\n", (float) cuart, (float) (time_bie_fin - time_bie_ini));
+ time_bie_fin = time(NULL);
+ printf("Two-electron integrals (%g) in %.1f s\n", (float) cuart, (float) (time_bie_fin - time_bie_ini));
  
  int revisa, revisa1;
  revisa  = 0;
