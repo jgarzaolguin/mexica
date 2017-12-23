@@ -355,6 +355,7 @@ int Evaluate_Elect_Pot(double z, int nt, double *matp, int *np, int *mang, int *
                         arreglo_factorial, arreglo_inv_factorial, r, Rc,
                         NC_minus, NC_plus);
     fprintf(target, "%20.8f  %20.8f\n", grid[i], pot/2.f);
+    fflush(target);
   }
 
   fclose(target);
