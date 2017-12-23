@@ -124,4 +124,4 @@ lypsr_mexica.o : lypsr_mexica.f
 ##rho_derrho_on_mesh.o : rho_derrho_on_mesh.c
 ##	$(CC) $(flags) rho_derrho_on_mesh.c
 clean : 
-	rm $(objects) mrbmexica
+	rm $(objects) mexica
