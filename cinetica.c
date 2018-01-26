@@ -16,6 +16,7 @@ void cinetica(char   *using_gamma,
 	      double *matk, 
 	      double *matkint, 
 	      double *matkext, 
+              char   *basis,
 	      int    *np, 
 	      int    *mang, 
 	      int    *ncm, 
@@ -59,6 +60,66 @@ void cinetica(char   *using_gamma,
  printf("Kinetic contribution to hamiltonian..\n");
 
  total_elements = nt*nt;
+
+ if (strcmp(basis,"GTOs") == 0 || strcmp(basis,"gtos") == 0) { //aquí empiezan los cálculos para los GTOs
+ //empezaré con puras GTOs tipo 1S, ya quedaron los elementos de matriz
+    if (strcmp(bound,"free") == 0) {
+//   #pragma omp for
+       for (k = 0; k < total_elements; k++) {
+          indexes(nt, k, &index_i, &index_j);
+          index_i = index_i - 1;
+          index_j = index_j - 1;
+          i = index_i;
+          j = index_j;
+          ang_i = mang[i];
+          ang_j = mang[j];
+          delta_kro_(&ang_i, &ang_j, &delta);
+          ncm_i = ncm[i];
+          ncm_j = ncm[j];
+          delta_kro_(&ncm_i, &ncm_j, &delta1);
+          delta = delta*delta1;
+          if (delta == (double)0)
+            matk[k] = (double)0;
+          else {
+             num1 = 7.f/4.f;
+             num2 = 5.f/2.f;
+             matk[k] = ((double) 6*sqrt(2))*pow((expo[i]*expo[j]),num1)/pow((expo[i] + expo[j]),num2);
+//             printf("K_mu,nu[%d] = %f \n", k, matk[k]);
+          }
+       }
+    }
+    else
+        if (strcmp(bound,"dielec") == 0) { 
+           /* Necesito separar la energía cinética dentro y fuera de la cavidad */
+           /* Ya quedaron los elementos de matriz */
+           for (k = 0; k < total_elements; k++) {
+              indexes(nt, k, &index_i, &index_j);
+              index_i = index_i - 1;
+              index_j = index_j - 1;
+              i = index_i;
+              j = index_j;
+              ang_i = mang[i];
+              ang_j = mang[j];
+              delta_kro_(&ang_i, &ang_j, &delta);
+              ncm_i = ncm[i];
+              ncm_j = ncm[j];
+              delta_kro_(&ncm_i, &ncm_j, &delta1);
+              delta = delta*delta1;
+              if (delta == (double)0)
+                matk[k] = (double)0;
+              else {
+                 num1 = 7.f/4.f;
+                 num2 = 5.f/2.f;
+                 matk[k] = ((double) 6*sqrt(2))*pow((expo[i]*expo[j]),num1)/pow((expo[i] + expo[j]),num2);
+//                 printf("K_mu,nu[%d] = %f \n", k, matk[k]);
+              }
+           }
+        }
+        else
+           if (strcmp(bound,"penetrable") == 0) {
+              printf("Estoy trabajando en esto \n");
+           }
+ } else { //aquí empieza toda la maquinaria para los STOs
 
 #pragma omp parallel shared(total_elements, nt, matk, np, mang, ncm, expo, Rc, gamma_couple, NC_minus, NC_plus)
 
@@ -217,6 +278,7 @@ void cinetica(char   *using_gamma,
    }
  }
  }//Termina omp
+ }
 
  }
 
