@@ -17,7 +17,8 @@ void traslape(char   *using_gamma,
 	      int    *np, 
 	      int    *mang,
               int    *ncm, 
-	      double *expo, 
+	      double *expo,
+              char   *basis, 
 	      double  Rc,
               double  gamma_couple,
 	      char   *bound, 
@@ -30,6 +31,7 @@ void traslape(char   *using_gamma,
  int i, j, k, index_i, index_j, total_elements;
  int ang_i, ang_j, ncm_i, ncm_j;
  double delta, delta1, part_real;
+ double num1, num2;
  
  double total;
  int enes, eles;
@@ -48,6 +50,61 @@ void traslape(char   *using_gamma,
  extern double intc(int, double, double, double*, double*);
 
  total_elements = nt*nt;
+
+ if (strcmp(basis,"GTOs") == 0 || strcmp(basis,"gtos") == 0) { //aquí empiezan los cálculos para los GTOs
+ //empezaré con puras GTOs tipo 1S,
+    if (strcmp(bound,"free") == 0 ) {
+       for (k = 0; k < total_elements; k++) {
+          indexes(nt, k, &index_i, &index_j);
+          index_i = index_i - 1;
+          index_j = index_j - 1;
+          i = index_i;
+          j = index_j;
+          ang_i = mang[i];
+          ang_j = mang[j];
+          delta_kro_(&ang_i, &ang_j, &delta);
+          ncm_i = ncm[i];
+          ncm_j = ncm[j];
+          delta_kro_(&ncm_i, &ncm_j, &delta1);
+          delta = delta*delta1;
+          if (delta == (double)0)
+            mats[k] = (double)0;
+          else {
+             num1 = 3.f/2.f;
+             num2 = 3.f/4.f;
+             mats[k] = pow(((double) 2),num1)*pow((expo[i]*expo[j]),num2)/pow((expo[i] + expo[j]),num1);
+//             printf("S_mu,nu[%d] = %f \n", k, mats[k]);
+     }
+   }
+ }
+ else
+    if (strcmp(bound,"dielec") == 0 ) {
+       for (k = 0; k < total_elements; k++) {
+          indexes(nt, k, &index_i, &index_j);
+          index_i = index_i - 1;
+          index_j = index_j - 1;
+          i = index_i;
+          j = index_j;
+          ang_i = mang[i];
+          ang_j = mang[j];
+          delta_kro_(&ang_i, &ang_j, &delta);
+          ncm_i = ncm[i];
+          ncm_j = ncm[j];
+          delta_kro_(&ncm_i, &ncm_j, &delta1);
+          delta = delta*delta1;
+          if (delta == (double)0)
+            mats[k] = (double)0;
+          else {
+             num1 = 3.f/2.f;
+             num2 = 3.f/4.f;
+             mats[k] = pow(((double) 2),num1)*pow((expo[i]*expo[j]),num2)/pow((expo[i] + expo[j]),num1);
+//             printf("S_mu,nu[%d] = %f \n", k, mats[k]);
+          }
+       }
+
+    }
+ } else {
+
 
 #pragma omp parallel shared(total_elements, nt, mats, np, mang, ncm, expo, Rc, gamma_couple, bound, U_0, NC_minus, NC_plus, arreglo_factorial, arreglo_inv_factorial) 
 
@@ -159,5 +216,6 @@ void traslape(char   *using_gamma,
    }
  }
  }//Termina omp
+} //termina el else para STOs
 }
 
