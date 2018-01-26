@@ -60,6 +60,7 @@ int input(double *z,
 	  double *mezcla, 
 	  int    *orbital, 
           int    *maxiter, 
+          char   *basis,
           char   *read_base,
           int    *base, 
 	  int    *np, 
@@ -221,31 +222,44 @@ int input(double *z,
      if (strcmp(bound,"free") == 0 || strcmp(bound,"Free") == 0 || strcmp(bound,"FREE") == 0) {
        *Rc = 0.00000;
        printf("Free atom calculation\n");
-     } else
-     if (strcmp(bound,"dielectricnc") == 0 || strcmp(bound,"Dielectricnc") == 0 || strcmp(bound,"DIELECTRICNC") == 0) {
-       scanf("%lf %lf", &Rc_temp, &epsilon_temp);
-       *Rc = Rc_temp;
-       *epsilon = epsilon_temp;
-       printf("Dielectric confined with asymtotic behavior incorrect\n");
-     } else 
-     if (strcmp(bound,"dielectricc")  == 0  || 
-         strcmp(bound,"Dielectricc")  == 0  || 
-         strcmp(bound,"DIELECTRICC")  == 0  || 
-         strcmp(bound,"polarization") == 0  || 
-         strcmp(bound,"Polarization") == 0  || 
-         strcmp(bound,"POLARIZATION") == 0) {
-       scanf("%lf %lf", &Rc_temp, &epsilon_temp);
-       *Rc = Rc_temp;
-       *epsilon = epsilon_temp;
-       scanf("%s",using_gamma);
-       if (strcmp(using_gamma,"n") == 0 || strcmp(using_gamma,"no") == 0 || strcmp(using_gamma,"NO") == 0 || strcmp(using_gamma,"No") == 0)
-       strcpy(using_gamma,"NO");
-       if (strcmp(bound,"polarization") == 0)
-       printf("Polarization with asymtotic behavior correct\n");
-       else
-       printf("Dielectric confined with asymtotic behavior correct\n");
-     }  
-     else {
+     } 
+     else
+         if (strcmp(bound,"dielec") == 0){  /* He creado un dielec distinto pues con el previo no me era posible correr los cálculos */
+             scanf("%lf %lf", &Rc_temp, &epsilon_temp);
+             *Rc = Rc_temp;
+             *epsilon = epsilon_temp;
+             printf("-----Confinement by a dielectric continuum-----\n");
+             printf("confinement radius, r0 = %f \n", Rc_temp);
+             printf("Dielectric constant, epsilon  = %f \n", epsilon_temp);
+         }
+         else
+         if (strcmp(bound,"dielectricnc") == 0 || strcmp(bound,"Dielectricnc") == 0 || strcmp(bound,"DIELECTRICNC") == 0) {
+            scanf("%lf %lf", &Rc_temp, &epsilon_temp);
+            *Rc = Rc_temp;
+            *epsilon = epsilon_temp;
+            printf("Dielectric confined with asymtotic behavior incorrect\n");
+         } 
+         else 
+             if (strcmp(bound,"dielectricc")  == 0  || 
+                 strcmp(bound,"Dielectricc")  == 0  || 
+                 strcmp(bound,"DIELECTRICC")  == 0  || 
+                 strcmp(bound,"polarization") == 0  || 
+                 strcmp(bound,"Polarization") == 0  || 
+                 strcmp(bound,"POLARIZATION") == 0) {
+                 scanf("%lf %lf", &Rc_temp, &epsilon_temp);
+                 *Rc = Rc_temp;
+                 *epsilon = epsilon_temp;
+//                 printf("confinement radius = %f \n", Rc_temp);
+//                 printf("Dielectric constant = %f \n", epsilon_temp);
+                 scanf("%s",using_gamma);
+                if (strcmp(using_gamma,"n") == 0 || strcmp(using_gamma,"no") == 0 || strcmp(using_gamma,"NO") == 0 || strcmp(using_gamma,"No") == 0)
+                  strcpy(using_gamma,"NO");
+                  if (strcmp(bound,"polarization") == 0)
+                    printf("Polarization with asymtotic behavior correct\n");
+                  else
+                    printf("Dielectric confined with asymtotic behavior correct\n");
+             }  
+             else {
      if (strcmp(bound,"impenetrable") == 0 || strcmp(bound,"Impenetrable") == 0 || strcmp(bound,"IMPENETRABLE") == 0) {
        strcpy(bound,"confined");
        printf("Atom confined by impenetrable walls, please give the confinement radius\n");
@@ -314,6 +328,7 @@ int input(double *z,
      else
        printf("no\n");
 
+     scanf("%s", basis);
      scanf("%s", read_base);
 
      if (strcmp(read_base,"bunge")    == 0 || 
