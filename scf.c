@@ -925,7 +925,7 @@ extern int ep2_cpu(char   *espin,
  extern int Evaluate_Elect_Pot(double z, int nt, double *matp, int *np, int *ang, int *ncm,
                       double *expo, char *bound, double *arreglo_factorial,
                       double *arreglo_inv_factorial, double *grid, int n_points, double Rc,
-                      double *NC_minus, double *NC_plus);
+                      double *NC_minus, double *NC_plus, char *basis);
 
  extern int print_out_array(int points, double *grid, double *array, char *name_file);
 
@@ -2092,7 +2092,7 @@ extern int ep2_cpu(char   *espin,
                                  matp, mats, &iter, save_i, print_vectors, cusp_kato);
                  Evaluate_Elect_Pot(z, nt, matp, np, mang, ncm, expo, bound,
                                     arreglo_factorial, arreglo_inv_factorial, 
-                                    grid, n_points, Rc, NC_minus, NC_plus);
+                                    grid, n_points, Rc, NC_minus, NC_plus, basis);
                  print_out_array(n_points, grid, array_i, "xc.dat");
                }
 /*compara*/} else { // Section for open-shell atoms
@@ -2335,8 +2335,15 @@ extern int ep2_cpu(char   *espin,
                    FILE *workout;
                    char nameout[200];
 
-                   if (strcmp(bound, "free") == 0 && Rc == 0.f)
+                   if (strcmp(bound, "free") == 0 && Rc == 0.f) {
                     sprintf(nameout, "%s_%s_rho_drho_+drho_rdf_divdrhorho", bound, tipo);
+                    if (strcmp(properties,"property") == 0) {
+                      Evaluate_Elect_Pot(z, nt, matp, np, mang, ncm, expo, bound,
+                                    arreglo_factorial, arreglo_inv_factorial,
+                                    grid, n_points, Rc, NC_minus, NC_plus, basis);
+                      print_out_array(n_points, grid, array_i, "xc.dat");
+                    }
+                   }
                    else
                     sprintf(nameout, "%3.3f_%s_%s_rho_drho_+drho_rdf_divdrhorho", Rc, bound, tipo);
 

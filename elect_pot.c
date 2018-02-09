@@ -74,6 +74,166 @@ double Spherical_Harmonics_at_zero(int l, int m) {
   return total;
 }
 
+// Integral to evaluate the electrostatic potential for free atoms using GTOS basis 
+// functions
+//
+
+double Elect_Pot_Free_GTO(int mu, int nu, int ang, int nt, double *matp, int *np, double *expo, double r)
+{
+
+double double_factorial(int);
+double factorial_jul (int);
+double exponential1 (int, double);
+double constant_normalization_GTOS (int, double);
+double numerical_incomplete_lower_gamma (double, double);
+double incomplete_lower_gamma (double, float);
+double incomplete_upper_gamma (double, float);
+double suma_gamma (double, float);
+double incomplete_analytical_lower_gamma (double, float);
+double incomplete_analytical_upper_gamma (double, float);
+double int_lower (double, int, int, int);
+double int_upper (double, int, int, int);
+
+int enes;
+float k, p;
+double arg2, inte1, inte2, Intesp, zetas, alpha;
+
+zetas=expo[mu] + expo[nu]; 
+enes=np[mu]+ np[nu];
+alpha=zetas*pow(r,2);
+        k=0.5*(enes + ang + 1);
+        p=0.5*(enes - ang);
+                inte1=pow(r,-ang-1)*0.5*pow((zetas),-k)*int_lower(alpha, np[mu], np[nu], ang);
+                inte2=pow(r,ang)*0.5*pow(zetas,-p)*int_upper(alpha, np[mu], np[nu], ang);
+                Intesp=constant_normalization_GTOS(np[mu], expo[mu])*constant_normalization_GTOS(np[nu], expo[nu])*(inte1+inte2);
+//      printf("\nEl resultado de la integral espacial es de: %.12lf\n", Intesp);
+return Intesp;
+}
+
+//Obtaining the value of the normalization constant for GTOS basis functions.
+
+double doble_factorial (int ni)
+{
+ int I;
+ double FAC;
+ FAC=1.f;
+for(I=1; I<=ni; I++)
+{
+        FAC*=(2.f*(double) I-1.f);
+}
+return FAC;
+}
+
+double exponential1(int ni, double expo)
+{
+        double RES;
+        int e;
+                e=ni+0.5;
+                RES=pow(2*expo,e);
+return RES;
+}
+
+double constant_normalization_GTOS (int ni, double expo)
+{
+        double RES, N;
+                RES=pow(2,ni+1)*exponential1(ni, expo)/(doble_factorial(ni)*sqrt(M_PI));
+                N=sqrt(RES);
+return N;
+}
+
+double factorial_jul (int k)
+{
+ int I;
+ double FAC;
+ FAC=1.f;
+ for (I=1; I<=k; I++)
+   FAC*=(double)I;
+
+ return FAC;
+}
+
+double numerical_incomplete_lower_gamma (double alpha, double z)
+{
+        double f1;
+        double c0=0.189450610455068496285, c1=0.182603415044923588867, c2=0.169156519395002538189, c3=0.149595988816576732081, c4=0.124628971255533872052, c5=0.095158511682492784810, c6=0.062253523938647892863, c7=0.027152459411754094852, c8=c7, c9=c6, c10=c5, c11=c4, c12=c3, c13=c2, c14=c1, c15=c0;
+        double x0=-0.095012509837637440185, x1=-0.281603550779258913230, x2=-0.458016777657227386342, x3=-0.617876244402643748447, x4=-0.755404408355003033895, x5=-0.865631202387831743880, x6=-0.944575023073232576078, x7=-0.989400934991649932596, x8=-x7, x9=-x6, x10=-x5, x11=-x4, x12=-x3, x13=-x2, x14=-x1, x15=-x0;
+                f1=c0*pow(x0+1,z-1)*exp(-0.5*alpha*x0)+c1*pow(x1+1,z-1)*exp(-0.5*alpha*x1)+c2*pow(x2+1,z-1)*exp(-0.5*alpha*x2)+c3*pow(x3+1,z-1)*exp(-0.5*alpha*x3)+c4*pow(x4+1,z-1)*exp(-0.5*alpha*x4)+c5*pow(x5+1,z-1)*exp(-0.5*alpha*x5)+c6*pow(x6+1,z-1)*exp(-0.5*alpha*x6)+c7*pow(x7+1,z-1)*exp(-0.5*alpha*x7)+c8*pow(x8+1,z-1)*exp(-0.5*alpha*x8)+c9*pow(x9+1,z-1)*exp(-0.5*alpha*x9)+c10*pow(x10+1,z-1)*exp(-0.5*alpha*x10)+c11*pow(x11+1,z-1)*exp(-0.5*alpha*x11)+c12*pow(x12+1,z-1)*exp(-0.5*alpha*x12)+c13*pow(x13+1,z-1)*exp(-0.5*alpha*x13)+c14*pow(x14+1,z-1)*exp(-0.5*alpha*x14)+c15*pow(x15+1,z-1)*exp(-0.5*alpha*x15);
+        return(f1);
+}
+
+double incomplete_lower_gamma (double alpha, float z)
+{
+        double lower_gamma;
+                lower_gamma=pow(0.5*alpha,z)*exp(-0.5*alpha)*numerical_incomplete_lower_gamma (alpha ,z);
+        return (lower_gamma);
+}
+
+double incomplete_upper_gamma (double alpha, float z)
+{
+        double upper_gamma, lower_gamma;
+                lower_gamma=pow(0.5*alpha,z)*exp(-0.5*alpha)*numerical_incomplete_lower_gamma (alpha, z);
+                upper_gamma=tgammaf(z)-lower_gamma;
+        return (upper_gamma);
+}
+
+double suma_gamma (double alpha, float z)
+{
+        int I;
+        double COS, RES;
+for (I=0; I<z; I++)
+{
+        COS+=(pow(alpha,I)/factorial_jul(I));
+}
+        RES=exp(-alpha)*COS;
+return RES;
+}
+
+double incomplete_analytical_lower_gamma (double alpha, float z)
+{
+        double lower_gamma;
+                lower_gamma=tgamma(z)*(1-suma_gamma(alpha, z));
+return lower_gamma;
+}
+
+double incomplete_analytical_upper_gamma (double alpha, float z)
+{
+        double upper_gamma;
+                upper_gamma=tgamma(z)*suma_gamma(alpha, z);
+return upper_gamma;
+}
+
+double int_lower (double alpha, int na, int nb, int l)
+{
+        int RES, x;
+        float z;
+        double int_1;
+                x=na+nb+l;
+                z=0.5*x+0.5;
+                RES=pow(-1,x);
+if(RES>0){
+                int_1=incomplete_lower_gamma(alpha, z);
+}else{
+                int_1=incomplete_analytical_upper_gamma(alpha, z);
+        }
+return int_1;
+}
+
+double int_upper (double alpha, int na, int nb, int l)
+{
+        int RES, x;
+        float z;
+        double int_2;
+                x=na+nb-l;
+                z=0.5*x;
+                RES=pow(-1,x);
+        if(RES<0){
+                int_2=incomplete_upper_gamma(alpha, z);
+        }else{
+                int_2=incomplete_analytical_upper_gamma(alpha, z);
+                }
+return int_2;
+}
+
 // Integral to evaluate the electrostatic potential
 // for free atoms.
 //
@@ -264,7 +424,7 @@ double Elect_Pot_Pen_RHO(int mu, int nu, int ang, int nt, double *matp, int *np,
 double Elect_Pot_RHO(int nt, double *matp, int *np, int *ang, int *ncm,
               double *expo, char *bound, double *arreglo_factorial,
               double *arreglo_inv_factorial, double r, double Rc,
-              double *NC_minus, double *NC_plus)
+              double *NC_minus, double *NC_plus, char *basis)
 {
   int l, m, mu, nu, lmu, lnu, mmu, mnu, down, up, entero1, test,
       sumam1, sumam2;
@@ -282,6 +442,8 @@ double Elect_Pot_RHO(int nt, double *matp, int *np, int *ang, int *ncm,
                          int *ang, double *expo, double *arreglo_factorial,
                          double *arreglo_inv_factorial, double r, double Rc,
                          double *NC_minus, double *NC_plus);
+
+  extern double Elect_Pot_Free_GTO(int mu, int nu, int ang, int nt, double *matp, int *np, double *expo, double r);
 
   doble1 = (double)1;
   pi = atan(doble1)*(double)4;
@@ -309,19 +471,24 @@ double Elect_Pot_RHO(int nt, double *matp, int *np, int *ang, int *ncm,
               if (coef2 != (double)0) {
                 partial = matp[mu*nt + nu]*coef1*coef2*Spherical_Harmonics_at_zero(l,m);
                 if (strcmp(bound,"free") == 0) {
-                  sumatot = sumatot + partial*Elect_Pot_Free_RHO(mu, nu, l, nt, matp, np, expo,
+                  if (strcmp(basis,"STOs") == 0)
+                    sumatot = sumatot + partial*Elect_Pot_Free_RHO(mu, nu, l, nt, matp, np, expo,
                                                              arreglo_factorial,
                                                              arreglo_inv_factorial, r);
+                  else
+		    sumatot= sumatot+partial*Elect_Pot_Free_GTO(mu, nu, l, nt, matp, np, expo, r);
                 } else {
                 if (strcmp(bound,"confined") == 0) {
                   sumatot = sumatot + partial*Elect_Pot_Impe_RHO(mu, nu, l, nt, matp, np,
                                                                  expo, arreglo_factorial,
                                                                  arreglo_inv_factorial, r, Rc);
                 } else {
+		if (strcmp(bound,"Penetrable") == 0){
                   sumatot = sumatot + partial*Elect_Pot_Pen_RHO(mu, nu, l, nt, matp, np, ang, expo,
                                                         arreglo_factorial,
                                                         arreglo_inv_factorial, r, Rc,
                                                         NC_minus, NC_plus);
+		} 
                 }
                 }
               }
@@ -336,14 +503,14 @@ double Elect_Pot_RHO(int nt, double *matp, int *np, int *ang, int *ncm,
 int Evaluate_Elect_Pot(double z, int nt, double *matp, int *np, int *mang, int *ncm,
                        double *expo, char *bound, double *arreglo_factorial,
                        double *arreglo_inv_factorial, double *grid, int n_points, double Rc,
-                       double *NC_minus, double *NC_plus)
+                       double *NC_minus, double *NC_plus, char *basis)
 {
   int i;
   double r, pot;
   extern double Elect_Pot_RHO(int nt, double *matp, int *np, int *mang, int *ncm,
                               double *expo, char *bound, double *arreglo_factorial,
                               double *arreglo_inv_factorial, double r, double Rc,
-                              double *NC_minus, double *NC_plus);
+                              double *NC_minus, double *NC_plus, char *basis);
 
   FILE *target;
 
@@ -353,7 +520,7 @@ int Evaluate_Elect_Pot(double z, int nt, double *matp, int *np, int *mang, int *
     r = grid[i];
     pot = Elect_Pot_RHO(nt, matp, np, mang, ncm, expo, bound,
                         arreglo_factorial, arreglo_inv_factorial, r, Rc,
-                        NC_minus, NC_plus);
+                        NC_minus, NC_plus, basis);
     fprintf(target, "%20.8f  %20.8f\n", grid[i], pot/2.f);
     fflush(target);
   }
