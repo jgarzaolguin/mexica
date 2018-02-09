@@ -40,7 +40,7 @@ int constants_normalization_finite(int     mu,
                      		   double *const_n_minus, 
 				   double *const_n_plus,
                      	           double *alphas, int print_expo)
-{
+{ //esto es para stos
  extern double intc(int a, double b, double r, double*, double*);
  extern double upper_incomplete_gamma(double Rc, int a, double b);
  int result;
@@ -104,5 +104,5 @@ int constants_normalization_finite(int     mu,
            }//label 2
  
  return result;
- }
+ } //esto es para stos
 
