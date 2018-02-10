@@ -35,33 +35,26 @@ extern  int bielectronicas_CPU(char   *using_gamma,
                                double *arreglo_inv_factorial)
 {
   int i, indice_i, indice_j, indice_k, indice_l;
-  int cuad, cubo, cuart;
-  double integral_cpu, inv_Rc;
+  int cuad, cubo, cuart, high_l;
+  double integral_cpu, inv_Rc, pi, *two_l_plus_1;
 
-  extern double doselec(char   *using_gamma,
-                        int     mu, 
-                        int     nu, 
-                        int     lam, 
-                        int     sig, 
-                        double  Rc, 
-                        double  inv_Rc,
-                        double  gamma_couple, 
-                        char   *bound,
-                        double *expo, 
-                        int    *np, 
-                        int    *ang, 
-                        int    *ncm, 
-                        double *zeta,
-                        double *N_minus, 
-                        double *N_plus,
-                        double *arreglo_factorial, 
-                        double *arreglo_inv_factorial);
+  extern double doselec(char *using_gamma, int mu, int nu, int lam, int sig, double Rc,
+                        double inv_Rc, double gamma_couple, char *bound, double *expo, int *np,
+                        int *ang, int    *ncm, double *zeta, double *N_minus, double *N_plus,
+                        double *arreglo_factorial, double *arreglo_inv_factorial,
+                        double *two_l_plus_1);
 
+  pi = 4.f*atan(1.f);
+  high_l = 50;
+  two_l_plus_1 = (double *)malloc(high_l*sizeof(double));
+
+  for (i = 0; i < high_l; i++)
+    two_l_plus_1[i] = 4.f*pi/((double) 2*i + 1.f);
   cuad = nt*nt;
   cubo = cuad*nt;
   cuart = cubo*nt;
   inv_Rc = 1.f/Rc;
-  #pragma omp parallel shared(integrales_bie, Rc, bound, expo, np, mang, ncm, cuad, cubo, cuart, nt, gamma_couple) private(i, indice_i,indice_j, indice_k, indice_l, integral_cpu)
+  #pragma omp parallel shared(integrales_bie, Rc, bound, expo, np, mang, ncm, cuad, cubo, cuart, nt, gamma_couple, two_l_plus_1) private(i, indice_i,indice_j, indice_k, indice_l, integral_cpu)
   {
     #pragma omp for
     for (i = 0; i < cuart; i++) {
@@ -89,11 +82,12 @@ extern  int bielectronicas_CPU(char   *using_gamma,
                               N_minus, 
                               N_plus, 
                               arreglo_factorial, 
-                              arreglo_inv_factorial);
+                              arreglo_inv_factorial, two_l_plus_1);
 
        integrales_bie[i] = integral_cpu;                
      }                                                                                                 
     }  // Termina openmp 
+  free(two_l_plus_1);
   return 0;
 }
 //
@@ -471,15 +465,6 @@ extern int compute_energy(int     compara,
                       double *mat_e_store[100],
                       double *mat_f_store[100],
                       double *matfock);
-
- extern void guarda_bielec(int, 
-                           double*, 
-                           int*, 
-                           int*, 
-                           int*, 
-                           double*,
-                           double , 
-                           char*);
 
 // extern int rho_derrho_on_mesh(int nt, double Rc, double* matp, int bandera_GPU,
 //                        double* expo, int* np, int* ang, int* ncm,
@@ -2090,10 +2075,10 @@ extern int ep2_cpu(char   *espin,
                                  grid, grid_rho, NULL, grid_der, NULL, n_points,
                                  arreglo_factorial, arreglo_inv_factorial,
                                  matp, mats, &iter, save_i, print_vectors, cusp_kato);
+                 print_out_array(n_points, grid, array_i, "xc.dat");
                  Evaluate_Elect_Pot(z, nt, matp, np, mang, ncm, expo, bound,
                                     arreglo_factorial, arreglo_inv_factorial, 
                                     grid, n_points, Rc, NC_minus, NC_plus, basis);
-                 print_out_array(n_points, grid, array_i, "xc.dat");
                }
 /*compara*/} else { // Section for open-shell atoms
                for (i = 0; i < nt; i++) 

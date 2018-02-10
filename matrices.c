@@ -431,15 +431,24 @@ int indexes(int size_N, int elemento, int *indice_i, int *indice_j)
  return 0;
  }
 
-void guarda_bielec(int nt, double *integrales_bie,
+void guarda_bielec(char *using_gamma, int nt, double *integrales_bie,
                    int* np, int* mang, int* ncm, double* expo, double Rc,
                    char* bound)
 {
- int i, j, k, m, cont, k2, index_i, index_j, sizebi, element_k, proc_come;
+ int i, j, k, m, high_l, cont, k2, index_i, index_j, sizebi, element_k, proc_come;
  int total_elements, bloque, restante, do_ini, do_fin, total_size;
+ 
+ double pi, *two_l_plus_1;
 
  extern double doselec(int, int, int, int, double, char*, double*, int*,
-                       int*, int*);
+                       int*, int*, double*);
+
+ pi = 4.f*atan(1.f);
+ high_l = 50;
+ two_l_plus_1 = (double *)malloc(high_l*sizeof(double));
+
+ for (i = 0; i < high_l; i++)
+   two_l_plus_1[i] = 4.f*pi/((double) 2*i + 1.f);
 
  total_elements = nt*nt;
 
@@ -453,9 +462,11 @@ void guarda_bielec(int nt, double *integrales_bie,
      for(m = 0; m < nt; m++) {
        cont++;
 //       printf("proc= %d, %d, k2: %d,indices = %d, %d, %d, %d\n", myproc, cont, k2, i, j, k, m);
-       integrales_bie[cont] = doselec(i, j, k, m, Rc, bound, expo, np, mang, ncm);
+       integrales_bie[cont] = doselec(i, j, k, m, Rc, bound, expo, np, mang, ncm, two_l_plus_1);
 //      printf("Ya tengo temp\n");
      }
   }
+
+  free(two_l_plus_1);
 
  }

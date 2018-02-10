@@ -80,29 +80,16 @@
 //    Probablemente se puede evitar la multiplicacion de (2*l + 1)
 //    en int3Y_1 y en int3Y_2, hay que intentar optimizarlo.
 //
-      double doselec(char   *using_gamma,
-                     int     mu, 
-                     int     nu, 
-                     int     lam, 
-                     int     sig, 
-                     double  Rc, 
-                     double  inv_Rc,
-                     double  gamma_couple, 
-                     char   *bound,
-                     double *expo, 
-                     int    *np, 
-                     int    *ang, 
-                     int    *ncm, 
-                     double *zeta,
-                     double *N_minus, 
-                     double *N_plus,
-                     double *arreglo_factorial, 
-                     double *arreglo_inv_factorial)
+      double doselec(char *using_gamma, int mu, int nu, int lam, int sig,
+                     double Rc, double inv_Rc, double gamma_couple, char *bound,
+                     double *expo, int *np, int *ang, int *ncm, double *zeta,
+                     double *N_minus, double *N_plus, double *arreglo_factorial,
+                     double *arreglo_inv_factorial, double *two_l_plus_1)
       {
       int entero1, l, m, dif1, dif2, down, up, pot, lmu, lnu, llam, lsig;
       int mmu, mnu, mlam, msig, ndim, test;
       int sumam1, sumam2, compara1, compara2, compara3;
-      double doble1, prod, sumatot, coef1, coef2, total, sumint, partrad, pi;
+      double prod, sumatot, coef1, coef2, total, sumint, partrad;
 
       extern double bielectronic_integral_confined(int, int, int, int, int, double, double, double*, int*, double*, double*);
       extern double bielectronic_integral_free(int, int, int, int, int, int*, double*, double*, double*);
@@ -125,8 +112,6 @@
                                                  double *N_minus, 
                                                  double *N_plus);
 
-      doble1 = (double)1;
-      pi = atan(doble1)*(double)4;
       lmu = ang[mu];
       lnu = ang[nu];
       llam = ang[lam];
@@ -141,71 +126,109 @@
       dif1 = lnu + lmu;
       dif2 = lsig + llam;
       up = (dif1 > dif2 ? dif1 : dif2);
-      sumatot = (double)0;
+      sumatot = 0.f;
+//**************************
+      if (strcmp(bound,"free") == 0) 
       for (l = down; l <= up; l++) {
         entero1 = lnu + lmu + l;
         test = fmod(entero1, 2);
         entero1 = llam + lsig + l;
         test = test*fmod(entero1,2);
         if (test == 0) {
-          doble1 = (double)4;
-          coef1 = doble1*pi/(double)(2*l + 1);
-          sumint = (double)0;
+          coef1 = two_l_plus_1[l];
+          sumint = 0.f;
           for (m = -l; m <= l; m++) {
             sumam1 = mmu + m;
             sumam2 = msig + m;
             if (mnu == sumam1 && mlam == sumam2) {
               coef2 = int3Y_1(lnu, lmu, l, mnu, mmu, m);
               coef2 = coef2*int3Y_2(llam, lsig, l, mlam, msig, m);
-              if (coef2 != (double)0) {
-//                compara1 = strcmp(bound,"confined");
-                if (strcmp(bound,"confined") == 0) 
-                  partrad = bielectronic_integral_confined(l, mu, nu, lam, sig, Rc, inv_Rc, expo, np, arreglo_factorial,
-                                    arreglo_inv_factorial);
-                else 
-                if (strcmp(bound,"free") == 0) {
-                  partrad = bielectronic_integral_free(l, mu, nu, lam, sig, np, expo,
+              if (coef2 != 0.f) 
+                partrad = bielectronic_integral_free(l, mu, nu, lam, sig, np, expo,
                                     arreglo_factorial, arreglo_inv_factorial);
-                }
-                else
-//CAMBIO EXPO POR ZETA
-                 //partrad = bielectronic_integral_finite(l, mu, nu, lam, sig, np,
-                 //                        ang, zeta, expo, Rc, 
-                 //                        arreglo_factorial, arreglo_inv_factorial,
-                 //                        gamma_couple,
-                 //                        N_minus,  N_plus);
-                  partrad = bielectronic_integral_finite(using_gamma,
-                                                         l, 
-                                                         mu, 
-                                                         nu, 
-                                                         lam, 
-                                                         sig, 
-                                                         np,
-                                                         ang, 
-                                                         expo, 
-                                                         zeta, 
-                                                         Rc, 
-                                                         arreglo_factorial, 
-                                                         arreglo_inv_factorial,
-                                                         gamma_couple,
-                                                         N_minus,  
-                                                         N_plus);
-
-              }
               else
-                partrad = (double)0;
+                partrad = 0.f;
               coef2 = coef2*partrad;
             }
             else
-              coef2 = (double)0;
+              coef2 = 0.f;
             sumint = sumint + coef2;
           }
           total = coef1*sumint;
         }
         else
-          total = (double)0;
+          total = 0.f;
         sumatot = sumatot + total;
       }
+      else {
+      if (strcmp(bound,"confined") == 0)
+//**************************
+      for (l = down; l <= up; l++) {
+        entero1 = lnu + lmu + l;
+        test = fmod(entero1, 2);
+        entero1 = llam + lsig + l;
+        test = test*fmod(entero1,2);
+        if (test == 0) {
+          coef1 = two_l_plus_1[l];
+          sumint = 0.f;
+          for (m = -l; m <= l; m++) {
+            sumam1 = mmu + m;
+            sumam2 = msig + m;
+            if (mnu == sumam1 && mlam == sumam2) {
+              coef2 = int3Y_1(lnu, lmu, l, mnu, mmu, m);
+              coef2 = coef2*int3Y_2(llam, lsig, l, mlam, msig, m);
+              if (coef2 != (double)0) 
+                  partrad = bielectronic_integral_confined(l, mu, nu, lam, sig, Rc, inv_Rc, expo, np, arreglo_factorial,
+                                    arreglo_inv_factorial);
+              else
+                partrad = 0.f;
+              coef2 = coef2*partrad;
+            }
+            else
+              coef2 = 0.f;
+            sumint = sumint + coef2;
+          }
+          total = coef1*sumint;
+        }
+        else
+          total = 0.f;
+        sumatot = sumatot + total;
+      }
+      else
+//*************************
+      for (l = down; l <= up; l++) {
+        entero1 = lnu + lmu + l;
+        test = fmod(entero1, 2);
+        entero1 = llam + lsig + l;
+        test = test*fmod(entero1,2);
+        if (test == 0) {
+          coef1 = two_l_plus_1[l];
+          sumint = 0.f;
+          for (m = -l; m <= l; m++) {
+            sumam1 = mmu + m;
+            sumam2 = msig + m;
+            if (mnu == sumam1 && mlam == sumam2) {
+              coef2 = int3Y_1(lnu, lmu, l, mnu, mmu, m);
+              coef2 = coef2*int3Y_2(llam, lsig, l, mlam, msig, m);
+              if (coef2 != 0.f) 
+                partrad = bielectronic_integral_finite(using_gamma, l, mu, nu, lam, sig, np, ang, expo, zeta, Rc,
+                                                       arreglo_factorial, arreglo_inv_factorial, gamma_couple, N_minus, N_plus);
+              else
+                partrad = 0.f;
+              coef2 = coef2*partrad;
+            }
+            else
+              coef2 = 0.f;
+            sumint = sumint + coef2;
+          }
+          total = coef1*sumint;
+        }
+        else
+          total = 0.f;
+        sumatot = sumatot + total;
+      }
+      }
+//****************************
       return(sumatot);
       }
 //
@@ -239,10 +262,10 @@
        extern double clebsch_g(int, int, int, int, int, int);
        extern double uno(int);
 
-       pi = ((double)4)*atan((double)1);
+       pi = 4.f*atan(1.f);
        prod = (double)((2*l1 + 1)*(2*l2 + 1));
        prod = prod/(double)(2*l3 + 1);
-       prod = sqrt(prod/(((double)4)*pi));
+       prod = sqrt(prod/(4.f*pi));
        prod = prod*clebsch_g(l1, l2, l3, 0, 0, 0);
        prod = prod*clebsch_g(l1, l2, l3, m1, m2, -m3);
        arg = m3 - 2*l1 + 2*l2;

@@ -146,7 +146,7 @@ double xc_energy(double *correlationc,
                        	         total_e_xc  = total_e_xc + correlation;
                           }  else
                                   if(strcmp(save_dft[dft],"hf") != 0)
-                                  printf("\n>>>> NOT HAVE THIS FUCTIONAL %s\n", save_dft[dft]);
+                                  printf("\n>>>> XC FUCTIONAL NOT IMPLEMENTED YET %s\n", save_dft[dft]);
      
                 }
   } else {//Open-Shell
@@ -301,7 +301,7 @@ double xc_energy(double *correlationc,
      if(strcmp(save_dft[dft], "slater") == 0) {
            for (cont = 0; cont < points; cont++) {
              rho_local = rho_alpha[cont];
-             if (rho_local > 1e-12) 
+             if (rho_local > 1e-16) 
               x_slater(rho_local, &local_energy, &local_potential);
              else 
               local_potential = 0.f;
@@ -317,7 +317,7 @@ double xc_energy(double *correlationc,
                 d2rho_local = d2rho_alpha[cont];
                 ri = grid[cont];
                 r2 = grid[1];
-                if (rho_local > 1e-12) 
+                if (rho_local > 1e-16) 
                   becke_sr_(&ri, &r2, &rho_local, &drho_local, &d2rho_local, &local_energy, &local_potential);
                 else
                   local_potential = 0.f;             
@@ -329,7 +329,7 @@ double xc_energy(double *correlationc,
                   
                   for (cont = 0; cont < points; cont++) {
                     rho_local = rho_alpha[cont];
-                    if (rho_local > 1e-12) 
+                    if (rho_local > 1e-16) 
                      pw92sr_(&rho_local, &local_energy, &local_potential);
                     else 
                      local_potential = 0.f;
@@ -343,7 +343,7 @@ double xc_energy(double *correlationc,
                          drho_local = derho_alpha[cont];
                          d2rho_local = d2rho_alpha[cont];
                          ri = grid[cont];
-                         if (rho_local > 1e-12) 
+                         if (rho_local > 1e-16) 
                            lyp_sr_(&ri, &rho_local, &drho_local, &d2rho_local, &local_energy, &local_potential);
                          else
                            local_potential = 0.f;             
@@ -355,7 +355,7 @@ double xc_energy(double *correlationc,
                     for (cont = 0; cont < points; cont++) {
                       rho_local = rho_alpha[cont];
                       drho_local = derho_alpha[cont];
-                      if (rho_local > 1e-12) 
+                      if (rho_local > 1e-16) 
                         pbe_sr_(&rho_local, &drho_local, &local_energy, &local_potential, &nolocal_pot);
                       else {
                         local_potential = 0.f;             
