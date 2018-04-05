@@ -84,7 +84,7 @@ double Elect_Pot_Free_GTO(int mu, int nu, int ang, int nt, double *matp, int *np
 double double_factorial(int);
 double factorial_jul (int);
 double exponential1 (int, double);
-double constant_normalization_GTOS (int, double);
+double constant_normalization_GTOS(int, double);
 double numerical_incomplete_lower_gamma (double, double);
 double incomplete_lower_gamma (double, float);
 double incomplete_upper_gamma (double, float);

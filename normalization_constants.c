@@ -87,6 +87,7 @@ int constants_normalization_finite(int     mu,
            if(zeta_mu < temp_2/Rc) {
              printf("\n Problems with condition for internal exponents in the basis set\n");;
              result = 1;
+             printf("Hola :( \n");
            }
            
            alpha_mu = (double) zeta_mu - temp_2/Rc;
@@ -105,4 +106,45 @@ int constants_normalization_finite(int     mu,
  
  return result;
  } //esto es para stos
+
+/* Mike */
+/* ----------------------------------------------------------------------------------------------------------------- */
+/* This is for GTO's */
+
+ double constant_normalization_GTO(int nu, int n, double alpha, double *n_gto) {
+
+    extern long long int factorial_mike(int );
+    double result;
+    long int factor;
+    double pi;
+
+    pi = ((double) 4)*atan(1.f);
+    factor = ((double) pow(2, 2*n + 1));
+    result = factor*((double) factorial_mike(n));
+    result = result*pow(2.f*alpha, n + 0.5);
+    result = result/(((double) factorial_mike(2*n))*sqrt(pi));
+    result = sqrt(result);
+    *n_gto = result;
+    return 1;
+ } /* utilizaré esta definición para los elementos de matriz */ 
+ 
+ double cte_norm_gto(int *mu, int *np, double *expo, double *n_gto) {
+
+    extern long long int factorial_mike(int );
+    double result;
+    long int factor;
+    double pi;
+    int index_mu;
+
+    pi = ((double) 4)*atan(1.f);
+
+    index_mu = *mu;
+    factor = ((double) pow(2, 2*np[index_mu] + 1));
+    result = factor*((double) factorial_mike(np[index_mu]));
+    result = result*pow(2.f*expo[index_mu], np[index_mu] + 0.5);
+    result = result/(((double) factorial_mike(2*np[index_mu]))*sqrt(pi));
+    result = sqrt(result);
+    *n_gto = result;
+    return 1;
+ } /* utilizaré esta definición para la construcción de la densidad radial */
 

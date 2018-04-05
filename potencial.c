@@ -204,7 +204,9 @@ void potencial(char   *using_gamma,
 
  double total, adicional;
  int ang_i, ang_j, ncm_i, ncm_j;
- int enes, eles;	
+ int enes, eles;
+ int n_mu, n_nu;
+ double n_gto_mu, n_gto_nu;
  double alphas, zetas;
  double num1, pi;
 
@@ -222,20 +224,23 @@ void potencial(char   *using_gamma,
  extern double upper_incomplete_gamma(double, int, double);
  extern int constant_normalization_free(int*, double*, int*, double*);
 
+ extern long long int factorial_mike(int );
+ extern double full_gamma_arg_2(int );
+ extern double lower_incomplete_gamma_function(int, double );
+ extern double constant_normalization_GTO(int , int , double , double *);
 
  total_elements = nt*nt;
  pi = 4.f*atan(1.f);
 
  if (strcmp(basis,"GTOs") == 0 || strcmp(basis,"gtos") == 0) { //aquí empiezan los cálculos para los GTOs
-//empezaré con puras GTOs tipo 1S, ya quedaron los elementos de matriz
-    if (strcmp(bound,"free") == 0) {
-//   #pragma omp for
-       for (k = 0; k < total_elements; k++) {
+     for (k = 0; k < total_elements; k++) {
           indexes(nt, k, &index_i, &index_j);
           index_i = index_i - 1;
           index_j = index_j - 1;
           i = index_i;
           j = index_j;
+          n_mu =np[i];
+          n_nu =np[j];
           ang_i = mang[i];
           ang_j = mang[j];
           delta_kro_(&ang_i, &ang_j, &delta);
@@ -245,42 +250,67 @@ void potencial(char   *using_gamma,
           delta = delta*delta1;
           if (delta == (double)0)
             matv[k] = (double)0;
-          else {
-             num1 = 3.f/4.f;
-             matv[k] = -((double) 4*sqrt(2)*z*pow(expo[i]*expo[j],num1))/((double) sqrt(pi)*(expo[i] + expo[j]));
-          //   printf("V_mu,nu[%d] = %f \n", k, matv[k]);
-     }
-   }
- }
- else
-        if (strcmp(bound,"dielec") == 0) {
-//          printf("epsilon = %f \n",U_0); 
-          /* Atención, al parecer hay una especie de reasignación pues epsilon ya está definida en data.c sin embargo, para evitar poner mas argumentos en la función de potencial lo que se hizo fue reemplazar U_0 por la constante dieléctrica, el printf de arriba lo prueba pues en este caso U_0 = 80 = epsilon*/
-          /* También ya quedaron los elementos de matriz, unicamente resta separar matv dentro y fuera de la cavidad, en este caso es relativamente sencillo */ 
-          for (k = 0; k < total_elements; k++) {
-             indexes(nt, k, &index_i, &index_j);
-             index_i = index_i - 1;
-             index_j = index_j - 1;
-             i = index_i;
-             j = index_j;
-             ang_i = mang[i];
-             ang_j = mang[j];
-             delta_kro_(&ang_i, &ang_j, &delta);
-             ncm_i = ncm[i];
-             ncm_j = ncm[j];
-             delta_kro_(&ncm_i, &ncm_j, &delta1);
-             delta = delta*delta1;
-             if (delta == (double)0)
-               matv[k] = (double)0;
-             else {
-                num1 = 3.f/4.f;
-                matv[k] = -((double) 4*sqrt(2)*z*pow(expo[i]*expo[j],num1))/((double) sqrt(pi)*(expo[i] + expo[j]));
-                matv[k] = matv[k]*((double) 1 - (1 - 1/U_0)*exp(-(expo[i] + expo[j])*pow(Rc,2.f)));
-//                printf("V_mu,nu[%d] = %f \n", k, matv[k]);
+          else { //begins principal else
+             if(strcmp(bound,"free") == 0){
+                num1 = ((double) n_mu + n_nu);
+                constant_normalization_GTO(i, n_mu, expo[i], &n_gto_mu);
+                constant_normalization_GTO(j, n_nu, expo[j], &n_gto_nu);
+
+                matv[k] = -((double) z)*n_gto_mu*n_gto_nu/(((double) 2)*pow(expo[i] + expo[j], num1/2.f));
+
+                matv[k] = matv[k]*((double) full_gamma_arg_2(n_mu + n_nu));
+ 
+             } 
+             else{
+                if(strcmp(bound,"dielectricc") == 0) {
+                   num1 = ((double) n_mu + n_nu);
+                   constant_normalization_GTO(i, n_mu, expo[i], &n_gto_mu);
+                   constant_normalization_GTO(j, n_nu, expo[j], &n_gto_nu);
+
+                   matv[k] = -((double) z)*n_gto_mu*n_gto_nu/(((double) 2)*pow(expo[i] + expo[j], num1/2.f));
+
+                   matv[k] = matv[k]*((U_0 - ((double) 1))*lower_incomplete_gamma_function(n_mu + n_nu, (expo[i] + expo[j])*pow(Rc,2.f))/U_0 +
+                                      ((double) full_gamma_arg_2(n_mu + n_nu))/U_0 );
+
+//                  printf("V_mu,nu[%d] = %f \n", k, matv[k]);
+                } 
+                else{
+                   if(strcmp(bound,"finite") == 0){
+                     num1 = ((double) n_mu + n_nu);
+                     constant_normalization_GTO(i, n_mu, expo[i], &n_gto_mu);
+                     constant_normalization_GTO(j, n_nu, expo[j], &n_gto_nu);
+
+                     matv[k] = -n_gto_mu*n_gto_nu/(((double) 2)*pow(expo[i] + expo[j], num1/2.f));
+
+                     matv[k] = matv[k]*(
+                               ((double) z)*lower_incomplete_gamma_function(n_mu + n_nu, (expo[i] + expo[j])*pow(Rc,2.f)) - 
+                               ( U_0/pow(expo[i] + expo[j],0.5f) )*
+                               ( ((double) full_gamma_arg_2(n_mu + n_nu + 1)) -
+                                 lower_incomplete_gamma_function(n_mu + n_nu + 1, (expo[i] + expo[j])*pow(Rc,2.f)) )
+                               );
+//                    printf("V_mu,nu[%d] = %f \n", k, matv[k]);
+                   }
+                   else{
+                      if(strcmp(bound,"parabolic") == 0){
+                         num1 = ((double) n_mu + n_nu);
+                         constant_normalization_GTO(i, n_mu, expo[i], &n_gto_mu);
+                         constant_normalization_GTO(j, n_nu, expo[j], &n_gto_nu);
+ 
+                         matv[k] = -n_gto_mu*n_gto_nu/(((double) 2)*pow(expo[i] + expo[j], num1/2.f));
+
+                         matv[k] = matv[k]*(
+                                   ((double) z)*lower_incomplete_gamma_function(n_mu + n_nu, (expo[i] + expo[j])*pow(Rc,2.f)) - 
+                                     pow(U_0,2.f)/(((double) 2)*pow(expo[i] + expo[j],1.5f))*
+                                     ( ((double) full_gamma_arg_2(n_mu + n_nu + 3)) - 
+                                       lower_incomplete_gamma_function(n_mu + n_nu + 3, (expo[i] + expo[j])*pow(Rc,2.f)) )
+                                   );
+                      }
+                   }
+                }
              }
-          }
-        }
-  //kinetic_integral_GTOs(using_gamma, nt, matk, np, mang, ncm, expo, Rc, bound);
+          } // ends principal else
+     }
+          /* Atención, al parecer hay una especie de reasignación pues epsilon ya está definida en data.c sin embargo, para evitar poner mas argumentos en la función de potencial lo que se hizo fue reemplazar U_0 por la constante dieléctrica, el printf de arriba lo prueba pues en este caso U_0 = 80 = epsilon*/
  } else {//aquí empieza el else para los STOs
 
 #pragma omp parallel shared(total_elements, nt, z, matv, np, mang, ncm, expo, Rc, gamma_couple, bound, U_0, NC_minus, NC_plus, arreglo_factorial, arreglo_inv_factorial, iter_pol, charge_int) private(i, j, k, index_i, index_j, delta, delta1, total, ang_i, ang_j, ncm_i, ncm_j, enes, eles, alphas, zetas, adicional)

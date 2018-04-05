@@ -366,4 +366,151 @@ double use_upper_incomplete_gamma(double Rc, int a1, int a2, double b1, double b
  }  // End of else for a1.
  return(integraltotal);
  }
+/* ------------------------------------------------------------------------------------------ */
+/* Mike */
+/* Here I am going to start with the with the necessary integrals for the GTO basis functions */
+ long long int factorial_mike(int n) {
+        int i;
+        long long int z;
+        i = 1;
+        z = 1;
+        if(n == 0) {
+           z = 1;
+        }
+        else{
+           while(i <= n){
+              z = z*i;
+              i++;
+           }
+        }
+        return(z);
+ }
+/* This function calculates the integral \int_{0}^{\infty} t^{(n/2)-1} e^{-t} dt = Gamma(n/2) = [(n/2) - 1]! for n = 1,2,3,4,5,... */
+/* I have decided to insert this function due to its frequency with the matrix elements */
+  double full_gamma_arg_2( int n1) {
+        extern long long int factorial_mike(int );
+        long long int factor2n;
+        double gamma;
+        double argument;
+        int n2;
+        double theta, pi;
+        int n_0_1;
+
+        pi = ((double) 4)*atan(1.f);
+        argument = ((double)n1)/((double) 2);
+        theta = argument*pi;
+        n_0_1 = ((int) sin(theta));
+        /* los únicos valores que puede tomar esta cantidad son "0" cuando (n_0_1/2)= entero; 1 ó -1 cuando (n_0_1/2) = 1/2, 3/2, etc. */
+        if(n_0_1 == 0){
+           n2 = ((int) n1/2);
+           n2 = n2 - 1;
+           gamma = (double) factorial_mike(n2);
+        }
+        else{
+           n2 = n1 - 1;
+           n2 = ((int) n2/2);
+           factor2n = pow(2, n1 - 1);
+           gamma = (double) factorial_mike(n1 - 1);
+           gamma = gamma*sqrt(pi);
+           gamma = gamma/((double) factor2n);
+           gamma = gamma/((double) factorial_mike(n2));
+        }
+        return gamma;
+ }
+ /* This function calculates the integral \int_{0}^{y} t^{(n/2)-1} e^{-t} dt \gamma((n/2,y) = lower incomplete gamma function n >= 2, n = 2,3,4,5,6,7,8,...  */
+ double lower_incomplete_gamma_function(int n2, double y){
+        int i, j, iglobal;
+        double rho_j;
+        double r0, r1, r[541], f_r[541];
+        double factor1;
+        int key;
+        double result;
+        double a, b, c, d, f0, f1, f2, f0_2, f1_2, f2_2, x0, x1, x2, x0_2, x1_2, x2_2, c13, c12;
+        factor1 = ((double) n2)/((double) 2);
+        factor1 = factor1 - ((double) 1);
+        key = 0;
+        c12 = ((double) 1)/((double) 2);
+        c13 = ((double) 1)/((double) 3);
+        if(n2 == 2){ /* se tiene \int_{0}^y e^{-t} dt */
+        /* la solución es analítica y no hay necesidad de generar la malla */
+          result = ((double) 1) - exp(-y);
+        }
+        else{ /* -------------------- Here begins the numerical integration -------------------- */
+           for(j = 0; j <= 540; j++){ /* ---------- Here begins the construction of the grid ---------- */
+              rho_j = ((double) j - 1);  //el nombre de esta variable no tiene nada que ver con la densidad electrónica
+              rho_j = rho_j/((double) 30);
+              rho_j = rho_j - ((double) 10);
+              r0 = exp(rho_j);
+              if(j == 0){
+                 r[0] = ((double) 0);
+                 f_r[0] = ((double) 0);
+              }
+              else{
+                 r[j] = r0; //reasigno para crear el arreglo de la malla
+                 f_r[j] = pow(r0,factor1)*exp(-r0); //para evaluar la función en cada punto de la malla
+              }
+              if(key == 0){
+                 if(r0 > y){
+                    if(j%2 != 0){ //para j "impar"
+                       j = j + 1;
+                       r[j] = y;
+                       f_r[j] = pow(y,factor1)*exp(-y);
+                       r1 = 0.5f*(y + r[j - 2]);
+                       r[j - 1] = r1;
+                       f_r[j - 1] = pow(r1,factor1)*exp(-r1);
+                    }
+                    else{   // para j "par"
+                       r[j] = y;
+                       f_r[j] = pow(y,factor1)*exp(-y);
+                    }
+                    key = 1; //reasignación
+                 }
+              }  //se controla que la malla pase exactamente por "y" y que el arreglo siempre termine siento un "j"---> par
+              else{
+                 f_r[j] = ((double) 0);  //no controlo hasta donde llega la malla, pero si que la función automáticamente sea cero más alla del límite de "y"
+              }
+           } /* ---------- Here ends the construction of the grid ---------- */
+           result = ((double) 0);   //inicializamos result
+           for(i = 0; i <= 269; i++){
+              iglobal = 2*(i + 1);
+
+              x0 = r[iglobal - 2];
+              x1 = r[iglobal - 1];
+              x2 = r[iglobal];
+
+              x0_2 = pow(x0, 2.f);
+              x1_2 = pow(x1, 2.f);
+              x2_2 = pow(x2, 2.f);
+
+              f0 = f_r[iglobal - 2];
+              f1 = f_r[iglobal - 1];
+              f2 = f_r[iglobal];
+
+              f0_2 = pow(f0, 2.f);
+              f1_2 = pow(f1, 2.f);
+              f2_2 = pow(f2, 2.f);
+
+              d = (x0 - x1)*(x0 - x2)*(x1 - x2);
+
+              if(f2 == (double) 0){
+                 a = ((double) 0);
+                 b = ((double) 0);
+                 c = ((double) 0);
+              }
+              else{
+                 a = ((x1 - x2)*f0 + (x2 - x0)*f1 + (x0 - x1)*f2)/d;
+
+                 b = ((f1 - f2)*x0_2 + (f2 - f0)*x1_2 + (f0 - f1)*x2_2)/d;
+
+                 c = ((f2*x1 - f1*x2)*x0_2 + (f0*x2 - f2*x0)*x1_2 + (f1*x0 - f0*x1)*x2_2)/d;
+
+                 result = result + c13*a*(x2*x2_2 - x0*x0_2) + c12*b*(x2_2 - x0_2) + c*(x2 - x0);
+              }
+//              printf("%20.15f \n", result);
+           }
+        } /* -------------------- Here ends the numerical integration -------------------- */
+        return result;
+ }
+
+
 

@@ -30,6 +30,8 @@ void traslape(char   *using_gamma,
 {
  int i, j, k, index_i, index_j, total_elements;
  int ang_i, ang_j, ncm_i, ncm_j;
+ int n_mu, n_nu;
+ double n_gto_mu, n_gto_nu;
  double delta, delta1, part_real;
  double num1, num2;
  
@@ -49,17 +51,24 @@ void traslape(char   *using_gamma,
  extern int delta_kro_(int*, int*, double*);
  extern double intc(int, double, double, double*, double*);
 
+ extern long long int factorial_mike(int );
+ extern double full_gamma_arg_2(int );
+ extern double constant_normalization_GTO(int , int , double , double *);
+
+ double pi;
+ pi = ((double) 4)*atan(1.f);
+
  total_elements = nt*nt;
 
- if (strcmp(basis,"GTOs") == 0 || strcmp(basis,"gtos") == 0) { //aquí empiezan los cálculos para los GTOs
- //empezaré con puras GTOs tipo 1S,
-    if (strcmp(bound,"free") == 0 ) {
+ if (strcmp(basis,"GTOs") == 0 || strcmp(basis,"gtos") == 0) { /* aquí empiezan los cálculos para los GTOs */
        for (k = 0; k < total_elements; k++) {
           indexes(nt, k, &index_i, &index_j);
           index_i = index_i - 1;
           index_j = index_j - 1;
           i = index_i;
           j = index_j;
+          n_mu =np[i];
+          n_nu =np[j];
           ang_i = mang[i];
           ang_j = mang[j];
           delta_kro_(&ang_i, &ang_j, &delta);
@@ -70,41 +79,20 @@ void traslape(char   *using_gamma,
           if (delta == (double)0)
             mats[k] = (double)0;
           else {
-             num1 = 3.f/2.f;
-             num2 = 3.f/4.f;
-             mats[k] = pow(((double) 2),num1)*pow((expo[i]*expo[j]),num2)/pow((expo[i] + expo[j]),num1);
-//             printf("S_mu,nu[%d] = %f \n", k, mats[k]);
+             num1 = ((double) n_mu + n_nu + 1.f);
+             constant_normalization_GTO(i, n_mu, expo[i], &n_gto_mu);
+             constant_normalization_GTO(j, n_nu, expo[j], &n_gto_nu);
+
+             mats[k] = (n_gto_mu*n_gto_nu)/(2.f*pow(expo[i] + expo[j],num1/2.f));
+
+             mats[k] = mats[k]*((double) full_gamma_arg_2(n_mu + n_nu + 1));
+
+//             printf("S_mu,nu[%d] = %f \n", k, mats[k]); /* ya quedaron */
+         }
      }
-   }
- }
- else
-    if (strcmp(bound,"dielec") == 0 ) {
-       for (k = 0; k < total_elements; k++) {
-          indexes(nt, k, &index_i, &index_j);
-          index_i = index_i - 1;
-          index_j = index_j - 1;
-          i = index_i;
-          j = index_j;
-          ang_i = mang[i];
-          ang_j = mang[j];
-          delta_kro_(&ang_i, &ang_j, &delta);
-          ncm_i = ncm[i];
-          ncm_j = ncm[j];
-          delta_kro_(&ncm_i, &ncm_j, &delta1);
-          delta = delta*delta1;
-          if (delta == (double)0)
-            mats[k] = (double)0;
-          else {
-             num1 = 3.f/2.f;
-             num2 = 3.f/4.f;
-             mats[k] = pow(((double) 2),num1)*pow((expo[i]*expo[j]),num2)/pow((expo[i] + expo[j]),num1);
-//             printf("S_mu,nu[%d] = %f \n", k, mats[k]);
-          }
-       }
-
-    }
- } else {
-
+ } /* Aquí terminan los elementos de matriz con GTOs */ 
+ else {
+ /* Aquí empiezan los elementos de matriz construidos con STOs */
 
 #pragma omp parallel shared(total_elements, nt, mats, np, mang, ncm, expo, Rc, gamma_couple, bound, U_0, NC_minus, NC_plus, arreglo_factorial, arreglo_inv_factorial) 
 

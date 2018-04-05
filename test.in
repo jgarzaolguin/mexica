@@ -1,14 +1,14 @@
-1
-0 2
+2
+0 1
 uhf nomp2 noep2
-xc hf 1.0 lda 0.0 end
+xc hf 1.0 end
 1.0e-10
 0.7
 110
 noopt 0.01
 free
 property
-GTOs
+STOs
 extern
 10
   1S  2.8791000000000002145839062 1 

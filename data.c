@@ -221,25 +221,25 @@ int input(double *z,
      scanf("%s", bound);
      if (strcmp(bound,"free") == 0 || strcmp(bound,"Free") == 0 || strcmp(bound,"FREE") == 0) {
        *Rc = 0.00000;
-       printf("Free atom calculation\n");
+       printf("|----- Free atom calculation -----| \n");
      } 
      else
-         if (strcmp(bound,"dielec") == 0){  /* He creado un dielec distinto pues con el previo no me era posible correr los cálculos */
+           if(strcmp(bound,"parabolic") == 0){
              scanf("%lf %lf", &Rc_temp, &epsilon_temp);
              *Rc = Rc_temp;
              *epsilon = epsilon_temp;
-             printf("-----Confinement by a dielectric continuum-----\n");
+             printf("|----- Confinement by a parabolic potential -----| \n");
              printf("confinement radius, r0 = %f \n", Rc_temp);
-             printf("Dielectric constant, epsilon  = %f \n", epsilon_temp);
-         }
-         else
-         if (strcmp(bound,"dielectricnc") == 0 || strcmp(bound,"Dielectricnc") == 0 || strcmp(bound,"DIELECTRICNC") == 0) {
-            scanf("%lf %lf", &Rc_temp, &epsilon_temp);
-            *Rc = Rc_temp;
-            *epsilon = epsilon_temp;
-            printf("Dielectric confined with asymtotic behavior incorrect\n");
-         } 
-         else 
+             printf("angular frequency, omega  = %f \n", epsilon_temp);
+           }
+           else
+             if (strcmp(bound,"dielectricnc") == 0 || strcmp(bound,"Dielectricnc") == 0 || strcmp(bound,"DIELECTRICNC") == 0) {
+                scanf("%lf %lf", &Rc_temp, &epsilon_temp);
+                *Rc = Rc_temp;
+                *epsilon = epsilon_temp;
+                printf("Dielectric confined with asymtotic behavior incorrect\n");
+             } 
+             else 
              if (strcmp(bound,"dielectricc")  == 0  || 
                  strcmp(bound,"Dielectricc")  == 0  || 
                  strcmp(bound,"DIELECTRICC")  == 0  || 
@@ -249,8 +249,9 @@ int input(double *z,
                  scanf("%lf %lf", &Rc_temp, &epsilon_temp);
                  *Rc = Rc_temp;
                  *epsilon = epsilon_temp;
-//                 printf("confinement radius = %f \n", Rc_temp);
-//                 printf("Dielectric constant = %f \n", epsilon_temp);
+                 printf("|----- Confinement by a continuum dielectric -----| \n");
+                 printf("confinement radius = %f \n", Rc_temp);
+                 printf("Dielectric constant, epsilon = %f \n", epsilon_temp);
                  scanf("%s",using_gamma);
                 if (strcmp(using_gamma,"n") == 0 || strcmp(using_gamma,"no") == 0 || strcmp(using_gamma,"NO") == 0 || strcmp(using_gamma,"No") == 0)
                   strcpy(using_gamma,"NO");
@@ -267,48 +268,48 @@ int input(double *z,
        *Rc = Rc_temp;
        printf("Impenetrable walls at Rc=%f\n", *Rc);
      } else {
-     if (strcmp(bound,"penetrable") == 0 || strcmp(bound,"Penetrable") == 0 || strcmp(bound,"PENETRABLE") == 0) {
+     if (strcmp(bound,"penetrable") == 0 || strcmp(bound,"Penetrable") == 0 || strcmp(bound,"PENETRABLE") == 0) {  /* Here begins for penetrable walls */
        strcpy(bound,"finite");
        printf("Atom confined by penetrable walls,\n");
        printf("provide the confinement radius and the height of the barrier\n");
        scanf("%lf %lf", &Rc_temp, &epsilon_temp);
        *Rc = Rc_temp;
        *epsilon = epsilon_temp;
-       printf("Penetrable walls at Rc=%f and height=%f\n", *Rc, *epsilon);
-//     Default values
-       strcpy(using_gamma,"NO");
-       strcpy(kind_of_cal,"NO");
-       temp_g = 7e-1;
-       *gamma_couple = temp_g;
-       temp1 = 1e-9;
-       temp2 = 98e-2;
-       temp3 = 20;
-       *count_temp = temp1; 
-       *count_final = temp2; 
-       *steps = temp3;
-       printf("Auxiliar function in the basis set? (y/n)\n");
-       scanf("%s", using_gamma);
-       if (strcmp(using_gamma,"y") == 0 || strcmp(using_gamma,"yes") == 0 || strcmp(using_gamma,"YES") == 0) {
-         strcpy(using_gamma,"YES");
-         printf("Optimization of gamma in auxiliar function? (y/n)\n");
-         scanf("%s", kind_of_cal);
-         if (strcmp(kind_of_cal,"y") == 0 || strcmp(kind_of_cal,"yes") == 0 || strcmp(kind_of_cal,"YES") == 0) {
-           strcpy(kind_of_cal,"YES");
-           temp_g = 5e-01;
-           *gamma_couple = temp_g;
-           printf("Gamma optimization\n");
-         } else {
-           printf("No optimization for gamma, please provide its value\n");
-           scanf("%lf", &temp_g);
-           *gamma_couple = temp_g;
-           printf("Auxiliar functions without optimization of gamma, gamma=%f\n", *gamma_couple);
-         }
-       }
-       else {
-         strcpy(using_gamma,"NO");
-         printf("No auxiliar funtion in the basis set\n");
-       }
-     } else {
+       printf("Penetrable walls at Rc= %f and height = Uo = %f\n", *Rc, *epsilon);
+          strcpy(using_gamma,"NO");
+          strcpy(kind_of_cal,"NO");
+          temp_g = 7e-1;
+          *gamma_couple = temp_g;
+          temp1 = 1e-9;
+          temp2 = 98e-2;
+          temp3 = 20;
+          *count_temp = temp1; 
+          *count_final = temp2; 
+          *steps = temp3;
+          printf("Auxiliar function in the basis set? (y/n)\n");
+          scanf("%s", using_gamma);
+          if (strcmp(using_gamma,"y") == 0 || strcmp(using_gamma,"yes") == 0 || strcmp(using_gamma,"YES") == 0) {
+            strcpy(using_gamma,"YES");
+            printf("Optimization of gamma in auxiliar function? (y/n)\n");
+            scanf("%s", kind_of_cal);
+            if (strcmp(kind_of_cal,"y") == 0 || strcmp(kind_of_cal,"yes") == 0 || strcmp(kind_of_cal,"YES") == 0) {
+              strcpy(kind_of_cal,"YES");
+              temp_g = 5e-01;
+              *gamma_couple = temp_g;
+              printf("Gamma optimization\n");
+            } else {
+                 printf("No optimization for gamma, please provide its value\n");
+                 scanf("%lf", &temp_g);
+                 *gamma_couple = temp_g;
+                 printf("Auxiliar functions without optimization of gamma, gamma=%f\n", *gamma_couple);
+              }
+          }
+          else {
+            strcpy(using_gamma,"NO");
+            printf("No auxiliar funtion in the basis set\n");
+          }
+     } /* Here ends for penetrable walls */ 
+     else {
          if (strcmp(bound,"plasma") == 0 || strcmp(bound,"Plasma") == 0 || strcmp(bound,"PLASMA") == 0) {
            strcpy(bound,"confined");
            printf("Atom confined by plasma model, please give the confinement radius\n");
@@ -416,13 +417,11 @@ int input(double *z,
 //
 // Checking zeta and alpha for exponents in finite potential option
 //
-
-   if (strcmp(bound,"finite") == 0 || strcmp(bound,"dielectricc") == 0 || strcmp(bound,"polarization") == 0) {
+   if ((strcmp(bound,"finite") == 0 && strcmp(basis,"STOs") == 0)|| (strcmp(bound,"dielectricc") == 0 && strcmp(basis,"STOs") == 0)|| strcmp(bound,"polarization") == 0) {
      i = check_exponents(*base, np, mang, expo, *Rc, using_gamma, *gamma_couple, &temp1, &temp1, &temp_g);
      if (i == 1) test_input = 1;
    }
-//    
-   }// End If, checking alpha and beta electrons
+}// End If, checking alpha and beta electrons
  return test_input;
  }
 

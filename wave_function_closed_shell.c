@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-int wf_closed_shell(int z, char *using_gamma, int compara, char *bound, int nt, int elecalfa, int elecbeta,
+int wf_closed_shell(int z, char *using_gamma, int compara, char *bound, char *basis, int nt, int elecalfa, int elecbeta,
                     double Rc, double *expo, int *np, double *zetas, int *mang, int *ncm, double *vectsfinalfa,
                     double *vectsfinbeta, char *tipo, double *NC_minus, double *NC_plus, double gamma_couple,
                     double *grid, double *grid_rho, double *grid_rho_beta, double *grid_der, double *grid_der_beta,
@@ -11,7 +11,7 @@ int wf_closed_shell(int z, char *using_gamma, int compara, char *bound, int nt, 
                     double *arreglo_factorial, double *arreglo_inv_factorial,
                     double *matp, double *mats, int *iter, int save_i, int print_vectors, double *cusp_kato) {
 
- extern int grid_rhorad(int z, char *using_gamma, int compara, char *bound, int nt, int elecalfa, int elecbeta,
+ extern int grid_rhorad(int z, char *using_gamma, int compara, char *bound, char *basis, int nt, int elecalfa, int elecbeta,
                         double Rc, double *expo, int *np, double *zetas, int *mang, double *vectsfinalfa,
                         double *vectsfinbeta, char *tipo, double *NC_minus, double *NC_plus, double gamma_couple,
                         double *grid, double *grid_rho, double *grid_rho_beta, int n_points, int n_boundary,
@@ -23,7 +23,7 @@ int wf_closed_shell(int z, char *using_gamma, int compara, char *bound, int nt, 
                         double *grid, double *grid_rho, double *grid_rho_beta, int n_points, int n_boundary,
                         double *arreglo_factorial, double *arreglo_inv_factorial, int selected_orb);
 
- extern int grid_derrad(int z, char *using_gamma, int compara, char *bound, int nt, int elecalfa, int elecbeta,
+ extern int grid_derrad(int z, char *using_gamma, int compara, char *bound, char *basis, int nt, int elecalfa, int elecbeta,
                         double Rc, double *expo, int *np, double *zetas, int *mang, double *vectsfinalfa,
                         double *vectsfinbeta, char *tipo, double *NC_minus, double *NC_plus, double gamma_couple,
                         double *grid, double *grid_rho, double *grid_rho_beta, int n_points, int n_boundary,
@@ -38,11 +38,11 @@ int wf_closed_shell(int z, char *using_gamma, int compara, char *bound, int nt, 
                               double *NC_minus, double *NC_plus, double *arreglo_factorial,
                               double *arreglo_inv_factorial, char *using_gamma, double *zeta, double *grid);
 
- grid_rhorad(z, using_gamma, compara, bound, nt, elecalfa, 0, Rc, expo, np, zetas, mang, vectsfinalfa, NULL,
+ grid_rhorad(z, using_gamma, compara, bound, basis, nt, elecalfa, 0, Rc, expo, np, zetas, mang, vectsfinalfa, NULL,
              tipo, NC_minus, NC_plus, gamma_couple, grid, grid_rho, grid_rho_beta, n_points, save_i, 
              arreglo_factorial, arreglo_inv_factorial);
 
- grid_derrad(z, using_gamma, compara, bound, nt, elecalfa, 0, Rc, expo, np, zetas, mang, vectsfinalfa, NULL,
+ grid_derrad(z, using_gamma, compara, bound, basis, nt, elecalfa, 0, Rc, expo, np, zetas, mang, vectsfinalfa, NULL,
              tipo, NC_minus, NC_plus, gamma_couple, grid, grid_der, grid_der_beta, n_points, save_i,
              arreglo_factorial, arreglo_inv_factorial);
 

@@ -735,6 +735,7 @@ extern int ep2_cpu(char   *espin,
                         char         *using_gamma,
                         int           compara,
                         char         *bound,
+                        char         *basis, /* new */
                         int           nt,
                         int           elecalfa,
                         int           elecbeta,
@@ -788,6 +789,7 @@ extern int ep2_cpu(char   *espin,
                         char         *using_gamma,
                         int           compara,
                         char         *bound,
+                        char         *basis,
                         int           nt,
                         int           elecalfa,
                         int           elecbeta,
@@ -1176,14 +1178,22 @@ extern int ep2_cpu(char   *espin,
      memoria_double_uni(sizedouble, &NC_plus, "NC_plus");
      zetas = NULL;
      memoria_double_uni(sizedouble, &zetas, "zetas");
-     for (i = 0; i < nt; i++){
-       constants_normalization_finite(i, np, mang, expo, Rc,
-                                      arreglo_factorial, arreglo_inv_factorial,
-                                      using_gamma, gamma_couple, &tmp1, &tmp2, &tmp3, 0);
-       NC_minus[i] = tmp1;
-       NC_plus[i] = tmp2;
-       zetas[i] = tmp3;
+     if(strcmp(basis,"STOs") == 0 || strcmp(basis,"stos") == 0){
+        for (i = 0; i < nt; i++){
+          constants_normalization_finite(i, np, mang, expo, Rc,
+                                         arreglo_factorial, arreglo_inv_factorial,
+                                         using_gamma, gamma_couple, &tmp1, &tmp2, &tmp3, 0);
+          NC_minus[i] = tmp1; //aquí se hace la asignación mike
+          NC_plus[i] = tmp2;
+          zetas[i] = tmp3;
+        }
      }
+     else{
+       if(strcmp(basis,"GTOs") == 0 || strcmp(basis,"gtos") == 0){
+          printf("|----- The calculation will be made with GTOs -----| \n"); 
+       }
+     }
+       
    }
 
  char bound_pol[80];
@@ -1218,18 +1228,24 @@ extern int ep2_cpu(char   *espin,
            plasma);
 
  if (strcmp(bound,"polarization") == 0) {
-   sprintf(bound_pol,"%s", bound);
-   strcpy(bound,"finite");
+    if(strcmp(basis,"STOs") == 0){
+       sprintf(bound_pol,"%s", bound);
+       strcpy(bound,"finite");
+    }
  }
 
  if (strcmp(bound,"dielectricc") == 0) {
-   sprintf(bound_pol,"%s", bound);
-   strcpy(bound,"finite");
+    if(strcmp(basis,"STOs") == 0){
+      sprintf(bound_pol,"%s", bound);
+      strcpy(bound,"finite");
+    }
  }
 
  if (strcmp(bound,"dielectricnc") == 0) {
-   sprintf(bound_pol,"%s", bound);
-   strcpy(bound,"free");
+    if(strcmp(basis,"STOs") == 0){
+      sprintf(bound_pol,"%s", bound);
+      strcpy(bound,"free");
+    }
  }
 
 
@@ -1357,6 +1373,7 @@ extern int ep2_cpu(char   *espin,
                         using_gamma,
                         compara,
                         bound,
+                        basis,
                         nt,
                         elecalfa,
                         0,
@@ -1430,6 +1447,7 @@ extern int ep2_cpu(char   *espin,
                      using_gamma,
                      compara,
                      bound,
+                     basis,
                      nt,
                      elecalfa,
                      0,
@@ -1456,6 +1474,7 @@ extern int ep2_cpu(char   *espin,
                      using_gamma,
                      compara,
                      bound,
+                     basis,
                      nt,
                      elecalfa,
                      0,
@@ -1574,6 +1593,7 @@ extern int ep2_cpu(char   *espin,
                        using_gamma,
                        compara,
                        bound,
+                       basis,
                        nt,
                        elecalfa,
                        elecbeta,
@@ -1664,6 +1684,7 @@ extern int ep2_cpu(char   *espin,
                            using_gamma,
                            compara,
                            bound,
+                           basis,
                            nt,
                            elecalfa,
                            elecbeta,
@@ -1690,6 +1711,7 @@ extern int ep2_cpu(char   *espin,
                            using_gamma,
                            compara,
                            bound,
+                           basis,
                            nt,
                            elecalfa,
                            elecbeta,
@@ -2087,6 +2109,7 @@ extern int ep2_cpu(char   *espin,
                            using_gamma,
                            compara,
                            bound,
+                           basis,
                            nt,
                            elecalfa,
                            elecbeta,
@@ -2112,6 +2135,7 @@ extern int ep2_cpu(char   *espin,
                           using_gamma,
                           compara,
                           bound,
+                          basis,
                           nt,
                           elecalfa,
                           elecbeta,
@@ -2315,7 +2339,7 @@ extern int ep2_cpu(char   *espin,
                                                array_ii,
                                                n_points);
 
-                   printf("\nNumber electrons from integral rho %5.8lf\n\n", SHAN);
+                   printf("\n Number electrons from integral rho %5.8lf \n \n", SHAN);
 
                    FILE *workout;
                    char nameout[200];
