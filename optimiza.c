@@ -196,7 +196,7 @@ void optimiza(int     nt,
  double temp_dble;
  int temp_int;
 
- energia_0 = 1e9;
+ energia_0 = 1e9;  // energy_0 asignation
     
  sprintf(nombre_ii, "%s_restart", nombre);
     do {
@@ -227,178 +227,186 @@ void optimiza(int     nt,
                                                             expo[index]);
                    }
                    todos = index + 1;
-               } else {//else1
-                     test_scf = 0;
-                     x  = expo[todos];
-                     x1 = x; 
-                     for (i = 1; i <= deg; i++) {
+               } 
+               else {  //else1
+                  test_scf = ((int) 0);      // test_scf asignation
+                  x  = expo[todos];  // se asigna cada exponente a x
+ //***************************************************************************************
+                  x1 = x;            // valor de referencia  x1, el exponente permanece igual 
+                  for(i = 1; i <= deg; i++) {
+                     index = todos + i - 1;
+                     expo[index] = x1;
+                  }
+                  test_scf = scf(nt,
+                                 elecalfa,
+                                 elecbeta,
+                                 z,
+                                 orbital,
+                                 tol,
+                                 using_gamma,
+                                 correlation,
+                                 propagador,
+                                 save_dft,
+                                 weight_dft,
+                                 flag_dft,
+                                 mezcla,
+                                 basis,
+                                 expo,
+                                 np,
+                                 mang,
+                                 ncm,
+                                 gamma_couple,
+                                 tipo,
+                                 maxiter,
+                                 Rc,
+                                 bound,
+                                 espin,
+                                 &energia,
+                                 0,
+                                 epsilon,
+                                 0,
+                                 plasma,
+                                 &cusp_kato,
+                                 properties);
+
+                  if(test_scf == 0)
+                     ener_array[1] = energia;
+                  else
+                     ener_array[1] = 1e11; 
+
+ //***************************************************************************************                    
+                  x0 = x + step_work;   //  x0, al exponente se le agrega el tamaño del paso             
+                  for(i = 1; i <= deg; i++) {
+                     index = todos + i - 1;
+                     expo[index] = x0;
+                  }              
+                  test_scf = scf(nt,
+                                 elecalfa,
+                                 elecbeta,
+                                 z,
+                                 orbital,
+                                 tol,
+                                 using_gamma,
+                                 correlation,
+                                 propagador,
+                                 save_dft,
+                                 weight_dft,
+                                 flag_dft,
+                                 mezcla,
+                                 basis,
+                                 expo,
+                                 np,
+                                 mang,
+                                 ncm,
+                                 gamma_couple,
+                                 tipo,
+                                 maxiter,
+                                 Rc,
+                                 bound,
+                                 espin,
+                                 &energia,
+                                 0,
+                                 epsilon,
+                                 0,
+                                 plasma,
+                                 &cusp_kato,
+                                 properties);
+
+                  if(test_scf == 0)
+                     ener_array[0] = energia;
+                  else 
+                     ener_array[0] = 1e12;
+
+ //***************************************************************************************                    
+                  x2 = x - step_work;   //  x2, al exponente se le resta el tamaño del paso
+//                  if(x2 > 0.1) {  //if x2
+                     for(i = 1; i <= deg; i++) {
                         index = todos + i - 1;
-                        expo[index] = x1;
+                        expo[index] = x2;
                      }
-                     test_scf = scf(nt,
-                                    elecalfa,
-                                    elecbeta,
-                                    z,
-                                    orbital,
-                                    tol,
-                                    using_gamma,
-                                    correlation,
-                                    propagador,
-                                    save_dft,
-                                    weight_dft,
-                                    flag_dft,
-                                    mezcla,
-                                    basis,
-                                    expo,
-                                    np,
-                                    mang,
-                                    ncm,
-                                    gamma_couple,
-                                    tipo,
-                                    maxiter,
-                                    Rc,
-                                    bound,
-                                    espin,
-                                    &energia,
-                                    0,
-                                    epsilon,
-                                    0,
-                                    plasma,
-                                   &cusp_kato,
-                                    properties);
+//                     if(strcmp(basis, "STOs") || strcmp(basis, "stos") == 0 ) {   
+//                        if(strcmp(bound, "finite") || strcmp(bound, "dielectricc") == 0 || strcmp(bound,"polarization") == 0) {
+//                           checking_expo = check_expotents_finite(using_gamma,
+//                                                                  gamma_couple,
+//                                                                  Rc,
+//                                                                  np,
+//                                                                  mang,
+//                                                                  expo,
+//                                                                  todos);
+//                        }
+//                        if(checking_expo == 0) {
+                           test_scf = scf(nt,
+                                          elecalfa,
+                                          elecbeta,
+                                          z,
+                                          orbital,
+                                          tol,
+                                          using_gamma,
+                                          correlation,
+                                          propagador,
+                                          save_dft,
+                                          weight_dft,
+                                          flag_dft,
+                                          mezcla,
+                                          basis,
+                                          expo,
+                                          np,
+                                          mang,
+                                          ncm,
+                                          gamma_couple,
+                                          tipo,
+                                          maxiter,
+                                          Rc,
+                                          bound,
+                                          espin,
+                                          &energia,
+                                          0,
+                                          epsilon,
+                                          0,
+                                          plasma,
+                                          &cusp_kato,
+                                          properties);
+//                        }
+//                        else {
+//                           test_scf = 1;
+//                        }
+//                     } //  if basis
+//                  }    // if x2
+//                  else
+//                     test_scf = 1;
 
+                  if(test_scf == 0)
+                     ener_array[2] = energia;
+                  else 
+                     ener_array[2] = 1e12;
 
-                     if (test_scf == 0)
-                       ener_array[1] = energia;
-                     else
-                       ener_array[1] = 1e11;
-        
-                     x0 = x + step_work;            
-                     for (i = 1; i <= deg; i++) {
+ //***************************************************************************************                   
+ // We have the next cases... 
+                  if(ener_array[0] < ener_array[1]) {      // first case: E0 < E1
+                     for(i = 1; i <= deg; i++) {
                         index = todos + i - 1;
                         expo[index] = x0;
-                     }              
-                     test_scf = scf(nt,
-                                    elecalfa,
-                                    elecbeta,
-                                    z,
-                                    orbital,
-                                    tol,
-                                    using_gamma,
-                                    correlation,
-                                    propagador,
-                                    save_dft,
-                                    weight_dft,
-                                    flag_dft,
-                                    mezcla,
-                                    basis,
-                                    expo,
-                                    np,
-                                    mang,
-                                    ncm,
-                                    gamma_couple,
-                                    tipo,
-                                    maxiter,
-                                    Rc,
-                                    bound,
-                                    espin,
-                                    &energia,
-                                    0,
-                                    epsilon,
-                                    0,
-                                    plasma,
-                                   &cusp_kato,
-                                    properties);
-
-
-                     if (test_scf == 0)
-                     ener_array[0] = energia;
-                     else 
-                     ener_array[0] = 1e12;
-        
-                     x2 = x - step_work;
-    
-    
-                     if (x2 > 0.1) {
-                         for (i = 1; i <= deg; i++) {
-                            index = todos + i - 1;
-                            expo[index] = x2;
-                         }
-    
-                         if (strcmp(bound, "finite") || strcmp(bound, "dielectricc") == 0 || strcmp(bound,"polarization") == 0)
-                            checking_expo = check_expotents_finite(using_gamma,
-                                                                   gamma_couple,
-                                                                   Rc,
-                                                                   np,
-                                                                   mang,
-                                                                   expo,
-                                                                   todos);
-                         if (checking_expo == 0) 
-                         test_scf = scf(nt,
-                                        elecalfa,
-                                        elecbeta,
-                                        z,
-                                        orbital,
-                                        tol,
-                                        using_gamma,
-                                        correlation,
-                                        propagador,
-                                        save_dft,
-                                        weight_dft,
-                                        flag_dft,
-                                        mezcla,
-                                        basis,
-                                        expo,
-                                        np,
-                                        mang,
-                                        ncm,
-                                        gamma_couple,
-                                        tipo,
-                                        maxiter,
-                                        Rc,
-                                        bound,
-                                        espin,
-                                        &energia,
-                                        0,
-                                        epsilon,
-                                        0,
-                                        plasma,
-                                       &cusp_kato,
-                                        properties);
-                           else
-                            test_scf = 1;
-                     } else
-                         test_scf = 1;
-                     if (test_scf == 0)
-                     ener_array[2] = energia;
-                     else 
-                     ener_array[2] = 1e12;
-        
-        
-        
-                     if (ener_array[0] < ener_array[1]) {
-                       for (i = 1; i <= deg; i++) {
-                          index = todos + i - 1;
-                          expo[index] = x0;
-                       } 
-                      energia = ener_array[0];
-                      printf("\nAJIJO1 %4.16lf %lf\n", ener_array[0], x0);
-                     } else 
-                        if (ener_array[2] < ener_array[1]) {
-                          for (i = 1; i <= deg; i++) {
-                             index = todos + i - 1;
-                             expo[index] = x2;
-                          } 
-                          energia = ener_array[2];
-                          printf("\nAJIJO2 %4.16lf %lf\n", ener_array[2], x2);
-                        } else  {
-                             for (i = 1; i <= deg; i++) {
-                               index = todos + i - 1;
-                               expo[index] = x1;
-                             }
-                           energia = ener_array[1];
-                           printf("\nAJIJO3 %4.16lf %lf\n", ener_array[1], x1);
-                          }
+                     } 
+                     energia = ener_array[0];
+                     printf("\n case_1 E0 < E1     %4.10lf  %4.25lf \n", ener_array[0], x0);
+                  } 
+                  else 
+                     if(ener_array[2] < ener_array[1]) {   // second case: E2 < E1
+                        for(i = 1; i <= deg; i++) {
+                           index = todos + i - 1;
+                           expo[index] = x2;
+                        } 
+                        energia = ener_array[2];
+                        printf("\n case_2 E2 < E1     %4.10lf  %4.25lf \n", ener_array[2], x2);
+                     } 
+                     else{                                 // third case: E1 is still smaller than E2 and E0
+                        for(i = 1; i <= deg; i++) {
+                           index = todos + i - 1;
+                           expo[index] = x1;
+                        }
+                        energia = ener_array[1];
+                        printf("\n case_3 E1 < E2, E0 %4.10lf  %4.25lf \n", ener_array[1], x1);
+                     }
                      todos_antes = todos;
                      todos        = index + 1;
                  }//else1
@@ -407,44 +415,45 @@ void optimiza(int     nt,
         step_work = step_work/10.f;
        }
     
-      //mrb if (fabs(energia - energia_0) < 1e-12)
-      //mrb  energia = 1e12;
-    
-       if (energia < energia_0) {
-         energia_0 = energia;
-         ident = 0;
-         for (i = 0; i < nt; i++)
-            expo_opt[i] = expo[i];
-         printf("\nAQUIVOY_I\n");
+       if(energia < energia_0) {
+          energia_0 = energia;
+          ident = 0;
+          for(i = 0; i < nt; i++)
+             expo_opt[i] = expo[i];
+          printf("\nAQUIVOY_I\n");
 
-       file++;
-       if (file == 2*file_ii) {
-           file_ii += file_ii;
-            file_basis = fopen(nombre_ii,"w");
-            archivo_opt = fopen(nombre,"r");
-            i = -1;
+          file++;
+          if(file == 2*file_ii) {
+             file_ii += file_ii;
+             file_basis = fopen(nombre_ii,"w");
+             archivo_opt = fopen(nombre,"r");
+             i = -1;
 
-            while (fscanf(archivo_opt,"%s %lf %d", config, &temp_dble, &temp_int) != EOF)
+             while (fscanf(archivo_opt,"%s %lf %d", config, &temp_dble, &temp_int) != EOF)
              {
-               if (config[1] == 'S') i = i + 1;
-               if (config[1] == 'P') i = i + 3;
-               if (config[1] == 'D') i = i + 5;
-               if (config[1] == 'F') i = i + 7;
-               if (config[1] == 'G') i = i + 9;
-               if (config[1] == 'H') i = i + 11;
-               if (config[1] == 'I') i = i + 13;
-               fprintf(file_basis,"%s  %8.25lf %d \n", config, expo_opt[i], temp_int);
+                if (config[1] == 'S') i = i + 1;
+                if (config[1] == 'P') i = i + 3;
+                if (config[1] == 'D') i = i + 5;
+                if (config[1] == 'F') i = i + 7;
+                if (config[1] == 'G') i = i + 9;
+                if (config[1] == 'H') i = i + 11;
+                if (config[1] == 'I') i = i + 13;
+                fprintf(file_basis,"%s  %8.25lf %d \n", config, expo_opt[i], temp_int);
              }
-          fclose(archivo_opt);
-          fclose(file_basis);
-        }
+             fclose(archivo_opt);
+             fclose(file_basis);
+          }
        }
        else 
-         if (energia >= energia_0) {
-         printf("\nAQUIVOY\n");
-         ident = 1;
-         for (i = 0; i < nt; i++)
-            expo[i] = expo_opt[i];
+         if(energia >= energia_0) {
+            printf("\nAQUIVOY\n");
+            ident = 1;
+            for (i = 0; i < nt; i++){
+//                expo[i] = expo_opt[i]; //aquí únicamente estoy pasando un cero (original)
+                expo_opt[i] = expo[i]; 
+//                printf(" expo %lf \n", expo[i]);         //mike :(
+//                printf(" expo_opt %lf \n", expo_opt[i]); //mike :(
+            }
          }
 
       } while (ident == 0);

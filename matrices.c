@@ -327,7 +327,7 @@ void valorespropios(int     nt,
  double *work;
  double *vectorestemp;
 
- extern void dsyev(char*, char*, int*, double*, int*, double*, double*, int*, int*);
+ extern void dsyev(char*, char*, int*, double*, int*, double*, double*, int*, int*); //lapack function
 
  vectorestemp = (double *)malloc(nt*nt*sizeof(double));
  if (vectorestemp == NULL) {
@@ -362,6 +362,9 @@ void valorespropios(int     nt,
  }
 
  dsyev_ ("V", "U", &nt, vectorestemp, &nt, valores, work, &lwork, &info);
+ // V--> Compute eigenvalues and eigenvectors
+ // U-->  Upper triangle of A is stored
+ // printf("mike = %d \n", info);
 
  *revisa = 0;
  if (info != 0) {

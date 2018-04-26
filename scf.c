@@ -1021,7 +1021,7 @@ extern int ep2_cpu(char   *espin,
 
  time_3 = time (NULL);
  time_scf_ini = time (NULL);
- valor = 0;
+ valor = 0;     // mike
 
  if (strcmp(tipo,"rhf") == 0 || strcmp(tipo,"rks") == 0) 
    compara = 0;
@@ -1171,7 +1171,7 @@ extern int ep2_cpu(char   *espin,
     arreglo_inv_factorial[i] = 1.f/arreglo_factorial[i];
   }
 
-  if (strcmp(bound,"finite") == 0 || strcmp(bound,"dielectricc") == 0 || strcmp(bound,"polarization") == 0) {
+  if(strcmp(bound,"finite") == 0 || strcmp(bound,"dielectricc") == 0 || strcmp(bound,"polarization") == 0) {
      NC_minus = NULL;
      memoria_double_uni(sizedouble, &NC_minus, "NC_minus");
      NC_plus = NULL;
@@ -1188,13 +1188,14 @@ extern int ep2_cpu(char   *espin,
           zetas[i] = tmp3;
         }
      }
-     else{
-       if(strcmp(basis,"GTOs") == 0 || strcmp(basis,"gtos") == 0){
-          printf("|----- The calculation will be made with GTOs -----| \n"); 
-       }
-     }
-       
-   }
+//     else{
+//        if(strcmp(basis,"GTOs") == 0 || strcmp(basis,"gtos") == 0){
+//           printf("|--------------------------------------------------| \n"); 
+//           printf("|----- The calculation will be made with GTOs -----| \n"); 
+//           printf("|--------------------------------------------------| \n"); 
+//        }
+//     }     
+  }
 
  char bound_pol[80];
  strcpy(bound_pol,"nothig");
@@ -1327,7 +1328,7 @@ extern int ep2_cpu(char   *espin,
    
    difmezcla = (double)1.0 - mezcla;
    energiavieja = (double)0.;
-   iter = 0;
+   iter = 0;     // mike, primera asignación de ITER
    iter_inter = 0;
    bandera = 0;
    coef1 = (double)1.;
@@ -1880,7 +1881,7 @@ extern int ep2_cpu(char   *espin,
             energia_prueba = energia;
 
           if (fabs(energia) < 2000.f && fabs(energia_prueba - energia) < 0.25) {
-            printf("Iter=%5d---Energy=%14.8f", iter, energia);
+            printf("Iter=%5d---Energy=%14.10f", iter, energia);
             e_check = energia;
             difer = fabs(e_check - energiavieja);
           
@@ -2078,10 +2079,9 @@ extern int ep2_cpu(char   *espin,
            
              if (iter >= maxiter) {
               printf("No convergence!!!!\n");
-              valor = 1;
+              valor = 1;     // mike
              }
-           
-             *total_energy = energia;
+             *total_energy = energia;     // mike
              time_scf_fin = time (NULL);
              printf("SCF time  = %16ld s.\n", time_scf_fin - time_scf_ini);
            
@@ -2376,10 +2376,12 @@ extern int ep2_cpu(char   *espin,
           printf("rho'(0)               = %.4f\n", grid_der[0] + grid_der_beta[0]);
           printf("KATO CUSP = %4.4f\n", -(grid_der[0] + grid_der_beta[0])/(2.f*z*(grid_rho[0] + grid_rho_beta[0])));
           *cusp_kato = -(grid_der[0] + grid_der_beta[0])/(2.f*z*(grid_rho[0] + grid_rho_beta[0]));
-          if (-(grid_der[0] + grid_der_beta[0])/(2.f*z*(grid_rho[0] + grid_rho_beta[0]))  < 0.98 || -(grid_der[0] + grid_der_beta[0])/(2.f*z*(grid_rho[0] + grid_rho_beta[0])) > 1.20)
-            iter = 1e7;
-
-           
+          if(strcmp(basis, "STOs") == 0 || strcmp(basis, "stos") == 0){
+             if(-(grid_der[0] + grid_der_beta[0])/(2.f*z*(grid_rho[0] + grid_rho_beta[0]))  < 0.98 || -(grid_der[0] + grid_der_beta[0])/(2.f*z*(grid_rho[0] + grid_rho_beta[0])) > 1.20){
+                iter = 1e7;
+             //   printf("ojo \n"); mike: here was the problem
+             }
+          }
            ///////////////////PRUEBA DENSIDAD 
            
            
@@ -2764,16 +2766,21 @@ extern int ep2_cpu(char   *espin,
              grid_rho = 0;
              free(grid);
              grid = 0;
-
-
      }
 
- if (strcmp(bound_pol,"dielectricc") == 0 || strcmp(bound_pol,"polarization") == 0 || strcmp(bound_pol,"dielectricnc") == 0)
-    sprintf(bound,"%s",bound_pol);
+    if(strcmp(bound_pol,"dielectricc") == 0 || strcmp(bound_pol,"polarization") == 0 || strcmp(bound_pol,"dielectricnc") == 0)
+       sprintf(bound,"%s",bound_pol);
 
-
- if (iter >= maxiter || energia != energia) return 1; 
- else  return(valor);
+       if(iter >= maxiter || energia != energia){ // This is the original
+//          printf("iter %d \n", iter);             // mike: la clave esta en una reasignación en iter 
+//          printf("maxiter %d \n", maxiter); 
+//          printf("scf_value :( = %d \n", valor);     // mike: en esta condición, aunque el valor de scf sea cero
+          return(1);                                 //       se asigna que valga 1.
+       } 
+       else{  
+//          printf("scf_value :) = %d \n", valor);     // mike: se mantiene el valor del scf que previamente se asigno como cero.
+          return(valor);
+       }  
 
  }   // Termina scf
 

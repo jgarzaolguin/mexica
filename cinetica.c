@@ -64,11 +64,14 @@ void cinetica(char   *using_gamma,
  double pi;
  pi = ((double) 4)*atan(1.f);
 
- printf("Kinetic contribution to hamiltonian..\n");
+// printf("Kinetic contribution to hamiltonian..\n");
 
  total_elements = nt*nt;
 
- if (strcmp(basis,"GTOs") == 0 || strcmp(basis,"gtos") == 0) { /* Aquí empieza la maquinaria para GTOs */
+ if(strcmp(basis,"GTOs") == 0 || strcmp(basis,"gtos") == 0) { /* Aquí empieza la maquinaria para GTOs */
+    printf("|--------------------------------------------------| \n");
+    printf("|----- The calculation will be made with GTOs -----| \n");
+    printf("|--------------------------------------------------| \n"); 
        for (k = 0; k < total_elements; k++) {
           indexes(nt, k, &index_i, &index_j);
           index_i = index_i - 1;
@@ -111,7 +114,9 @@ void cinetica(char   *using_gamma,
            /* Necesito la energía cinética dentro de la cavidad para el caso impenetrable */
  } 
  else { /* Aquí empieza toda la maquinaria para los STOs */
-
+    printf("|--------------------------------------------------| \n");
+    printf("|----- The calculation will be made with STOs -----| \n");
+    printf("|--------------------------------------------------| \n");
 #pragma omp parallel shared(total_elements, nt, matk, np, mang, ncm, expo, Rc, gamma_couple, NC_minus, NC_plus)
 
 #pragma omp parallel private(i, j, k, index_i, index_j, ang_i, ang_j, ncm_i, ncm_j, delta, delta1, entero1, doble1, doble2, num1, num2, num3, num4, num5, num6, result1, result2, total, alpha_nu, alpha_mu, zetas, alphas, n_mu, n_nu, enes, eles, total1, zeta_nu, zeta_mu, totaltemp)
