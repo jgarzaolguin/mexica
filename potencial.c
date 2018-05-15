@@ -18,6 +18,7 @@ void expected_value_r(int     nt,
 		      double *expo, 
 		      double  Rc, 
 		      char   *bound,
+                      char   *basis,  // new
                       double *vectsfin, 
 		      int     elecalfa, 
                       double  gamma_couple,
@@ -35,20 +36,21 @@ void expected_value_r(int     nt,
  int bloque, restante, do_ini, do_fin, total_size, sizebi;
  int ang_i, ang_j, ncm_i, ncm_j, orbital;
  int enes, eles;
- int compara, points;
+ int compara, points; 
+ int n_mu, n_nu;                // mike
+ double n_gto_mu, n_gto_nu;     // mike
  double alphas, zetas;
  double delta, delta1, part_real, suma, mat_r_i_j;
  double *array_temp, *array_temp_2;
  double value_integral_ext,
         value_integral_int;
  double num1, pi;
- double partial;                       //new 
+ double partial;                        
  double r;
 
  extern int indexes(int, int, int*, int*);
  extern double intl(int, int, int, double*, int*, double*);
  extern double int1c(int, int, int, double, double*, int*, double*, double*);
-//mrb extern void memoria_double_uni(int, double**, char*);
  extern void memoria_double_uni(int      tamanio,
                                 double **arreglo,
                                 char    *titulo);
@@ -80,97 +82,148 @@ void expected_value_r(int     nt,
  extern double numerical_int(double   *grid,
                              double   *grid_fun,
                              int       points);
+ extern double full_gamma_arg_2(int );
+ extern double constant_normalization_GTO(int , int , double , double *); 
 
  points = 600;
  array_temp = (double *) malloc (points * sizeof (double));
  total_elements = nt*nt;
 
-//#pragma omp parallel shared(nt, Rc, total_elements, mang, ncm, expo, np, z, matv) private(index_i, index_j, i, j, ang_i, ang_j, ncm_i, ncm_j, k, delta, delta1)
-//{
-// int TID = omp_get_thread_num();
- if (strcmp(bound,"free") == 0) {
-//   #pragma omp for
-   for (orbital = 0; orbital < elecalfa; orbital++) {
-   suma = 0.f;
-   for (k = 0; k < total_elements; k++) {
-     indexes(nt, k, &index_i, &index_j);
-     index_i = index_i - 1;
-     index_j = index_j - 1;
-     i = index_i;
-     j = index_j;
-     ang_i = mang[i];
-     ang_j = mang[j];
-     delta_kro_(&ang_i, &ang_j, &delta);
-     ncm_i = ncm[i];
-     ncm_j = ncm[j];
-     delta_kro_(&ncm_i, &ncm_j, &delta1);
-     delta = delta*delta1;
-      if (delta == (double)0) 
-       mat_r_i_j = (double)0;
-     else 
-       mat_r_i_j = intl(i, j, 2 + r_exp, expo, np, arreglo_factorial);
+ //#pragma omp parallel shared(nt, Rc, total_elements, mang, ncm, expo, np, z, matv) private(index_i, index_j, i, j, ang_i, ang_j, ncm_i, ncm_j, k, delta, delta1)
+ //{
+ // int TID = omp_get_thread_num();
+ if(strcmp(basis,"GTOs") == 0 || strcmp(basis,"gtos") == 0){     // begins GTOs
+    for(orbital = 0; orbital < elecalfa; orbital++){
+       suma = ((double) 0);
+       for(k = 0; k < total_elements; k++){
+          indexes(nt, k, &index_i, &index_j);
+          index_i = index_i - 1;
+          index_j = index_j - 1;
+          i = index_i;
+          j = index_j;
+          n_mu =np[i];
+          n_nu =np[j];
+          ang_i = mang[i];
+          ang_j = mang[j];
+          delta_kro_(&ang_i, &ang_j, &delta);
+          ncm_i = ncm[i];
+          ncm_j = ncm[j];
+          delta_kro_(&ncm_i, &ncm_j, &delta1);
+          delta = delta*delta1; 
+          if(delta == ((double) 0)){
+             mat_r_i_j = (double)0;
+          }
+          else {
+             constant_normalization_GTO(i, n_mu, expo[i], &n_gto_mu);
+             constant_normalization_GTO(j, n_nu, expo[j], &n_gto_nu);
+             if(r_exp == -1){
+                num1 = ((double) n_mu + n_nu)/((double) 2);
+                mat_r_i_j = (n_gto_mu*n_gto_nu*full_gamma_arg_2(n_mu + n_nu))/(((double) 2)*pow(expo[i] + expo[j], num1));
+                suma = suma + vectsfin[i*nt + orbital]*vectsfin[j*nt + orbital]*mat_r_i_j;
+             }
+             else{
+                if(r_exp == 1){
+                   num1 = ((double) n_mu + n_nu + 2)/((double) 2);
+                   mat_r_i_j = (n_gto_mu*n_gto_nu*full_gamma_arg_2(n_mu + n_nu + 2))/(((double) 2)*pow(expo[i] + expo[j], num1));
+                   suma = suma + vectsfin[i*nt + orbital]*vectsfin[j*nt + orbital]*mat_r_i_j;
+                }
+                else{
+                   if(r_exp == 2){
+                      num1 = ((double) n_mu + n_nu + 3)/((double) 2);
+                      mat_r_i_j = (n_gto_mu*n_gto_nu*full_gamma_arg_2(n_mu + n_nu + 3))/(((double) 2)*pow(expo[i] + expo[j], num1));
+                      suma = suma + vectsfin[i*nt + orbital]*vectsfin[j*nt + orbital]*mat_r_i_j;
+                   }                   
+                }
+             }
+          }
+       }
+       printf("Orbital %d, <r^%d>=%10.5f\n", orbital, r_exp, suma);
+    }
+ }  // ends GTOs
+ else{     
+    if(strcmp(basis,"STOs") == 0 || strcmp(basis,"stos") == 0){  // begins STOs
+       if(strcmp(bound,"free") == 0) {
+ //   #pragma omp for
+          for(orbital = 0; orbital < elecalfa; orbital++) {
+             suma = 0.f;
+             for(k = 0; k < total_elements; k++) {
+                indexes(nt, k, &index_i, &index_j);
+                index_i = index_i - 1;
+                index_j = index_j - 1;
+                i = index_i;
+                j = index_j;
+                ang_i = mang[i];
+                ang_j = mang[j];
+                delta_kro_(&ang_i, &ang_j, &delta);
+                ncm_i = ncm[i];
+                ncm_j = ncm[j];
+                delta_kro_(&ncm_i, &ncm_j, &delta1);
+                delta = delta*delta1;
+                if(delta == (double)0) 
+                   mat_r_i_j = (double)0;
+                else 
+                   mat_r_i_j = intl(i, j, 2 + r_exp, expo, np, arreglo_factorial);
 //     suma = suma + matp[element2]*mat_r_i_j;
-     suma = suma + vectsfin[i*nt + orbital]*vectsfin[j*nt + orbital]*mat_r_i_j;
-   }
-   printf("Orbital %d, <r^%d>=%10.5f\n", orbital, r_exp, suma); 
-   }
- }
- else
- if(strcmp(bound,"confined") == 0) {
+                suma = suma + vectsfin[i*nt + orbital]*vectsfin[j*nt + orbital]*mat_r_i_j;
+             }
+             printf("Orbital %d, <r^%d>=%10.5f\n", orbital, r_exp, suma); 
+          }
+       }
+       else
+          if(strcmp(bound,"confined") == 0) {
 //   #pragma omp for
-   for (orbital = 0; orbital < elecalfa; orbital++) {
-   suma = 0.f;
-   for (k = 0; k < total_elements; k++) {
-     indexes(nt, k, &index_i, &index_j);
-     index_i = index_i - 1;
-     index_j = index_j - 1;
-     i = index_i;
-     j = index_j;
-     ang_i = mang[i];
-     ang_j = mang[j];
-     delta_kro_(&ang_i, &ang_j, &delta);
-     ncm_i = ncm[i];
-     ncm_j = ncm[j];
-     delta_kro_(&ncm_i, &ncm_j, &delta1);
-     delta = delta*delta1;
-     if (delta == (double)0)
-       mat_r_i_j = (double)0;
-     else 
-     mat_r_i_j = int1c(i, j, 2 + r_exp, Rc, expo, np, arreglo_factorial, arreglo_inv_factorial);
-     suma = suma + vectsfin[i*nt + orbital]*vectsfin[j*nt + orbital]*mat_r_i_j;
-   }
-   printf("Orbital %d, <r^%d>=%10.5f\n", orbital, r_exp, suma); 
-   }
- }
- else
- {
+             for(orbital = 0; orbital < elecalfa; orbital++) {
+                suma = 0.f;
+                for(k = 0; k < total_elements; k++) {
+                   indexes(nt, k, &index_i, &index_j);
+                   index_i = index_i - 1;
+                   index_j = index_j - 1;
+                   i = index_i;
+                   j = index_j;
+                   ang_i = mang[i];
+                   ang_j = mang[j];
+                   delta_kro_(&ang_i, &ang_j, &delta);
+                   ncm_i = ncm[i];
+                   ncm_j = ncm[j];
+                   delta_kro_(&ncm_i, &ncm_j, &delta1);
+                   delta = delta*delta1;
+                   if(delta == (double)0)
+                      mat_r_i_j = (double)0;
+                   else 
+                      mat_r_i_j = int1c(i, j, 2 + r_exp, Rc, expo, np, arreglo_factorial, arreglo_inv_factorial);
+                   suma = suma + vectsfin[i*nt + orbital]*vectsfin[j*nt + orbital]*mat_r_i_j;
+                }
+                printf("Orbital %d, <r^%d>=%10.5f\n", orbital, r_exp, suma); 
+             }
+          }
+          else {
 //   #pragma omp for
-  double pi;
-  pi = 4.f*atan(1.f);
-   for (i = 0; i < points; i++) array_temp[i] = 0.f;
-   for (orbital = 0; orbital < elecalfa; orbital++) {
-      suma = 0.f;
-      for (i = 0; i < points; i++) {
-        r = grid[i];
-        if (r < Rc )
-          partial = finite_orbital_int(using_gamma, nt, orbital, r, Rc, expo, np,
-                                       vectsfin, gamma_couple, NC_minus);
-        else
-          partial = finite_orbital_ext(nt, orbital, r, Rc, zeta, mang, vectsfin,
-                                       gamma_couple, NC_plus);
-
-        if (i == 0) 
-          array_temp[i] = 0.f;
-        else
-          array_temp[i] = pow(r,(double) r_exp)*partial*partial; //This array will be multiplied by r^2 in
-                                                                 //numerical_int function
-   }
-   suma = numerical_int(grid, array_temp, points);
-   printf("Orbital %d, <r^%d>=%10.5f\n", orbital, r_exp, suma);
-   }
-
- }
- free(array_temp);
+             double pi;
+             pi = 4.f*atan(1.f);
+             for(i = 0; i < points; i++) array_temp[i] = 0.f;
+                for(orbital = 0; orbital < elecalfa; orbital++) {
+                   suma = 0.f;
+                   for(i = 0; i < points; i++) {
+                      r = grid[i];
+                      if(r < Rc )
+                         partial = finite_orbital_int(using_gamma, nt, orbital, r, Rc, expo, np,
+                                                      vectsfin, gamma_couple, NC_minus);
+                      else
+                         partial = finite_orbital_ext(nt, orbital, r, Rc, zeta, mang, vectsfin,
+                                                   gamma_couple, NC_plus);
+                      if(i == 0) 
+                         array_temp[i] = 0.f;
+                      else
+                         array_temp[i] = pow(r,(double) r_exp)*partial*partial; //This array will be multiplied by r^2 in
+                                                                    //numerical_int function
+                   }
+                   suma = numerical_int(grid, array_temp, points);
+                   printf("Orbital %d, <r^%d>=%10.5f\n", orbital, r_exp, suma);
+             }
+          }  
+          free(array_temp);
+    }   // ends STOs
+ }  
 //} Cierra openmp
 } //aquí cierra expected value
 
@@ -224,7 +277,7 @@ void potencial(char   *using_gamma,
  extern double upper_incomplete_gamma(double, int, double);
  extern int constant_normalization_free(int*, double*, int*, double*);
 
- extern long long int factorial_mike(int );
+// extern long long int factorial_mike(int );
  extern double full_gamma_arg_2(int );
  extern double lower_incomplete_gamma_function(int, double );
  extern double constant_normalization_GTO(int , int , double , double *);
@@ -251,35 +304,23 @@ void potencial(char   *using_gamma,
           if (delta == (double)0)
             matv[k] = (double)0;
           else { //begins principal else
+             num1 = ((double) n_mu + n_nu);
+             constant_normalization_GTO(i, n_mu, expo[i], &n_gto_mu);
+             constant_normalization_GTO(j, n_nu, expo[j], &n_gto_nu);
              if(strcmp(bound,"free") == 0){
-                num1 = ((double) n_mu + n_nu);
-                constant_normalization_GTO(i, n_mu, expo[i], &n_gto_mu);
-                constant_normalization_GTO(j, n_nu, expo[j], &n_gto_nu);
-
                 matv[k] = -((double) z)*n_gto_mu*n_gto_nu/(((double) 2)*pow(expo[i] + expo[j], num1/2.f));
 
                 matv[k] = matv[k]*((double) full_gamma_arg_2(n_mu + n_nu));
- 
              } 
              else{
                 if(strcmp(bound,"dielectricc") == 0) {
-                   num1 = ((double) n_mu + n_nu);
-                   constant_normalization_GTO(i, n_mu, expo[i], &n_gto_mu);
-                   constant_normalization_GTO(j, n_nu, expo[j], &n_gto_nu);
-
                    matv[k] = -((double) z)*n_gto_mu*n_gto_nu/(((double) 2)*pow(expo[i] + expo[j], num1/2.f));
 
                    matv[k] = matv[k]*((U_0 - ((double) 1))*lower_incomplete_gamma_function(n_mu + n_nu, (expo[i] + expo[j])*pow(Rc,2.f))/U_0 +
                                       ((double) full_gamma_arg_2(n_mu + n_nu))/U_0 );
-
-//                  printf("V_mu,nu[%d] = %f \n", k, matv[k]);
                 } 
                 else{
                    if(strcmp(bound,"finite") == 0){
-                     num1 = ((double) n_mu + n_nu);
-                     constant_normalization_GTO(i, n_mu, expo[i], &n_gto_mu);
-                     constant_normalization_GTO(j, n_nu, expo[j], &n_gto_nu);
-
                      matv[k] = -n_gto_mu*n_gto_nu/(((double) 2)*pow(expo[i] + expo[j], num1/2.f));
 
                      matv[k] = matv[k]*(
@@ -292,10 +333,6 @@ void potencial(char   *using_gamma,
                    }
                    else{
                       if(strcmp(bound,"parabolic") == 0){
-                         num1 = ((double) n_mu + n_nu);
-                         constant_normalization_GTO(i, n_mu, expo[i], &n_gto_mu);
-                         constant_normalization_GTO(j, n_nu, expo[j], &n_gto_nu);
- 
                          matv[k] = -n_gto_mu*n_gto_nu/(((double) 2)*pow(expo[i] + expo[j], num1/2.f));
 
                          matv[k] = matv[k]*(
@@ -305,13 +342,21 @@ void potencial(char   *using_gamma,
                                        lower_incomplete_gamma_function(n_mu + n_nu + 3, (expo[i] + expo[j])*pow(Rc,2.f)) )
                                    );
                       }
+                      else{
+                         if(strcmp(bound,"confined") == 0){
+                            matv[k] = -((double) z)*n_gto_mu*n_gto_nu/(((double) 2)*pow(expo[i] + expo[j], num1/2.f));
+
+                            matv[k] = matv[k]*((double) lower_incomplete_gamma_function(n_mu + n_nu, (expo[i] + expo[j])*pow(Rc,2.f)));
+                         }
+                      }
                    }
                 }
              }
           } // ends principal else
      }
-          /* Atención, al parecer hay una especie de reasignación pues epsilon ya está definida en data.c sin embargo, para evitar poner mas argumentos en la función de potencial lo que se hizo fue reemplazar U_0 por la constante dieléctrica, el printf de arriba lo prueba pues en este caso U_0 = 80 = epsilon*/
- } else {//aquí empieza el else para los STOs
+          /* Atención, al parecer hay una especie de reasignación pues epsilon ya está definida en data.c sin embargo, para evitar poner mas argumentos en la función de potencial lo que se hizo fue reemplazar U_0 por la constante dieléctrica */
+ } 
+ else {//aquí empieza el else para los STOs
 
 #pragma omp parallel shared(total_elements, nt, z, matv, np, mang, ncm, expo, Rc, gamma_couple, bound, U_0, NC_minus, NC_plus, arreglo_factorial, arreglo_inv_factorial, iter_pol, charge_int) private(i, j, k, index_i, index_j, delta, delta1, total, ang_i, ang_j, ncm_i, ncm_j, enes, eles, alphas, zetas, adicional)
 

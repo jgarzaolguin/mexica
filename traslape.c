@@ -53,6 +53,7 @@ void traslape(char   *using_gamma,
 
  extern long long int factorial_mike(int );
  extern double full_gamma_arg_2(int );
+ extern double lower_incomplete_gamma_function(int, double );
  extern double constant_normalization_GTO(int , int , double , double *);
 
  double pi;
@@ -82,12 +83,18 @@ void traslape(char   *using_gamma,
              num1 = ((double) n_mu + n_nu + 1.f);
              constant_normalization_GTO(i, n_mu, expo[i], &n_gto_mu);
              constant_normalization_GTO(j, n_nu, expo[j], &n_gto_nu);
+             if(strcmp(bound,"confined") == 0){
+                mats[k] = (n_gto_mu*n_gto_nu)/(2.f*pow(expo[i] + expo[j],num1/2.f));
 
-             mats[k] = (n_gto_mu*n_gto_nu)/(2.f*pow(expo[i] + expo[j],num1/2.f));
+                mats[k] = mats[k]*((double) lower_incomplete_gamma_function(n_mu + n_nu + 1, (expo[i] + expo[j])*pow(Rc,2.f)));
 
-             mats[k] = mats[k]*((double) full_gamma_arg_2(n_mu + n_nu + 1));
+//              printf("S_mu,nu[%d] = %f \n", k, mats[k]);
+             }
+             else{
+                mats[k] = (n_gto_mu*n_gto_nu)/(2.f*pow(expo[i] + expo[j],num1/2.f));
 
-//             printf("S_mu,nu[%d] = %f \n", k, mats[k]); /* ya quedaron */
+                mats[k] = mats[k]*((double) full_gamma_arg_2(n_mu + n_nu + 1));
+             }
          }
      }
  } /* Aquí terminan los elementos de matriz con GTOs */ 

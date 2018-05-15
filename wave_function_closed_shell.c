@@ -34,7 +34,7 @@ int wf_closed_shell(int z, char *using_gamma, int compara, char *bound, char *ba
  extern double numerical_int(double *grid, double *grid_fun, int points);
 
  extern void expected_value_r(int nt, int r_exp, int *np, int *mang, int *ncm, double *expo, 
-                              double  Rc, char *bound, double *vectsfin, int elecalfa, double gamma_couple,
+                              double  Rc, char *bound, char *basis, double *vectsfin, int elecalfa, double gamma_couple,
                               double *NC_minus, double *NC_plus, double *arreglo_factorial,
                               double *arreglo_inv_factorial, char *using_gamma, double *zeta, double *grid);
 
@@ -67,15 +67,15 @@ int wf_closed_shell(int z, char *using_gamma, int compara, char *bound, char *ba
    printf("---------------------------\n");
    printf("Number of electrons: = %f\n", sum);
    printf("---------------------------\n");
-   expected_value_r(nt, -1, np, mang, ncm, expo, Rc, bound, vectsfinalfa, elecalfa, gamma_couple,
+   expected_value_r(nt, -1, np, mang, ncm, expo, Rc, bound, basis, vectsfinalfa, elecalfa, gamma_couple,
                     NC_minus, NC_plus, arreglo_factorial, arreglo_inv_factorial, using_gamma,
                     zetas, grid);
    printf("---------------------------\n");
-   expected_value_r(nt, 1,np, mang, ncm, expo, Rc, bound, vectsfinalfa, elecalfa, gamma_couple,
+   expected_value_r(nt, 1,np, mang, ncm, expo, Rc, bound, basis, vectsfinalfa, elecalfa, gamma_couple,
                     NC_minus, NC_plus, arreglo_factorial, arreglo_inv_factorial, using_gamma,
                     zetas, grid);
    printf("---------------------------\n");
-   expected_value_r(nt, 2, np, mang, ncm, expo, Rc, bound, vectsfinalfa, elecalfa, gamma_couple,
+   expected_value_r(nt, 2, np, mang, ncm, expo, Rc, bound, basis, vectsfinalfa, elecalfa, gamma_couple,
                     NC_minus, NC_plus, arreglo_factorial, arreglo_inv_factorial, using_gamma,
                     zetas, grid);
    printf("---------------------------\n");

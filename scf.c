@@ -516,6 +516,7 @@ extern int ep2_cpu(char   *espin,
                               double *expo,
                               double  Rc,
                               char   *bound,
+                              char   *basis,
                               double *vectsfin,
                               int     elecalfa,
                               double  gamma_couple,
@@ -1188,13 +1189,6 @@ extern int ep2_cpu(char   *espin,
           zetas[i] = tmp3;
         }
      }
-//     else{
-//        if(strcmp(basis,"GTOs") == 0 || strcmp(basis,"gtos") == 0){
-//           printf("|--------------------------------------------------| \n"); 
-//           printf("|----- The calculation will be made with GTOs -----| \n"); 
-//           printf("|--------------------------------------------------| \n"); 
-//        }
-//     }     
   }
 
  char bound_pol[80];
@@ -1855,7 +1849,6 @@ extern int ep2_cpu(char   *espin,
                          &energia);
           //       energia = energia + e_exch;
          
-        //Here I stay right now. 
         energia = energia  + coef_HF*e_exch + e_xc;
 
         if (flag_dft != 2) {
@@ -2031,23 +2024,25 @@ extern int ep2_cpu(char   *espin,
 //jgo         fprintf(write_out,"%16.12f %16.12f \n", grid[i], grid_rho[i]);
 //jgo       fclose(write_out);
 //jgo     }
-   
-  // Fermi-Hole function in this point for closed-shell atoms
 
-             if (compara == 0) {
-             double v_e;
-              v_e = 0;
-              for (i = 0; i < (elec/2); i++)
-               v_e = v_e + valores[i];
-             printf("Var Energy                           = %15.5f\n", e_kin - e_v - 2.f*e_coul - 2.f*v_e);
+             if(compara == 0) {
+                double v_e;
+                v_e = 0;
+                for(i = 0; i < (elec/2); i++)
+                   v_e = v_e + valores[i];
+                printf("Var Energy                           = %15.5f\n", e_kin - e_v - 2.f*e_coul - 2.f*v_e);
              }
 
-             printf("Kinetic energy                       = %15.5f\n", e_kin);
-             if (strcmp(bound,"finite") == 0){
+             if(strcmp(bound,"free") == 0 || strcmp(bound,"FREE") == 0){
+                printf("Kinetic energy                       = %15.5f\n", e_kin);
+                printf("Nuc-elec energy                      = %15.5f\n", e_v);
+             }
+             else{
+                printf("Kinetic energy                       = %15.5f\n", e_kin);
                 printf("Kinetic energy internal              = %15.5f\n", e_kinint);
-                printf("Kinetic energy external              = %15.5f\n", e_kinext);
-             } 
-             printf("Nuc-elec energy                      = %15.5f\n", e_v);
+                printf("Kinetic energy external              = %15.5f\n", e_kinext);     
+                printf("Potential energy (V_int + V_ext)     = %15.5f\n", e_v);
+             }
              printf("One-electron energy                  = %15.5f\n", e_core);
              printf("Coulomb energy                       = %15.5f\n", e_coul);
   //QUITAR DESPUES
@@ -2067,12 +2062,13 @@ extern int ep2_cpu(char   *espin,
                  }
                   
                }
-             } else
-               printf("Exchange energy                      = %15.5f\n", e_exch);
+             } 
+             else
+                printf("Exchange energy                      = %15.5f\n", e_exch);
              if(strcmp(save_dft[1],"hf") == 0 && flag_dft == 2) 
-               printf("Hartree-Fock energy                  = %15.5f (%15.5f Ryd)\n", energia, 2.f*energia);
+                printf("Hartree-Fock energy                  = %15.5f (%15.5f Ryd)\n", energia, 2.f*energia);
              else 
-               printf("DFT energy                           = %15.5f (%15.5f Ryd)\n", energia, 2.f*energia);
+                printf("DFT energy                           = %15.5f (%15.5f Ryd)\n", energia, 2.f*energia);
  
             
              printf("POT/KIN                              = %15.5f\n", (e_v + e_coul + e_exch)/e_kin);
@@ -2086,26 +2082,53 @@ extern int ep2_cpu(char   *espin,
              printf("SCF time  = %16ld s.\n", time_scf_fin - time_scf_ini);
            
              printf("------------------- EIGENVALUES -------------------\n");
-             if ( compara == 0 ) {
-               for (i = 0; i < nt; i++) 
-                 printf("Eigenvalue %d: %8.5f\n", i, valores[i]);
+             if( compara == 0 ) {
+                for(i = 0; i < nt; i++) 
+                   printf("Eigenvalue %d: %8.5f\n", i, valores[i]);
 
-               if (strcmp(properties,"property") == 0) {
-                 wf_closed_shell(z, using_gamma, compara, bound, nt, elecalfa, elecbeta,
-                                 Rc, expo, np, zetas, mang, ncm, vectsfin, NULL,
-                                 tipo, NC_minus, NC_plus, gamma_couple,
-                                 grid, grid_rho, NULL, grid_der, NULL, n_points,
-                                 arreglo_factorial, arreglo_inv_factorial,
-                                 matp, mats, &iter, save_i, print_vectors, cusp_kato);
-                 print_out_array(n_points, grid, array_i, "xc.dat");
-                 Evaluate_Elect_Pot(z, nt, matp, np, mang, ncm, expo, bound,
-                                    arreglo_factorial, arreglo_inv_factorial, 
-                                    grid, n_points, Rc, NC_minus, NC_plus, basis);
-               }
-/*compara*/} else { // Section for open-shell atoms
-               for (i = 0; i < nt; i++) 
-                 printf("Eigenvalue %d: alpha | beta = %8.5f  %8.5f\n", i, valoresalfa[i], valoresbeta[i]);
-               grid_rhorad(z,
+                if(strcmp(properties,"property") == 0) {
+                   wf_closed_shell(z, using_gamma, compara, bound, nt, elecalfa, elecbeta,
+                                   Rc, expo, np, zetas, mang, ncm, vectsfin, NULL,
+                                   tipo, NC_minus, NC_plus, gamma_couple,
+                                   grid, grid_rho, NULL, grid_der, NULL, n_points,
+                                   arreglo_factorial, arreglo_inv_factorial,
+                                   matp, mats, &iter, save_i, print_vectors, cusp_kato);
+                   print_out_array(n_points, grid, array_i, "xc.dat");
+                   Evaluate_Elect_Pot(z, nt, matp, np, mang, ncm, expo, bound,
+                                      arreglo_factorial, arreglo_inv_factorial, 
+                                      grid, n_points, Rc, NC_minus, NC_plus, basis);
+                }
+             } 
+             else { // Section for open-shell atoms
+                for(i = 0; i < nt; i++) 
+                   printf("Eigenvalue %d: alpha | beta = %8.5f  %8.5f\n", i, valoresalfa[i], valoresbeta[i]);
+                grid_rhorad(z,
+                            using_gamma,
+                            compara,
+                            bound,
+                            basis,
+                            nt,
+                            elecalfa,
+                            elecbeta,
+                            Rc,
+                            expo,
+                            np,
+                            zetas,
+                            mang,
+                            vectsfinalfa,
+                            vectsfinbeta,
+                            tipo,
+                            NC_minus,
+                            NC_plus,
+                            gamma_couple,
+                            grid,
+                            grid_rho,
+                            grid_rho_beta,
+                            n_points,
+                            save_i,
+                            arreglo_factorial,
+                            arreglo_inv_factorial);
+               grid_derrad(z,
                            using_gamma,
                            compara,
                            bound,
@@ -2125,189 +2148,153 @@ extern int ep2_cpu(char   *espin,
                            NC_plus,
                            gamma_couple,
                            grid,
-                           grid_rho,
-                           grid_rho_beta,
+                           grid_der,
+                           grid_der_beta,
                            n_points,
                            save_i,
                            arreglo_factorial,
                            arreglo_inv_factorial);
-              grid_derrad(z,
-                          using_gamma,
-                          compara,
-                          bound,
-                          basis,
-                          nt,
-                          elecalfa,
-                          elecbeta,
-                          Rc,
-                          expo,
-                          np,
-                          zetas,
-                          mang,
-                          vectsfinalfa,
-                          vectsfinbeta,
-                          tipo,
-                          NC_minus,
-                          NC_plus,
-                          gamma_couple,
-                          grid,
-                          grid_der,
-                          grid_der_beta,
-                          n_points,
-                          save_i,
-                          arreglo_factorial,
-                          arreglo_inv_factorial);
-           
+            
            
                 if (print_vectors == 1) {
-
                     int mu, nu, elemento1, elemento2;
                     double suma, rho_0, drho_0;
                     suma = 0.f;
-                    for (mu = 0; mu < nt; mu++) {
-                      for (nu = 0; nu < nt; nu++) {
-                        elemento1 = mu*nt + nu;
-                        elemento2 = nu*nt + mu;
-                        suma = suma + matp[elemento1]*mats[elemento2];
-                      }
-                    }
-               
-
-           
-                 if(strcmp(bound,"finite") == 0) {
-              
-                    printf("Number of electrons: = %f\n", suma);
-                    printf("---------------------------\n");
-              
-                    printf("alpha\n");
-                    expected_value_r(nt,
-                                     -1,
-                                     np,
-                                     mang,
-                                     ncm,
-                                     expo,
-                                     Rc,
-                                     bound,
-                                     vectsfinalfa,
-                                     elecalfa,
-                                     gamma_couple,
-                                     NC_minus,
-                                     NC_plus,
-                                     arreglo_factorial,
-                                     arreglo_inv_factorial,
-                                     using_gamma,
-                                     zetas,
-                                     grid);
-              
-              
-                    printf("beta\n");
-                    expected_value_r(nt,
-                                     -1,
-                                     np,
-                                     mang,
-                                     ncm,
-                                     expo,
-                                     Rc,
-                                     bound,
-                                     vectsfinbeta,
-                                     elecbeta,
-                                     gamma_couple,
-                                     NC_minus,
-                                     NC_plus,
-                                     arreglo_factorial,
-                                     arreglo_inv_factorial,
-                                     using_gamma,
-                                     zetas,
-                                     grid);
-                    
-              
-              
-                   printf("---------------------------\n");
-                   printf("alpha\n");
-                   expected_value_r(nt,
-                                    1,
-                                    np,
-                                    mang,
-                                    ncm,
-                                    expo,
-                                    Rc,
-                                    bound,
-                                    vectsfinalfa,
-                                    elecalfa,
-                                    gamma_couple,
-                                    NC_minus,
-                                    NC_plus,
-                                    arreglo_factorial,
-                                    arreglo_inv_factorial,
-                                    using_gamma,
-                                    zetas,
-                                    grid);
-                   printf("beta\n");
-                   expected_value_r(nt,
-                                    1,
-                                    np,
-                                    mang,
-                                    ncm,
-                                    expo,
-                                    Rc,
-                                    bound,
-                                    vectsfinbeta,
-                                    elecbeta,
-                                    gamma_couple,
-                                    NC_minus,
-                                    NC_plus,
-                                    arreglo_factorial,
-                                    arreglo_inv_factorial,
-                                    using_gamma,
-                                    zetas,
-                                    grid);
-              
-              
-                   printf("---------------------------\n");
-                   printf("alpha\n");
-                   expected_value_r(nt,
-                                    2,
-                                    np,
-                                    mang,
-                                    ncm,
-                                    expo,
-                                    Rc,
-                                    bound,
-                                    vectsfinalfa,
-                                    elecalfa,
-                                    gamma_couple,
-                                    NC_minus,
-                                    NC_plus,
-                                    arreglo_factorial,
-                                    arreglo_inv_factorial,
-                                    using_gamma,
-                                    zetas,
-                                    grid);
-                   printf("beta\n");
-                   expected_value_r(nt,
-                                    2,
-                                    np,
-                                    mang,
-                                    ncm,
-                                    expo,
-                                    Rc,
-                                    bound,
-                                    vectsfinbeta,
-                                    elecbeta,
-                                    gamma_couple,
-                                    NC_minus,
-                                    NC_plus,
-                                    arreglo_factorial,
-                                    arreglo_inv_factorial,
-                                    using_gamma,
-                                    zetas,
-                                    grid);
-              
-              
-                   printf("---------------------------\n");
-
-
-                   }//End if finite
+                    for(mu = 0; mu < nt; mu++) {
+                       for(nu = 0; nu < nt; nu++) {
+                          elemento1 = mu*nt + nu;
+                          elemento2 = nu*nt + mu;
+                          suma = suma + matp[elemento1]*mats[elemento2];
+                       }
+                    }          
+                    if(strcmp(bound,"free") == 0 || strcmp(bound,"finite") == 0 || strcmp(bound,"dielectricc") == 0 || strcmp(bound,"parabolic") == 0) {
+//                    if(strcmp(bound,"finite") == 0) {     // esta era la sentencia original mike
+                       printf("Number of electrons: = %f\n", suma);
+                       printf("---------------------------\n");
+                       printf("alpha\n");
+                       expected_value_r(nt,
+                                        -1,
+                                        np,
+                                        mang,
+                                        ncm,
+                                        expo,
+                                        Rc,
+                                        bound,
+                                        basis,
+                                        vectsfinalfa,
+                                        elecalfa,
+                                        gamma_couple,
+                                        NC_minus,
+                                        NC_plus,
+                                        arreglo_factorial,
+                                        arreglo_inv_factorial,
+                                        using_gamma,
+                                        zetas,
+                                        grid);     
+                       printf("beta\n");
+                       expected_value_r(nt,
+                                        -1,
+                                        np,
+                                        mang,
+                                        ncm,
+                                        expo,
+                                        Rc,
+                                        bound,
+                                        basis,
+                                        vectsfinbeta,
+                                        elecbeta,
+                                        gamma_couple,
+                                        NC_minus,
+                                        NC_plus,
+                                        arreglo_factorial,
+                                        arreglo_inv_factorial,
+                                        using_gamma,
+                                        zetas,
+                                        grid);
+                       printf("---------------------------\n");
+                       printf("alpha\n");
+                       expected_value_r(nt,
+                                        1,
+                                        np,
+                                        mang,
+                                        ncm,
+                                        expo,
+                                        Rc,
+                                        bound,
+                                        basis,
+                                        vectsfinalfa,
+                                        elecalfa,
+                                        gamma_couple,
+                                        NC_minus,
+                                        NC_plus,
+                                        arreglo_factorial,
+                                        arreglo_inv_factorial,
+                                        using_gamma,
+                                        zetas,
+                                        grid);
+                       printf("beta\n");
+                       expected_value_r(nt,
+                                        1,
+                                        np,
+                                        mang,
+                                        ncm,
+                                        expo,
+                                        Rc,
+                                        bound,
+                                        basis,
+                                        vectsfinbeta,
+                                        elecbeta,
+                                        gamma_couple,
+                                        NC_minus,
+                                        NC_plus,
+                                        arreglo_factorial,
+                                        arreglo_inv_factorial,
+                                        using_gamma,
+                                        zetas,
+                                        grid);
+                       printf("---------------------------\n");
+                       printf("alpha\n");
+                       expected_value_r(nt,
+                                        2,
+                                        np,
+                                        mang,
+                                        ncm,
+                                        expo,
+                                        Rc,
+                                        bound,
+                                        basis,
+                                        vectsfinalfa,
+                                        elecalfa,
+                                        gamma_couple,
+                                        NC_minus,
+                                        NC_plus,
+                                        arreglo_factorial,
+                                        arreglo_inv_factorial,
+                                        using_gamma,
+                                        zetas,
+                                        grid);
+                       printf("beta\n");
+                       expected_value_r(nt,
+                                        2,
+                                        np,
+                                        mang,
+                                        ncm,
+                                        expo,
+                                        Rc,
+                                        bound,
+                                        basis,
+                                        vectsfinbeta,
+                                        elecbeta,
+                                        gamma_couple,
+                                        NC_minus,
+                                        NC_plus,
+                                        arreglo_factorial,
+                                        arreglo_inv_factorial,
+                                        using_gamma,
+                                        zetas,
+                                        grid);
+                       printf("---------------------------\n");
+                    }  //End if finite, free, dielec, parabolic
 
                    double SHAN;
                    for(h = 0; h < n_points; h++)
@@ -2326,7 +2313,7 @@ extern int ep2_cpu(char   *espin,
                                                n_points);
 
                    if(strcmp(bound,"free") == 0 && Rc == 0.f)
-                    printf("\n%s %s Shannon entropy  %5.4lf\n", tipo, bound, SHAN);
+                     printf("\n%s %s Shannon entropy  %5.4lf\n", tipo, bound, SHAN);
                    else
                     printf("\n%s %s Shannon entropy %3.3lf %5.4lf\n", tipo, bound, Rc, SHAN);
 
@@ -2771,17 +2758,12 @@ extern int ep2_cpu(char   *espin,
     if(strcmp(bound_pol,"dielectricc") == 0 || strcmp(bound_pol,"polarization") == 0 || strcmp(bound_pol,"dielectricnc") == 0)
        sprintf(bound,"%s",bound_pol);
 
-       if(iter >= maxiter || energia != energia){ // This is the original
-//          printf("iter %d \n", iter);             // mike: la clave esta en una reasignación en iter 
-//          printf("maxiter %d \n", maxiter); 
-//          printf("scf_value :( = %d \n", valor);     // mike: en esta condición, aunque el valor de scf sea cero
-          return(1);                                 //       se asigna que valga 1.
-       } 
-       else{  
-//          printf("scf_value :) = %d \n", valor);     // mike: se mantiene el valor del scf que previamente se asigno como cero.
-          return(valor);
-       }  
-
+    if(iter >= maxiter || energia != energia){ // This is the original
+       return(1);                                 //       se asigna que valga 1.
+    } 
+    else{  
+       return(valor);
+    }  
  }   // Termina scf
 
 int exact_exch_ener(int     compara, 

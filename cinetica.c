@@ -58,6 +58,7 @@ void cinetica(char   *using_gamma,
  extern int delta_kro_(int*, int*, double*);
  extern double upper_incomplete_gamma(double, int, double);
 
+ extern double lower_incomplete_gamma_function(int, double ); 
  extern double full_gamma_arg_2(int );
  extern double constant_normalization_GTO(int , int , double , double *);
 
@@ -72,7 +73,7 @@ void cinetica(char   *using_gamma,
     printf("|--------------------------------------------------| \n");
     printf("|----- The calculation will be made with GTOs -----| \n");
     printf("|--------------------------------------------------| \n"); 
-       for (k = 0; k < total_elements; k++) {
+       for(k = 0; k < total_elements; k++) {
           indexes(nt, k, &index_i, &index_j);
           index_i = index_i - 1;
           index_j = index_j - 1;
@@ -87,9 +88,10 @@ void cinetica(char   *using_gamma,
           ncm_j = ncm[j];
           delta_kro_(&ncm_i, &ncm_j, &delta1);
           delta = delta*delta1;
-          if (delta == (double)0)
+          if(delta == (double)0){
             matk[k] = (double)0;
-          else {
+          }
+          else {   // begins principal else
              num1 = ((double) n_mu + n_nu - 1.f);
              num2 = ((double) n_mu + n_nu + 1.f);
              num3 = ((double) n_mu + n_nu + 3.f);
@@ -97,22 +99,29 @@ void cinetica(char   *using_gamma,
              constant_normalization_GTO(i, n_mu, expo[i], &n_gto_mu);
              constant_normalization_GTO(j, n_nu, expo[j], &n_gto_nu);
 
-             matk[k] = (-0.25f)*n_gto_mu*n_gto_nu;
-
-             matk[k] = matk[k]*( 
-                                 (((double) n_nu*(n_nu - 1)) - ((double) ang_j*(ang_j + 1)))/pow(expo[i] + expo[j],num1/2.f) -
-
-                                 (expo[j]*((double) 2.f*n_nu + 1.f)*num1)/pow(expo[i] + expo[j],num2/2.f) + 
-
-                                 (pow(expo[j],2.f)*num2*num1)/pow(expo[i] + expo[j],num3/2.f)
-
-                               )*full_gamma_arg_2(n_mu + n_nu - 1);
-//             printf("T_mu,nu = %f \n", matk[k]);
-
-          }
-       }
-           /* Necesito la energía cinética dentro de la cavidad para el caso impenetrable */
- } 
+             num4 = (-0.25f)*n_gto_mu*n_gto_nu*(
+                                                (((double) n_nu*(n_nu - 1)) - ((double) ang_j*(ang_j + 1)))/pow(expo[i] + expo[j],num1/2.f) -
+                                                (expo[j]*((double) 2.f*n_nu + 1.f)*num1)/pow(expo[i] + expo[j],num2/2.f) +
+                                                (pow(expo[j],2.f)*num2*num1)/pow(expo[i] + expo[j],num3/2.f)
+                                               );
+             if(strcmp(bound,"free") == 0 || strcmp(bound,"FREE") == 0){
+                matk[k] = num4*full_gamma_arg_2(n_mu + n_nu - 1);
+             }   // ends free
+             else{
+                if(strcmp(bound,"confined") == 0){
+                   matkint[k] = num4*lower_incomplete_gamma_function(n_mu + n_nu - 1, (expo[i] + expo[j])*pow(Rc,2.f));
+                   matkext[k] = ((double) 0);
+                   matk[k] = matkint[k];
+                }   // ends confined by impenetrable walls
+                else{
+                      matkint[k] = num4*lower_incomplete_gamma_function(n_mu + n_nu - 1, (expo[i] + expo[j])*pow(Rc,2.f));
+                      matkext[k] = num4*(full_gamma_arg_2(n_mu + n_nu - 1) - lower_incomplete_gamma_function(n_mu + n_nu - 1, (expo[i] + expo[j])*pow(Rc,2.f)));
+                      matk[k] = num4*full_gamma_arg_2(n_mu + n_nu - 1);
+                }   // ends the rest of the cases dielectric, parabolic and finite
+             }
+          }   // ends principal else 
+       }   // ends for
+    }   // ends GTOs
  else { /* Aquí empieza toda la maquinaria para los STOs */
     printf("|--------------------------------------------------| \n");
     printf("|----- The calculation will be made with STOs -----| \n");
