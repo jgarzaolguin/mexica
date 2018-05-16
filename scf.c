@@ -910,6 +910,9 @@ extern int ep2_cpu(char   *espin,
                           int     n_points,
                           int    *save_i);
 
+ extern void xc_over_grid(int compara, char **save_dft, int flag_dft, double *weight_dft, int n_points,
+                          double * grid, double *grid_rho, double *grid_der);
+
  extern int Evaluate_Elect_Pot(double z, int nt, double *matp, int *np, int *ang, int *ncm,
                       double *expo, char *bound, double *arreglo_factorial,
                       double *arreglo_inv_factorial, double *grid, int n_points, double Rc,
