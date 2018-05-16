@@ -911,7 +911,7 @@ extern int ep2_cpu(char   *espin,
                           int    *save_i);
 
  extern void xc_over_grid(int compara, char **save_dft, int flag_dft, double *weight_dft, int n_points,
-                          double * grid, double *grid_rho, double *grid_der);
+                          double * grid, double *grid_rho, double *grid_der, double *grid_secder);
 
  extern int Evaluate_Elect_Pot(double z, int nt, double *matp, int *np, int *ang, int *ncm,
                       double *expo, char *bound, double *arreglo_factorial,
@@ -2092,7 +2092,7 @@ extern int ep2_cpu(char   *espin,
                 if(strcmp(properties,"property") == 0) {
                  printf("jgo, in properties\n");
                  xc_over_grid(compara, save_dft, flag_dft, weight_dft, n_points, grid,
-                              grid_rho, grid_der);
+                              grid_rho, grid_der, grid_secder);
                  wf_closed_shell(z, using_gamma, compara, bound, nt, elecalfa, elecbeta,
                                  Rc, expo, np, zetas, mang, ncm, vectsfin, NULL,
                                  tipo, NC_minus, NC_plus, gamma_couple,
