@@ -2087,12 +2087,15 @@ extern int ep2_cpu(char   *espin,
                    printf("Eigenvalue %d: %8.5f\n", i, valores[i]);
 
                 if(strcmp(properties,"property") == 0) {
-                   wf_closed_shell(z, using_gamma, compara, bound, nt, elecalfa, elecbeta,
-                                   Rc, expo, np, zetas, mang, ncm, vectsfin, NULL,
-                                   tipo, NC_minus, NC_plus, gamma_couple,
-                                   grid, grid_rho, NULL, grid_der, NULL, n_points,
-                                   arreglo_factorial, arreglo_inv_factorial,
-                                   matp, mats, &iter, save_i, print_vectors, cusp_kato);
+                 printf("jgo, in properties\n");
+                 xc_over_grid(compara, save_dft, flag_dft, weight_dft, n_points, grid,
+                              grid_rho, grid_der);
+                 wf_closed_shell(z, using_gamma, compara, bound, nt, elecalfa, elecbeta,
+                                 Rc, expo, np, zetas, mang, ncm, vectsfin, NULL,
+                                 tipo, NC_minus, NC_plus, gamma_couple,
+                                 grid, grid_rho, NULL, grid_der, NULL, n_points,
+                                 arreglo_factorial, arreglo_inv_factorial,
+                                 matp, mats, &iter, save_i, print_vectors, cusp_kato);
                    print_out_array(n_points, grid, array_i, "xc.dat");
                    Evaluate_Elect_Pot(z, nt, matp, np, mang, ncm, expo, bound,
                                       arreglo_factorial, arreglo_inv_factorial, 
