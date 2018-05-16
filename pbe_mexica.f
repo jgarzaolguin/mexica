@@ -128,6 +128,28 @@ c*********************
       end if 
       return
       end
+c*********************************************
+c Derivada funcional para ser escrita sobre un grid
+c Solamente para \'atomos
+c************************************************
+      subroutine pbegrid(rho, varS, der_varS, pot_x)
+      implicit none
+      double precision rho, varS, der_varS, pot_x
+      double precision term1, term2, kappa, mu, cuadS, frac, pi
+      double precision eps_x, Fx, der_Fx
+      pi = 4d00*datan(1d00)
+      kappa = 0.804d00
+      mu = 0.21951d00
+      term1 = 4d00*eps_x(rho)*(Fx(varS) - varS*der_Fx(varS))/3d00
+      cuadS = varS*varS
+      frac = mu/kappa
+      term2 = kappa - 3d00*mu*cuadS
+      term2 = term2/((1d00 + frac*cuadS)**3d00)
+      term2 = 3d00*frac*term2/(4d00*pi)
+      term2 = term2*der_varS
+      pot_x = term1 + term2
+      return
+      end
 c****************************************
 c** Intercambio para el gas de electrones
 c***************************************
