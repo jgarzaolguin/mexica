@@ -132,9 +132,9 @@ c*********************************************
 c Derivada funcional para ser escrita sobre un grid
 c Solamente para \'atomos
 c************************************************
-      subroutine pbegrid(rho, varS, der_varS, pot_x)
+      subroutine pbegrid(rho, derho, varS, der_varS, pot_x)
       implicit none
-      double precision rho, varS, der_varS, pot_x
+      double precision rho, varS, der_varS, pot_x, derho
       double precision term1, term2, kappa, mu, cuadS, frac, pi
       double precision eps_x, Fx, der_Fx
       pi = 4d00*datan(1d00)
