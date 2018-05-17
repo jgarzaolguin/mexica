@@ -1,14 +1,15 @@
 2
 0 1
 rhf nomp2 noep2
-xc hf 1.0 end
+xc hf 1.0 pbe 0.0 end
 1.0e-12
 0.7
 110
 noopt 0.01
 free
-noproperty
+property
 STOs
+thakkar
 extern
 10
   1S  2.8974000000000010857093002 1
