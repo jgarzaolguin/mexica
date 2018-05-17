@@ -101,9 +101,11 @@ int numerical_der(int points, double *grid, double *objetive, double *derivative
 int xc_over_grid(int compara, char **save_dft, int flag_dft, double *weight_dft,  int points, double *grid, 
                  double *rho, double *der_rho, double *secder_rho) {
  int i, dft;
- double weight, pot_x, arg1, arg2, arg3, arg_derho, arg_grid, arg_secderho;
+ double weight, pot_x, arg1, arg2, arg3, arg_derho, arg_grid, arg_secderho, arg_abs_grad_rho,
+        arg_derabs_grad_rho;
  double varS[10000], dervarS[10000], abs_grad_rho[10000], derabs_grad_rho[10000];
- extern void pbegrid(double *rho, double *der_rho, double *arg_secderho, double *varS,
+ extern void pbegrid(double *rho, double *der_rho, double *arg_secderho,
+                     double *abs_grad_rho, double *derabs_grad_rho,  double *varS,
                      double *der_varS, double *grid, double *pot_x);
 
  if (compara == 0) {
@@ -118,10 +120,13 @@ int xc_over_grid(int compara, char **save_dft, int flag_dft, double *weight_dft,
          arg1 = rho[i];
          arg_derho = der_rho[i];
          arg_secderho = secder_rho[i];
+         arg_abs_grad_rho = abs_grad_rho[i];
+         arg_derabs_grad_rho = derabs_grad_rho[i];
          arg2 = varS[i];
          arg3 = dervarS[i];
          arg_grid = grid[i];
-         pbegrid_(&arg1, &arg_derho, &arg_secderho, &arg2, &arg3, &arg_grid, &pot_x);
+         pbegrid_(&arg1, &arg_derho, &arg_secderho, &arg_abs_grad_rho, &arg_derabs_grad_rho,
+                  &arg2, &arg3, &arg_grid, &pot_x);
          printf("%f %f %f %f %f %f\n", grid[i], varS[i], dervarS[i], arg_secderho, derabs_grad_rho[i],
                  pot_x);
        }
