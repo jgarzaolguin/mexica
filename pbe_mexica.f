@@ -151,7 +151,7 @@ c************************************************
       laplac = secdrho + term1
       if (normdrho.gt.0d00) then
         term2 = derho*dernormrho/normdrho
-        term2 = (laplac - term2)*der_Fx(varS)/normdrho
+        term2 = (laplac - term2)*der_Fx(varS)
       else
         term2 = 0d00
       endif
@@ -162,8 +162,12 @@ c************************************************
       term2 = kappa - 3d00*mu*cuadS
       term2 = term2/((1d00 + frac*cuadS)**3d00)
       term2 = 2d00*frac*term2
-      term2 = term2*der_varS
-      pot_x = pot_x + term2
+      term2 = term2*der_varS*derho
+      if (normdrho.gt.0d00) then
+        pot_x = (pot_x - derho*term2)/normdrho
+      else
+        pot_x = 0d00
+      endif
       pot_x = -3d00*pot_x/(8d00*pi)
       pot_x = term1 - pot_x
       return
