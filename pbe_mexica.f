@@ -145,9 +145,10 @@ c************************************************
       if (grid.lt.1e-10) then
         term1 = 1e16
       else
-        term1 = 2d00*derho/grid
+        term1 = 2d00/grid
       endif
-      laplac = term1
+      term1 = term1*derho
+      laplac = secdrho + term1
       term1 = 4d00*eps_x(rho)*(Fx(varS) - varS*der_Fx(varS))/3d00
       cuadS = varS*varS
       frac = mu/kappa
