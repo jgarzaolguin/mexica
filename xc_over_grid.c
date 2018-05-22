@@ -114,7 +114,7 @@ int xc_over_grid(int compara, char **save_dft, int flag_dft, double *weight_dft,
      if(strcmp(save_dft[dft], "pbe") == 0) {
        get_varS(points, rho, der_rho, varS);
        numerical_der(points, grid, varS, dervarS);
-       for (i = 0; i < points; i++) abs_grad_rho[i] = fabs(rho[i]);
+       for (i = 0; i < points; i++) abs_grad_rho[i] = fabs(der_rho[i]);
        numerical_der(points, grid, abs_grad_rho, derabs_grad_rho);
        for (i = 0; i < points; i++) {
          arg1 = rho[i];
