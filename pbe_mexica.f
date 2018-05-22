@@ -132,44 +132,44 @@ c*********************************************
 c Derivada funcional para ser escrita sobre un grid
 c Solamente para \'atomos
 c************************************************
+c Para evaluar esta derivada se deriv\'o num\'ericamente
+c a la norma del gradiente a al gradiente reducido
+c
       subroutine pbegrid(rho, derho, secdrho, normdrho, dernormrho,
      &           varS, der_varS, grid, pot_x)
       implicit none
       double precision rho, varS, der_varS, pot_x, derho, secdrho,
      &                 grid, laplac, normdrho, dernormrho
-      double precision term1, term2, kappa, mu, cuadS, frac, pi
+      double precision term1, term2, term3, kappa, mu, cuadS, frac, pi
       double precision eps_x, Fx, der_Fx
       pi = 4d00*datan(1d00)
       kappa = 0.804d00
       mu = 0.21951d00
+      term1 = 4d00*eps_x(rho)*(Fx(varS) - varS*der_Fx(varS))/3d00
       if (grid.lt.1e-10) then
-        term1 = 1e16
+        laplac = 1e16
       else
-        term1 = 2d00/grid
+        laplac = 2d00/grid
       endif
-      term1 = term1*derho
-      laplac = secdrho + term1
+      laplac = laplac*derho
+      laplac = secdrho + laplac
       if (normdrho.gt.0d00) then
         term2 = derho*dernormrho/normdrho
         term2 = (laplac - term2)*der_Fx(varS)
       else
         term2 = 0d00
       endif
-      pot_x = term2
-      term1 = 4d00*eps_x(rho)*(Fx(varS) - varS*der_Fx(varS))/3d00
       cuadS = varS*varS
       frac = mu/kappa
-      term2 = kappa - 3d00*mu*cuadS
-      term2 = term2/((1d00 + frac*cuadS)**3d00)
-      term2 = 2d00*frac*term2
-      term2 = term2*der_varS*derho
+      term3 = kappa - 3d00*mu*cuadS
+      term3 = term3/((1d00 + frac*cuadS)**3d00)
+      term3 = 2d00*frac*term3*derho*der_vars
       if (normdrho.gt.0d00) then
-        pot_x = (pot_x - derho*term2)/normdrho
+        pot_x = (term2 + term3)/normdrho
       else
         pot_x = 0d00
       endif
-      pot_x = -3d00*pot_x/(8d00*pi)
-      pot_x = term1 - pot_x
+      pot_x = term1 + 3d00*pot_x/(8d00*pi)
       return
       end
 c****************************************
