@@ -1876,7 +1876,7 @@ extern int ep2_cpu(char   *espin,
           if (iter <= 7)
             energia_prueba = energia;
 
-          if (fabs(energia) < 2000.f && fabs(energia_prueba - energia) < 0.25) {
+          if (fabs(energia) < 2000.f && fabs(energia_prueba - energia) < 1000.25) {
             printf("Iter=%5d---Energy=%14.10f", iter, energia);
             e_check = energia;
             difer = fabs(e_check - energiavieja);
@@ -1885,17 +1885,15 @@ extern int ep2_cpu(char   *espin,
               //   DIIS para capa cerrada
               summat(dim, coef1, matg_coul, coef1, matg_exch, matg);
               summat(dim, coef1, matcore, coef1, matg, matfock);
-              printf("\n");
-              if (iter > 1000) {
-                diis_check(nt, matp, mats, matfock, matx, mat_temp_2, &max_e);
-                if ( max_e >= (double) 0.1) {
+              diis_check(nt, matp, mats, matfock, matx, mat_temp_2, &max_e);
+              if ( max_e >= (double) 0.1) {
                     printf("\n");
                     iter_inter = 0;
                     bandera = 0;
-                  } else {
+              } else {
                       printf("  DIIS = %10.6f\n", max_e);
                       bandera = 1;
-                      iter_inter ++;
+                      iter_inter++;
                       if (abre == 0) {
                        mat_f_store[iter_inter] = NULL;
                        memoria_double_uni(sizebi, &mat_f_store[iter_inter], "Mat_f_store");
@@ -1906,10 +1904,8 @@ extern int ep2_cpu(char   *espin,
                         mat_f_store[iter_inter][i] = matfock[i];
                         mat_e_store[iter_inter][i] = mat_temp_2[i];
                       }
-                  }
               }
           
-              if(iter > 1000) {
                 if (bandera == 1 && iter_inter > 1) {
                   main_diis(nt, 
                               iter_inter, 
@@ -1923,7 +1919,6 @@ extern int ep2_cpu(char   *espin,
                     summat(dim, difmezcla, matfock, mezcla, matgvieja, matfock);
                     copiamat(dim, matfock, matgvieja);
                   }
-              }
                 
             } else {// DIIS para capa abierta
                  summat(dim, coef1, matg_coul, coef1, matg_exch_alfa, matg_alfa);
