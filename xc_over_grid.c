@@ -77,8 +77,8 @@ double primder(int flag, int ini, double *grid, double *objetive) {
 
 
 
-int numerical_der(int points, double *grid, double *objetive, double *derivative) {
-  int i, ini, flag;
+int numerical_der(int points, int points_boundary, double *grid, double *objetive, double *derivative) {
+  int i, ini, final, flag;
 
   ini = 0;
   flag = 0;
@@ -86,10 +86,28 @@ int numerical_der(int points, double *grid, double *objetive, double *derivative
   flag = 1;
   derivative[1] = primder(flag, ini, grid, objetive);
   flag = 2;
-  for (i = 0; i < (points - 4); i++) {
+  if (points_boundary != 0) {
+    final = points_boundary - 1;
+    for (i = ini; i <= (final - 4); i++)
+      derivative[i + 2] = primder(flag, i, grid, objetive);
+    ini = final - 4;
+    flag = 3;
+    derivative[final - 1] = primder(flag, ini, grid, objetive); 
+    flag = 4;
+    derivative[final] = primder(flag, ini, grid, objetive); 
+    ini = points_boundary;
+  }
+//
+  final = points;
+  flag = 0;
+  derivative[ini] = primder(flag, ini, grid, objetive);
+  flag = 1;
+  derivative[ini + 1] = primder(flag, ini, grid, objetive);
+  flag = 2;
+  for (i = ini; i < (final - 4); i++) {
     derivative[i + 2] = primder(flag, i, grid, objetive); 
   } 
-  ini = points - 5;
+  ini = final - 5;
   flag = 3;
   derivative[points - 2] = primder(flag, ini, grid, objetive); 
   flag = 4;
@@ -98,8 +116,8 @@ int numerical_der(int points, double *grid, double *objetive, double *derivative
   return 0;
 }
 
-int xc_over_grid(int compara, char **save_dft, int flag_dft, double *weight_dft,  int points, double *grid, 
-                 double *rho, double *der_rho, double *secder_rho) {
+int xc_over_grid(int compara, char **save_dft, int flag_dft, double *weight_dft,  int points, int points_boundary,
+		 double *grid, double *rho, double *der_rho, double *secder_rho) {
  int i, dft, size;
  double weight, pot_x, arg1, arg2, arg3, arg_derho, arg_grid, arg_secderho, arg_abs_grad_rho,
         arg_derabs_grad_rho;
@@ -114,9 +132,9 @@ int xc_over_grid(int compara, char **save_dft, int flag_dft, double *weight_dft,
      weight = weight_dft[dft];
      if(strcmp(save_dft[dft], "pbe") == 0) {
        get_varS(points, rho, der_rho, varS);
-       numerical_der(points, grid, varS, dervarS);
+       numerical_der(points, points_boundary, grid, varS, dervarS);
        for (i = 0; i < points; i++) abs_grad_rho[i] = fabs(der_rho[i]);
-       numerical_der(points, grid, abs_grad_rho, derabs_grad_rho);
+       numerical_der(points, points_boundary, grid, abs_grad_rho, derabs_grad_rho);
        for (i = 0; i < points; i++) {
          arg1 = rho[i];
          arg_derho = der_rho[i];
