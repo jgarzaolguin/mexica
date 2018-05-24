@@ -2085,10 +2085,8 @@ extern int ep2_cpu(char   *espin,
                    printf("Eigenvalue %d: %8.5f\n", i, valores[i]);
 
                 if(strcmp(properties,"property") == 0) {
-                  printf("jgo, in properties, save_i=%d\n",save_i);
                   xc_over_grid(compara, save_dft, flag_dft, weight_dft, n_points, save_i,  grid,
                               grid_rho, grid_der, grid_secder);
-                  printf("jgo, in properties, 2\n");
                   wf_closed_shell(z, using_gamma, compara, bound, basis, nt, elecalfa, elecbeta,
                                  Rc, expo, np, zetas, mang, ncm, vectsfin, NULL,
                                  tipo, NC_minus, NC_plus, gamma_couple,
