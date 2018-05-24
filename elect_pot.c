@@ -483,7 +483,7 @@ double Elect_Pot_RHO(int nt, double *matp, int *np, int *ang, int *ncm,
                                                                  expo, arreglo_factorial,
                                                                  arreglo_inv_factorial, r, Rc);
                 } else {
-		if (strcmp(bound,"Penetrable") == 0){
+		if (strcmp(bound,"finite") == 0){
                   sumatot = sumatot + partial*Elect_Pot_Pen_RHO(mu, nu, l, nt, matp, np, ang, expo,
                                                         arreglo_factorial,
                                                         arreglo_inv_factorial, r, Rc,
@@ -521,7 +521,7 @@ int Evaluate_Elect_Pot(double z, int nt, double *matp, int *np, int *mang, int *
     pot = Elect_Pot_RHO(nt, matp, np, mang, ncm, expo, bound,
                         arreglo_factorial, arreglo_inv_factorial, r, Rc,
                         NC_minus, NC_plus, basis);
-    fprintf(target, "%20.8f  %20.8f\n", grid[i], pot/2.f);
+    fprintf(target, "%20.8f  %20.8f\n", grid[i], pot);
     fflush(target);
   }
 
