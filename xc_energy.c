@@ -3,14 +3,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int print_out_array(int points, double *grid, double *array, char *name_file) {
+int print_out_arrays(int points, double *grid, double *array1, double *array2, char *name_file) {
   int i;
   FILE *target;
 
   target = fopen(name_file,"w");
 
   for (i = 0; i < points; i++)
-    fprintf(target,"%20.8f  %20.8f\n", grid[i], array[i]);
+    fprintf(target,"%20.8f  %20.8f %20.8f\n", grid[i], array1[i], array2[i]);
 
   fclose(target);
 

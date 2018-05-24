@@ -503,7 +503,7 @@ double Elect_Pot_RHO(int nt, double *matp, int *np, int *ang, int *ncm,
 int Evaluate_Elect_Pot(double z, int nt, double *matp, int *np, int *mang, int *ncm,
                        double *expo, char *bound, double *arreglo_factorial,
                        double *arreglo_inv_factorial, double *grid, int n_points, double Rc,
-                       double *NC_minus, double *NC_plus, char *basis)
+                       double *NC_minus, double *NC_plus, char *basis, double *pot_elect_grid)
 {
   int i;
   double r, pot;
@@ -512,20 +512,13 @@ int Evaluate_Elect_Pot(double z, int nt, double *matp, int *np, int *mang, int *
                               double *arreglo_inv_factorial, double r, double Rc,
                               double *NC_minus, double *NC_plus, char *basis);
 
-  FILE *target;
-
-  printf("Computing electrostatic potential..\n");
-  target = fopen("Elect_pot.dat","w");
   for (i = 0; i < n_points; i++) {
     r = grid[i];
     pot = Elect_Pot_RHO(nt, matp, np, mang, ncm, expo, bound,
                         arreglo_factorial, arreglo_inv_factorial, r, Rc,
                         NC_minus, NC_plus, basis);
-    fprintf(target, "%20.8f  %20.8f\n", grid[i], pot);
-    fflush(target);
+    pot_elect_grid[i] = pot;
   }
-
-  fclose(target);
 
   return 0;
 }

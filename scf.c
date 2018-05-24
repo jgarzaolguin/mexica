@@ -911,14 +911,14 @@ extern int ep2_cpu(char   *espin,
                           int    *save_i);
 
  extern void xc_over_grid(int compara, char **save_dft, int flag_dft, double *weight_dft, int n_points, int n_boundary,
-                          double * grid, double *grid_rho, double *grid_der, double *grid_secder);
+                          double * grid, double *grid_rho, double *grid_der, double *grid_secder, double *pot_xc_grid);
 
  extern int Evaluate_Elect_Pot(double z, int nt, double *matp, int *np, int *ang, int *ncm,
                       double *expo, char *bound, double *arreglo_factorial,
                       double *arreglo_inv_factorial, double *grid, int n_points, double Rc,
-                      double *NC_minus, double *NC_plus, char *basis);
+                      double *NC_minus, double *NC_plus, char *basis, double *pot_elect_grid);
 
- extern int print_out_array(int points, double *grid, double *array, char *name_file);
+ extern int print_out_arrays(int points, double *grid, double *array1, double *array2, char *name_file);
 
 
  time_t time_scf_ini, time_scf_fin, time_bie_ini, time_bie_fin, time_3, time_4;
@@ -2085,18 +2085,26 @@ extern int ep2_cpu(char   *espin,
                    printf("Eigenvalue %d: %8.5f\n", i, valores[i]);
 
                 if(strcmp(properties,"property") == 0) {
+		  double *pot_xc_grid, *pot_elect_grid;
+		  pot_xc_grid = (double *)malloc(n_points*sizeof(double));
+		  pot_elect_grid = (double *)malloc(n_points*sizeof(double));
                   xc_over_grid(compara, save_dft, flag_dft, weight_dft, n_points, save_i,  grid,
-                              grid_rho, grid_der, grid_secder);
+                              grid_rho, grid_der, grid_secder, pot_xc_grid);
                   wf_closed_shell(z, using_gamma, compara, bound, basis, nt, elecalfa, elecbeta,
                                  Rc, expo, np, zetas, mang, ncm, vectsfin, NULL,
                                  tipo, NC_minus, NC_plus, gamma_couple,
                                  grid, grid_rho, NULL, grid_der, NULL, n_points,
                                  arreglo_factorial, arreglo_inv_factorial,
                                  matp, mats, &iter, save_i, print_vectors, cusp_kato);
-                  print_out_array(n_points, grid, array_i, "xc.dat");
                   Evaluate_Elect_Pot(z, nt, matp, np, mang, ncm, expo, bound,
                                       arreglo_factorial, arreglo_inv_factorial, 
-                                      grid, n_points, Rc, NC_minus, NC_plus, basis);
+                                      grid, n_points, Rc, NC_minus, NC_plus, basis,
+				      pot_elect_grid);
+                  print_out_arrays(n_points, grid, pot_xc_grid, pot_elect_grid, "results.dat");
+		  free(pot_elect_grid);
+		  pot_elect_grid = 0;
+		  free(pot_xc_grid);
+		  pot_xc_grid = 0;
                 }
              } 
              else { // Section for open-shell atoms
@@ -2334,10 +2342,14 @@ extern int ep2_cpu(char   *espin,
                    if (strcmp(bound, "free") == 0 && Rc == 0.f) {
                     sprintf(nameout, "%s_%s_rho_drho_+drho_rdf_divdrhorho", bound, tipo);
                     if (strcmp(properties,"property") == 0) {
+		      double *pot_elect_grid;
+		      pot_elect_grid = (double *)malloc(n_points*sizeof(double));
                       Evaluate_Elect_Pot(z, nt, matp, np, mang, ncm, expo, bound,
                                     arreglo_factorial, arreglo_inv_factorial,
-                                    grid, n_points, Rc, NC_minus, NC_plus, basis);
-                      print_out_array(n_points, grid, array_i, "xc.dat");
+                                    grid, n_points, Rc, NC_minus, NC_plus, basis, pot_elect_grid);
+                      print_out_arrays(n_points, grid, array_i, NULL, "xc.dat");
+		      free(pot_elect_grid);
+		      pot_elect_grid = 0;
                     }
                    }
                    else

@@ -117,16 +117,18 @@ int numerical_der(int points, int points_boundary, double *grid, double *objetiv
 }
 
 int xc_over_grid(int compara, char **save_dft, int flag_dft, double *weight_dft,  int points, int points_boundary,
-		 double *grid, double *rho, double *der_rho, double *secder_rho) {
- int i, dft, size;
+		 double *grid, double *rho, double *der_rho, double *secder_rho, double *pot_xc_grid) {
+ int i, dft;
  double weight, pot_x, arg1, arg2, arg3, arg_derho, arg_grid, arg_secderho, arg_abs_grad_rho,
         arg_derabs_grad_rho;
- size = 10000;
- double varS[size], dervarS[size], abs_grad_rho[size], derabs_grad_rho[size];
+ double *varS, *dervarS, *abs_grad_rho, *derabs_grad_rho;
  extern void pbegrid(double *rho, double *der_rho, double *arg_secderho,
                      double *abs_grad_rho, double *derabs_grad_rho,  double *varS,
                      double *der_varS, double *grid, double *pot_x);
-
+ varS = (double *)malloc(points*sizeof(double));
+ dervarS = (double *)malloc(points*sizeof(double));
+ abs_grad_rho = (double *)malloc(points*sizeof(double));
+ derabs_grad_rho = (double *)malloc(points*sizeof(double));
  if (compara == 0) {
    for (dft = 1; dft < flag_dft; dft++) {
      weight = weight_dft[dft];
@@ -146,7 +148,7 @@ int xc_over_grid(int compara, char **save_dft, int flag_dft, double *weight_dft,
          arg_grid = grid[i];
          pbegrid_(&arg1, &arg_derho, &arg_secderho, &arg_abs_grad_rho, &arg_derabs_grad_rho,
                   &arg2, &arg3, &arg_grid, &pot_x);
-         printf("%f %f\n", grid[i], pot_x);
+	 pot_xc_grid[i] = weight*pot_x;
        }
      }
    } 
@@ -154,5 +156,13 @@ int xc_over_grid(int compara, char **save_dft, int flag_dft, double *weight_dft,
  else
    printf("No XC potential for open-shell atoms\n");
 
+  free(derabs_grad_rho);
+  derabs_grad_rho = 0;
+  free(abs_grad_rho);
+  abs_grad_rho = 0;
+  free(dervarS);
+  dervarS = 0;
+  free(varS);
+  varS = 0;
   return 0;
 }
