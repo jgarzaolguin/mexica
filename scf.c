@@ -890,7 +890,7 @@ extern int ep2_cpu(char   *espin,
                            double       *arreglo_inv_factorial,
                            double       *nolocal_pot_array);
 
- extern int wf_closed_shell(int z, char *using_gamma, int compara, char *bound, int nt, int elecalfa, int elecbeta,
+ extern int wf_closed_shell(int z, char *using_gamma, int compara, char *bound, char *basis,  int nt, int elecalfa, int elecbeta,
                             double Rc, double *expo, int *np, double *zetas, int *mang, int *ncm, double *vectsfinalfa,
                             double *vectsfinbeta, char *tipo, double *NC_minus, double *NC_plus, double gamma_couple,
                             double *grid, double *grid_rho, double *grid_rho_beta, double *grid_der, double *grid_der_beta,
@@ -2085,17 +2085,18 @@ extern int ep2_cpu(char   *espin,
                    printf("Eigenvalue %d: %8.5f\n", i, valores[i]);
 
                 if(strcmp(properties,"property") == 0) {
-                 printf("jgo, in properties, save_i=%d\n",save_i);
-                 xc_over_grid(compara, save_dft, flag_dft, weight_dft, n_points, save_i,  grid,
+                  printf("jgo, in properties, save_i=%d\n",save_i);
+                  xc_over_grid(compara, save_dft, flag_dft, weight_dft, n_points, save_i,  grid,
                               grid_rho, grid_der, grid_secder);
-                 wf_closed_shell(z, using_gamma, compara, bound, nt, elecalfa, elecbeta,
+                  printf("jgo, in properties, 2\n");
+                  wf_closed_shell(z, using_gamma, compara, bound, basis, nt, elecalfa, elecbeta,
                                  Rc, expo, np, zetas, mang, ncm, vectsfin, NULL,
                                  tipo, NC_minus, NC_plus, gamma_couple,
                                  grid, grid_rho, NULL, grid_der, NULL, n_points,
                                  arreglo_factorial, arreglo_inv_factorial,
                                  matp, mats, &iter, save_i, print_vectors, cusp_kato);
-                   print_out_array(n_points, grid, array_i, "xc.dat");
-                   Evaluate_Elect_Pot(z, nt, matp, np, mang, ncm, expo, bound,
+                  print_out_array(n_points, grid, array_i, "xc.dat");
+                  Evaluate_Elect_Pot(z, nt, matp, np, mang, ncm, expo, bound,
                                       arreglo_factorial, arreglo_inv_factorial, 
                                       grid, n_points, Rc, NC_minus, NC_plus, basis);
                 }
