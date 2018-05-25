@@ -512,7 +512,6 @@ int Evaluate_Elect_Pot(double z, int nt, double *matp, int *np, int *mang, int *
                               double *arreglo_inv_factorial, double r, double Rc,
                               double *NC_minus, double *NC_plus, char *basis);
 
-  printf("jgo in pot\n");
   for (i = 0; i < n_points; i=i+2) {
     r = grid[i];
     if (r < 100.f) 
