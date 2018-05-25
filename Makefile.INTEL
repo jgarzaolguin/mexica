@@ -14,7 +14,7 @@ librerias=-L$(DIRLIB) $(DIRLIB)/libmkl_scalapack_lp64.a  -Wl,--start-group $(DIR
 
 
 
-objects = data.o optimiza.o clebsch.o integrals_free.o integrals_finite.o integrals_confined.o normalization_constants.o checkout_expotents_finite.o  main.o matrices.o traslape.o cinetica.o potencial.o scf.o matrixg_coul.o  matrixg_exch.o diis.o mp2.o basis_assigned.o basis_extern.o ep2.o shannon_entropy_finite.o shannon_entropy_confined.o main_function_global.o spherical_density_finite.o spherical_density_confined.o spherical_density_free.o print_spherical_density_finite.o print_spherical_density_confined.o check_linear_dependence.o optimiza_new.o xc_energy.o grid.o grid_der.o grid_rho.o grid_sec_der.o numerical_int.o becke_mexica.o pwl_mexica.o slater.o lypsr_mexica.o pbe_mexica.o wave_function_closed_shell.o elect_pot.o
+objects = data.o optimiza.o clebsch.o integrals_free.o integrals_finite.o integrals_confined.o normalization_constants.o checkout_expotents_finite.o  main.o matrices.o traslape.o cinetica.o potencial.o scf.o matrixg_coul.o  matrixg_exch.o diis.o mp2.o basis_assigned.o basis_extern.o ep2.o shannon_entropy_finite.o shannon_entropy_confined.o main_function_global.o spherical_density_finite.o spherical_density_confined.o spherical_density_free.o print_spherical_density_finite.o print_spherical_density_confined.o check_linear_dependence.o optimiza_new.o xc_energy.o grid.o grid_der.o grid_rho.o grid_sec_der.o numerical_int.o becke_mexica.o pwl_mexica.o slater.o lypsr_mexica.o pbe_mexica.o wave_function_closed_shell.o elect_pot.o xc_over_grid.o
 
 flags = -c -O1  ##-xhost
 mexica : $(objects)
@@ -112,6 +112,8 @@ slater.o : slater.f
 	gfortran -c slater.f
 lypsr_mexica.o : lypsr_mexica.f
 	gfortran -c lypsr_mexica.f
+xc_over_grid.o : xc_over_grid.c
+	$(CC) $(flags) xc_over_grid.c 
 
 
 

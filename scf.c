@@ -1877,7 +1877,8 @@ extern int ep2_cpu(char   *espin,
             energia_prueba = energia;
 
           if (fabs(energia) < 2000.f && fabs(energia_prueba - energia) < 1000.25) {
-            printf("Iter=%5d---Energy=%14.10f", iter, energia);
+//            printf("Iter=%5d---Energy=%14.10f", iter, energia);
+            printf("Iter=%5d---Energy=%18.12f", iter, energia);
             e_check = energia;
             difer = fabs(e_check - energiavieja);
           
