@@ -9,8 +9,10 @@ int print_out_arrays(int points, double *grid, double *array1, double *array2, c
 
   target = fopen(name_file,"w");
 
-  for (i = 0; i < points; i++)
+  for (i = 0; i < points; i=i+2) {
     fprintf(target,"%20.8f  %20.8f %20.8f\n", grid[i], array1[i], array2[i]);
+    fflush(target);
+  }
 
   fclose(target);
 

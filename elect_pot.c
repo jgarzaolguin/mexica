@@ -512,11 +512,15 @@ int Evaluate_Elect_Pot(double z, int nt, double *matp, int *np, int *mang, int *
                               double *arreglo_inv_factorial, double r, double Rc,
                               double *NC_minus, double *NC_plus, char *basis);
 
-  for (i = 0; i < n_points; i++) {
+  printf("jgo in pot\n");
+  for (i = 0; i < n_points; i=i+2) {
     r = grid[i];
-    pot = Elect_Pot_RHO(nt, matp, np, mang, ncm, expo, bound,
-                        arreglo_factorial, arreglo_inv_factorial, r, Rc,
-                        NC_minus, NC_plus, basis);
+    if (r < 100.f) 
+      pot = Elect_Pot_RHO(nt, matp, np, mang, ncm, expo, bound,
+                          arreglo_factorial, arreglo_inv_factorial, r, Rc,
+                          NC_minus, NC_plus, basis);
+    else
+      pot = 0.f;
     pot_elect_grid[i] = pot;
   }
 
