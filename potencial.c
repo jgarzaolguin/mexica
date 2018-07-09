@@ -38,7 +38,8 @@ void expected_value_r(int     nt,
  int enes, eles;
  int compara, points; 
  int n_mu, n_nu;                // mike
- double n_gto_mu, n_gto_nu;     // mike
+ double n_gto_mu, n_gto_nu, n_gto_imp_mu, n_gto_imp_nu, y;     // mike
+ double g0, g1, g2, g3, g4, g5, g6;                            // mike
  double alphas, zetas;
  double delta, delta1, part_real, suma, mat_r_i_j;
  double *array_temp, *array_temp_2;
@@ -83,7 +84,9 @@ void expected_value_r(int     nt,
                              double   *grid_fun,
                              int       points);
  extern double full_gamma_arg_2(int );
- extern double constant_normalization_GTO(int , int , double , double *); 
+ extern double constant_normalization_GTO(int , int , double , double *);
+ extern double constant_normalization_GTO_imp(int , int , double , double , double *);  /* mike */
+ extern double lower_incomplete_gamma_function(int, double ); 
 
  points = 600;
  array_temp = (double *) malloc (points * sizeof (double));
@@ -113,29 +116,68 @@ void expected_value_r(int     nt,
           if(delta == ((double) 0)){
              mat_r_i_j = (double)0;
           }
-          else {
-             constant_normalization_GTO(i, n_mu, expo[i], &n_gto_mu);
-             constant_normalization_GTO(j, n_nu, expo[j], &n_gto_nu);
-             if(r_exp == -1){
-                num1 = ((double) n_mu + n_nu)/((double) 2);
-                mat_r_i_j = (n_gto_mu*n_gto_nu*full_gamma_arg_2(n_mu + n_nu))/(((double) 2)*pow(expo[i] + expo[j], num1));
-                suma = suma + vectsfin[i*nt + orbital]*vectsfin[j*nt + orbital]*mat_r_i_j;
-             }
-             else{
-                if(r_exp == 1){
-                   num1 = ((double) n_mu + n_nu + 2)/((double) 2);
-                   mat_r_i_j = (n_gto_mu*n_gto_nu*full_gamma_arg_2(n_mu + n_nu + 2))/(((double) 2)*pow(expo[i] + expo[j], num1));
+          else {  /* begins principal else */
+             if(strcmp(bound,"confined") == 0){
+//                printf("¡Aun estoy trabajando en eso! \n");
+                y = (expo[i] + expo[j])*pow(Rc,2.f);
+                /* estas dos integrales son las fundamentales, el resto pueden ser puestas en términos de estas */
+                g0 = lower_incomplete_gamma_function(n_mu + n_nu - 1, y);
+                g1 = lower_incomplete_gamma_function(n_mu + n_nu, y);
+                /* aprovecharemos estas definiciones y utilizaré una reducción de orden */
+                g2 = 0.5f*((double) n_mu + n_nu - 1.f)*g0 - pow(y,0.5f*((double) n_mu + n_nu - 1.f))*exp(-y);
+                g3 = 0.5f*((double) n_mu + n_nu)*g1 - pow(y,0.5f*((double) n_mu + n_nu))*exp(-y);
+                g4 = 0.25f*((double) n_mu + n_nu + 1.f)*((double) n_mu + n_nu - 1.f)*g0 - 
+                     0.5f*pow(y,0.5f*((double) n_mu + n_nu - 1.f))*exp(-y)*((double) n_mu + n_nu + 1.f + 2.f*y);
+                g5 = 0.25f*((double) n_mu + n_nu)*((double) n_mu + n_nu + 2.f)*g1 - 
+                     0.5f*pow(y,0.5f*((double) n_mu + n_nu))*exp(-y)*((double) n_mu + n_nu + 2.f + 2.f*y);
+                g6 = 0.5f*((double) n_mu + n_nu + 3.f)*g4 - pow(y,0.5f*((double) n_mu + n_nu + 3.f))*exp(-y);
+
+                constant_normalization_GTO_imp(i, n_mu, expo[i], Rc, &n_gto_imp_mu);
+                constant_normalization_GTO_imp(j, n_nu, expo[j], Rc, &n_gto_imp_nu);
+                if(r_exp == -1){
+                   mat_r_i_j = (0.5f*n_gto_imp_mu*n_gto_imp_nu)/pow(expo[i] + expo[j],0.5f*((double) n_mu + n_nu));
+                   mat_r_i_j = mat_r_i_j*( g3/((expo[i] + expo[j])*pow(Rc,2.f)) - (2.f*g2)/(sqrt(expo[i] + expo[j])*Rc) + g1 ); 
                    suma = suma + vectsfin[i*nt + orbital]*vectsfin[j*nt + orbital]*mat_r_i_j;
                 }
                 else{
-                   if(r_exp == 2){
-                      num1 = ((double) n_mu + n_nu + 3)/((double) 2);
-                      mat_r_i_j = (n_gto_mu*n_gto_nu*full_gamma_arg_2(n_mu + n_nu + 3))/(((double) 2)*pow(expo[i] + expo[j], num1));
+                   if(r_exp == 1){
+                      mat_r_i_j = (0.5f*n_gto_imp_mu*n_gto_imp_nu)/pow(expo[i] + expo[j],0.5f*((double) n_mu + n_nu + 2.f));
+                      mat_r_i_j = mat_r_i_j*( g5/((expo[i] + expo[j])*pow(Rc,2.f)) - (2.f*g4)/(sqrt(expo[i] + expo[j])*Rc) + g3 ); 
                       suma = suma + vectsfin[i*nt + orbital]*vectsfin[j*nt + orbital]*mat_r_i_j;
-                   }                   
-                }
+                   }
+                   else{
+                      if(r_exp == 2){
+                         mat_r_i_j = (0.5f*n_gto_imp_mu*n_gto_imp_nu)/pow(expo[i] + expo[j],0.5f*((double) n_mu + n_nu + 3.f));
+                         mat_r_i_j = mat_r_i_j*( g6/((expo[i] + expo[j])*pow(Rc,2.f)) - (2.f*g5)/(sqrt(expo[i] + expo[j])*Rc) + g4 ); 
+                         suma = suma + vectsfin[i*nt + orbital]*vectsfin[j*nt + orbital]*mat_r_i_j;
+                      }
+                   }
+                } 
              }
-          }
+             else{     /* begins the rest of the cases: finite, dielec, parabolic and free */
+                constant_normalization_GTO(i, n_mu, expo[i], &n_gto_mu);
+                constant_normalization_GTO(j, n_nu, expo[j], &n_gto_nu);
+                if(r_exp == -1){
+                   num1 = ((double) n_mu + n_nu)/((double) 2);
+                   mat_r_i_j = (n_gto_mu*n_gto_nu*full_gamma_arg_2(n_mu + n_nu))/(((double) 2)*pow(expo[i] + expo[j], num1));
+                   suma = suma + vectsfin[i*nt + orbital]*vectsfin[j*nt + orbital]*mat_r_i_j;
+                }
+                else{
+                   if(r_exp == 1){
+                      num1 = ((double) n_mu + n_nu + 2)/((double) 2);
+                      mat_r_i_j = (n_gto_mu*n_gto_nu*full_gamma_arg_2(n_mu + n_nu + 2))/(((double) 2)*pow(expo[i] + expo[j], num1));
+                      suma = suma + vectsfin[i*nt + orbital]*vectsfin[j*nt + orbital]*mat_r_i_j;
+                   }
+                   else{
+                      if(r_exp == 2){
+                         num1 = ((double) n_mu + n_nu + 3)/((double) 2);
+                         mat_r_i_j = (n_gto_mu*n_gto_nu*full_gamma_arg_2(n_mu + n_nu + 3))/(((double) 2)*pow(expo[i] + expo[j], num1));
+                         suma = suma + vectsfin[i*nt + orbital]*vectsfin[j*nt + orbital]*mat_r_i_j;
+                      }                   
+                   }
+                }
+             }         /* ends the rest of the cases: finite, dielec, parabolic and free */
+          }       /* ends principal else */
        }
        printf("Orbital %d, <r^%d>=%10.5f\n", orbital, r_exp, suma);
     }
@@ -259,7 +301,7 @@ void potencial(char   *using_gamma,
  int ang_i, ang_j, ncm_i, ncm_j;
  int enes, eles;
  int n_mu, n_nu;
- double n_gto_mu, n_gto_nu;
+ double n_gto_mu, n_gto_nu, n_gto_imp_mu, n_gto_imp_nu, limit;     // mike
  double alphas, zetas;
  double num1, pi;
 
@@ -281,6 +323,7 @@ void potencial(char   *using_gamma,
  extern double full_gamma_arg_2(int );
  extern double lower_incomplete_gamma_function(int, double );
  extern double constant_normalization_GTO(int , int , double , double *);
+ extern double constant_normalization_GTO_imp(int , int , double , double , double *);
 
  total_elements = nt*nt;
  pi = 4.f*atan(1.f);
@@ -344,9 +387,19 @@ void potencial(char   *using_gamma,
                       }
                       else{
                          if(strcmp(bound,"confined") == 0){
-                            matv[k] = -((double) z)*n_gto_mu*n_gto_nu/(((double) 2)*pow(expo[i] + expo[j], num1/2.f));
+                            limit = (expo[i] + expo[j])*pow(Rc,2.f); 
+                            constant_normalization_GTO_imp(i, n_mu, expo[i], Rc, &n_gto_imp_mu);
+                            constant_normalization_GTO_imp(j, n_nu, expo[j], Rc, &n_gto_imp_nu);
+ 
+                            matv[k] = -(((double)z)*n_gto_imp_mu*n_gto_imp_nu)/( ((double)2)*pow(expo[i] + expo[j],num1/2.f));
 
-                            matv[k] = matv[k]*((double) lower_incomplete_gamma_function(n_mu + n_nu, (expo[i] + expo[j])*pow(Rc,2.f)));
+                            matv[k] = matv[k]*(
+                                      lower_incomplete_gamma_function(n_mu + n_nu, limit) -
+                                      (((double)2)*lower_incomplete_gamma_function(n_mu + n_nu + 1, limit))/(Rc*sqrt(expo[i] + expo[j])) +
+                                      lower_incomplete_gamma_function(n_mu + n_nu + 2, limit)/(pow(Rc,2.f)*(expo[i] + expo[j]))
+                            );
+ 
+//                            printf("V_mu,nu[%d] = %10.15f \n", k, matv[k]);  /* Ya quedo mike */
                          }
                       }
                    }

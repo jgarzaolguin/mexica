@@ -44,7 +44,8 @@ void cinetica(char   *using_gamma,
  double zetas, alphas;
  int n_mu, n_nu;
  int enes, eles;
- double n_gto_mu, n_gto_nu;
+ double n_gto_mu, n_gto_nu, n_gto_imp_mu, n_gto_imp_nu, limit;    // mike
+ double a0, a1, a2, a3, a4, a5, a6, g0, g1, g2, g3, g4, g5, g6;   // mike
  
  extern int indexes(int, int, int*, int*);
  extern double intl(int, int, int, double* , int*, double*);
@@ -61,6 +62,7 @@ void cinetica(char   *using_gamma,
  extern double lower_incomplete_gamma_function(int, double ); 
  extern double full_gamma_arg_2(int );
  extern double constant_normalization_GTO(int , int , double , double *);
+ extern double constant_normalization_GTO_imp(int , int , double , double , double *);
 
  double pi;
  pi = ((double) 4)*atan(1.f);
@@ -108,15 +110,55 @@ void cinetica(char   *using_gamma,
                 matk[k] = num4*full_gamma_arg_2(n_mu + n_nu - 1);
              }   // ends free
              else{
-                if(strcmp(bound,"confined") == 0){
-                   matkint[k] = num4*lower_incomplete_gamma_function(n_mu + n_nu - 1, (expo[i] + expo[j])*pow(Rc,2.f));
-                   matkext[k] = ((double) 0);
-                   matk[k] = matkint[k];
+                if(strcmp(bound,"confined") == 0){  /* Confinement by impenetrable walls */ 
+                   a6 = 4.f*pow(expo[j],2.f)/pow(Rc,2.f);
+                   a5 = 8.f*pow(expo[j],2.f)/Rc;
+                   a4 = 4.f*pow(expo[j],2.f) - expo[j]*((double)4*n_nu + (double)6)/pow(Rc,2.f);                   
+                   a3 = 8.f*expo[j]*((double)n_nu + 1)/Rc;
+                   a2 = ((double)n_nu*n_nu + n_nu - ang_j*ang_j - ang_j)/pow(Rc,2.f) - 2.f*expo[j]*((double)2*n_nu + 1);
+                   a1 = 2.f*((double) ang_j*ang_j + ang_j - n_nu*n_nu)/Rc;
+                   a0 = ((double) n_nu*n_nu - n_nu - ang_j*ang_j - ang_j); 
+
+                   limit = (expo[i] + expo[j])*pow(Rc,2.f);
+
+                   g0 = lower_incomplete_gamma_function(n_mu + n_nu - 1, limit);
+                   g1 = lower_incomplete_gamma_function(n_mu + n_nu, limit);
+                   g2 = 0.5f*((double) n_mu + n_nu - 1)*g0 - pow(limit,num1/2.f)*exp(-limit);
+                   g3 = 0.5f*((double) n_mu + n_nu)*g1 - pow(limit,((double) n_mu + n_nu)/2.f)*exp(-limit);
+                   g4 = 0.25f*((double) n_mu + n_nu + 1)*((double) n_mu + n_nu - 1)*g0 - 
+                        0.5f*pow(limit,num1/2.f)*exp(-limit)*(2.f*limit + ((double)n_mu + n_nu + 1));
+                   g5 = 0.25f*((double)n_mu + n_nu)*((double)n_mu + n_nu + 2)*g1 - 
+                        0.5f*pow(limit,((double) n_mu + n_nu)/2.f)*exp(-limit)*(2.f*limit + ((double)n_mu + n_nu + 2));
+
+
+                   g6 = 0.125f*((double)n_mu + n_nu + 3)*((double)n_mu + n_nu + 1)*((double)n_mu + n_nu - 1)*g0 - 
+                        0.25*pow(limit,num1/2.f)*exp(-limit)*(
+                        4.f*pow(limit,2.f) + 2.f*((double)n_mu + n_nu + 3)*limit + ((double)n_mu + n_nu + 3)*((double)n_mu + n_nu + 1)
+                        );
+
+                   constant_normalization_GTO_imp(i, n_mu, expo[i], Rc, &n_gto_imp_mu);
+                   constant_normalization_GTO_imp(j, n_nu, expo[j], Rc, &n_gto_imp_nu);
+                   
+                   num5 = -0.25f*n_gto_imp_mu*n_gto_imp_nu;
+                   num5 = num5/pow(expo[i] + expo[j],num1/2.f);
+                   
+                   matkint[k] = a6*g6/pow(expo[i] + expo[j],3.0f) -
+                                a5*g5/pow(expo[i] + expo[j],2.5f) +  
+                                a4*g4/pow(expo[i] + expo[j],2.0f) +  
+                                a3*g3/pow(expo[i] + expo[j],1.5f) +  
+                                a2*g2/(expo[i] + expo[j]) +  
+                                a1*g1/sqrt(expo[i] + expo[j]) +  
+                                a0*g0;  
+                   matkint[k] = num5*matkint[k];
+                   matkext[k] = ((double) 0); 
+                   matk[k] = matkint[k];     /* ya quedo */
+//                   printf("matk_[%d] = %10.10f \n", k, matk[k]);
                 }   // ends confined by impenetrable walls
                 else{
                       matkint[k] = num4*lower_incomplete_gamma_function(n_mu + n_nu - 1, (expo[i] + expo[j])*pow(Rc,2.f));
                       matkext[k] = num4*(full_gamma_arg_2(n_mu + n_nu - 1) - lower_incomplete_gamma_function(n_mu + n_nu - 1, (expo[i] + expo[j])*pow(Rc,2.f)));
                       matk[k] = num4*full_gamma_arg_2(n_mu + n_nu - 1);
+//                      printf("T_mu,nu[%d] = %f \n", k, matk[k]);
                 }   // ends the rest of the cases dielectric, parabolic and finite
              }
           }   // ends principal else 

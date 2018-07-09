@@ -76,6 +76,8 @@
 
  extern double der_rho_radial_gto(int nt, int elec, double r, double* expo, int* np, double* vectors, char* tipo);
 
+ extern double der_rho_radial_gto_imp(int nt, int elec, double r, double r0, double* expo, int* np, double* vectors, char* tipo);
+
  int unsigned i;
  double p1;
 
@@ -202,6 +204,20 @@
                         }
                      } //for save_temp
                   } /* ends stos */
+                  else{
+                     if(strcmp(basis,"GTOs") == 0){
+                        for(i = 0; i < n_boundary; i++) { //for save_temp
+                           p1 = grid[i];
+                           if(compara == 0) {
+                              grid_der[i] = der_rho_radial_gto_imp(nt, elecalfa, p1, Rc, expo, np, vectsfinalfa, tipo);
+                           }
+                           else {
+                              grid_der[i] = der_rho_radial_gto_imp(nt, elecalfa, p1, Rc, expo, np, vectsfinalfa, tipo);
+                              grid_der_beta[i] = der_rho_radial_gto_imp(nt, elecbeta, p1, Rc, expo, np, vectsfinbeta, tipo);
+                           }
+                        } //for save_temp
+                     }                
+                  }  /* ends gtos*/
                } /* ends confined */
             }
          }

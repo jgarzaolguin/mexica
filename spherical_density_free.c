@@ -230,6 +230,7 @@ double sec_der_rho_radial_free(int nt, int elec, double r, double* expo,
   return(sum/(4.f*pi));
  }
   /*------------------ Here I'm going to start with GTOs ---------------------*/
+  /* This is only for the cases, finite, dielectric, free and parabolic */
  double gto(int mu, double r, double* expo, int* np) {
 
     extern double cte_norm_gto(int *, int *, double *, double *);
@@ -397,7 +398,7 @@ double sec_der_rho_radial_free(int nt, int elec, double r, double* expo,
     }
 
     return(sum/(4.f*pi));
- } /* Hasta aqui todo bien */
+ } 
 
  double der_rho_radial_gto(int nt, int elec, double r, double* expo, int* np, double* vectors, char* tipo) {
     int orbital;
@@ -415,6 +416,34 @@ double sec_der_rho_radial_free(int nt, int elec, double r, double* expo,
     for(orbital = 0; orbital < elec; orbital++) {
        partial = ((double) 2)*orbital_gto(nt, orbital, r, expo, np, vectors);
        partial = partial*der_orbital_gto(nt, orbital, r, expo, np, vectors);
+       sum = sum + occ*partial;
+    }
+  return(sum/(4.f*pi));
+ }
+
+ double sec_der_rho_radial_gto(int nt, int elec, double r, double* expo, int* np, double* vectors, char* tipo) {
+    int orbital;
+    double sum, partial, partial1, partial2, occ, pi;
+    extern double orbital_gto(int nt, int orbital, double r, double* expo, int* np, double* vectors);
+    extern double der_orbital_gto(int nt, int orbital, double r, double* expo, int* np, double* vectors);
+    extern double sec_der_orbital_gto(int nt, int orbital, double r, double* expo, int* np, double* vectors);
+
+    pi = 4.f*atan(1.f);
+    if (strcmp(tipo,"rhf") == 0 || strcmp(tipo,"RHF") == 0)
+      occ = 2.f;
+    else
+      occ = 1.f;
+
+    sum = 0.f;
+    for(orbital = 0; orbital < elec; orbital++) {
+       partial1 = orbital_gto(nt, orbital, r, expo, np, vectors);
+       partial1 = partial1*sec_der_orbital_gto(nt, orbital, r, expo, np, vectors);
+ 
+       partial2 = der_orbital_gto(nt, orbital, r, expo, np, vectors);
+       partial2 = partial2*der_orbital_gto(nt, orbital, r, expo, np, vectors);
+
+       partial = 2.f*(partial1 + partial2);
+ 
        sum = sum + occ*partial;
     }
   return(sum/(4.f*pi));

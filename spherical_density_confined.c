@@ -280,5 +280,231 @@
 
   return(sum/(4.f*pi));
  }
+ /* Here I'm going to start with the GTOs, this case is only for the impenetrable wall */
+ /* The R_{GTO}(r) = N^{(imp)}*r^{n - 1}*exp^{-\alpha r^{2}}*(1 - r/r0) */ 
+ double gto_imp(int mu, double r, double r0, double* expo, int* np) {
+    extern double cte_norm_gto_imp(int *, int *, double *, double , double *);
+    double result, n_gto_imp, factor, num;
 
+    cte_norm_gto_imp(&mu, np, expo, r0, &n_gto_imp);
+
+    if(r == 0) {
+       if(np[mu] == 1){
+          result = n_gto_imp;
+       }
+       else{
+          result = 0.f;
+       }
+    }
+    else {
+       factor = n_gto_imp*exp(-expo[mu]*r*r)*(1.f - r/r0);
+       if(np[mu] == 1){
+          result = factor;
+       }
+       else{
+          num = (double)np[mu];
+          result = pow(r,num - 1.f)*factor;
+       }
+    }
+    return (result);
+ }
+
+ double der_gto_imp_r(int mu, double r, double r0, double* expo, int* np) {
+    extern double cte_norm_gto_imp(int *, int *, double *, double , double *);
+    double result, n_gto_imp, factor, num;
+
+    cte_norm_gto_imp(&mu, np, expo, r0, &n_gto_imp);
+
+    if(r == 0) {
+       if(np[mu] == 1){
+          result = -n_gto_imp/r0;
+       }
+       else{
+          if(np[mu] == 2){
+             result = n_gto_imp;
+          }
+          else{
+             result = 0.f;
+          }
+       }
+    }
+    else{
+       num = (double)np[mu];
+       factor = n_gto_imp*exp(-expo[mu]*r*r);
+       if(np[mu] == 1){
+          result =  (-2.f*expo[mu]*r*(1.f - r/r0) - 1.f/r0)*factor;
+       }
+       else{
+          if(np[mu] == 2){
+             result = ((1.f - 2.f*expo[mu]*r*r)*(1.f - r/r0) - r/r0)*factor;
+          }
+          else{
+             result = ((num - 1.f)*pow(r,num - 2.f) - 2.f*expo[mu]*pow(r,num))*(1.f - r/r0) - pow(r,num - 1.f)/r0;
+             result = result*factor;
+          }
+       }
+    }
+  return (result);
+  }
+
+  double sec_der_gto_imp_r(int mu, double r, double r0, double* expo, int* np) {
+    extern double cte_norm_gto_imp(int *, int *, double *, double , double *);
+    double result, n_gto_imp, factor, num;
+
+    cte_norm_gto_imp(&mu, np, expo, r0, &n_gto_imp);
+
+    if(r == 0) {
+       if(np[mu] == 1){
+          result = -2.f*n_gto_imp*expo[mu];
+       }
+       else{
+          if(np[mu] == 2){
+             result = 2.f*n_gto_imp/r0;
+          }
+          else{
+             if(np[mu] == 3){
+                result = 2.f*n_gto_imp;   
+             } 
+             else{
+                result = 0.f;
+             } 
+          }
+       }
+    }
+    else{
+       factor = n_gto_imp*exp(-expo[mu]*r*r);
+       num = (double)np[mu];
+       if(np[mu] == 1){
+          result = 2.f*factor*expo[mu]*((2.f*expo[mu]*r*r - 1.f)*(1.f - r/r0) + 2.f*r/r0);
+       }
+       else{
+          if(np[mu] == 2){
+             result = 2.f*factor*(2.f*pow(expo[mu],2.f)*pow(r,3.f)*(1.f - r/r0) - (1.f - 2.f*expo[mu]*pow(r,2.f))/r0); 
+          }
+          else{
+             if(np[mu] == 3){
+                result = 2.f*factor*((1.f - 5.f*expo[mu]*pow(r,2.f) + 2.f*pow(expo[mu],2.f)*pow(r,4.f))*(1.f - r/r0) - (2.f*r/r0)*(1.f - expo[mu]*pow(r,2.f))); 
+             }
+             else{
+                result = factor*pow(r,num - 3.f);
+                result = result*(
+                         ((num - 1.f)*(num - 2.f) + 2.f*expo[mu]*(1.f - 2.f*num)*pow(r,2.f) + 4.f*pow(expo[mu],2.f)*pow(r,4.f))*(1.f - r/r0) - 
+                         (2.f*r/r0)*(num - 1.f - 2.f*expo[mu]*pow(r,2.f))  
+                         );
+             }
+          }
+       }
+    }
+  return (result);
+  }
+
+ double orbital_gto_imp(int nt, int orbital, double r, double r0, double* expo, int* np, double* vectors) {
+    int i;
+    double suma;
+    extern double gto_imp(int , double , double , double* , int* );
+
+    suma = 0.f;
+    for(i = 0; i < nt; i++) {
+       suma = suma + vectors[i*nt + orbital]*gto_imp(i, r, r0, expo, np);
+    }
+
+    return (suma);
+ }
+
+ double der_orbital_gto_imp(int nt, int orbital, double r, double r0, double* expo, int* np, double* vectors) {
+    int i;
+    double suma;
+    extern double der_gto_imp_r(int , double , double , double* , int* ); 
+
+    suma = 0.f;
+    for(i = 0; i < nt; i++) {
+       suma = suma + vectors[i*nt + orbital]*der_gto_imp_r(i, r, r0, expo, np);
+    }
+
+    return (suma);
+ }
+
+ double sec_der_orbital_gto_imp(int nt, int orbital, double r, double r0, double* expo, int* np, double* vectors) {
+    int i;
+    double suma;
+    extern double sec_der_gto_imp_r(int , double , double , double* , int* );
+
+    suma = 0.f;
+    for(i = 0; i < nt; i++) {
+       suma = suma + vectors[i*nt + orbital]*sec_der_gto_imp_r(i, r, r0, expo, np);
+    }
+
+    return (suma);
+ }
+
+ double rho_radial_gto_imp(int nt, int elec, double r, double r0, double* expo, int* np, double* vectors, char* tipo) {
+    int orbital;
+    double sum, partial, occ, pi;
+    extern double orbital_gto_imp(int , int , double , double , double* , int* , double* );
+
+    pi = 4.f*atan(1.f);
+    if (strcmp(tipo,"rhf") == 0 || strcmp(tipo,"RHF") == 0)
+      occ = 2.f;
+    else
+      occ = 1.f;
+
+    sum = 0.f;
+    for (orbital = 0; orbital < elec; orbital++) {
+      partial = orbital_gto_imp(nt, orbital, r, r0, expo, np, vectors);
+      sum = sum + occ*partial*partial;
+    }
+
+    return(sum/(4.f*pi));
+ }
+
+  double der_rho_radial_gto_imp(int nt, int elec, double r, double r0, double* expo, int* np, double* vectors, char* tipo) {
+    int orbital;
+    double sum, partial, occ, pi;
+    extern double orbital_gto_imp(int , int , double , double , double* , int* , double* );
+    extern double der_orbital_gto_imp(int , int , double , double , double* , int* , double* );
+
+    pi = 4.f*atan(1.f);
+    if (strcmp(tipo,"rhf") == 0 || strcmp(tipo,"RHF") == 0)
+      occ = 2.f;
+    else
+      occ = 1.f;
+
+    sum = 0.f;
+    for (orbital = 0; orbital < elec; orbital++) {
+      partial = 2.f*orbital_gto_imp(nt, orbital, r, r0, expo, np, vectors);
+      partial = partial*der_orbital_gto_imp(nt, orbital, r, r0, expo, np, vectors);
+      sum = sum + occ*partial;
+    }
+
+    return(sum/(4.f*pi));
+ }  
+
+  double sec_der_rho_radial_gto_imp(int nt, int elec, double r, double r0, double* expo, int* np, double* vectors, char* tipo) {
+    int orbital;
+    double sum, partial, partial1, partial2, occ, pi;
+    extern double orbital_gto_imp(int , int , double , double , double* , int* , double* );
+    extern double der_orbital_gto_imp(int , int , double , double , double* , int* , double* );
+    extern double sec_der_orbital_gto_imp(int , int , double , double , double* , int* , double* );
+
+    pi = 4.f*atan(1.f);
+    if (strcmp(tipo,"rhf") == 0 || strcmp(tipo,"RHF") == 0)
+      occ = 2.f;
+    else
+      occ = 1.f;
+
+    sum = 0.f;
+    for (orbital = 0; orbital < elec; orbital++) {
+      partial1 = orbital_gto_imp(nt, orbital, r, r0, expo, np, vectors);
+      partial1 = partial1*sec_der_orbital_gto_imp(nt, orbital, r, r0, expo, np, vectors);
+ 
+      partial2 = der_orbital_gto_imp(nt, orbital, r, r0, expo, np, vectors);
+      partial2 = partial2*der_orbital_gto_imp(nt, orbital, r, r0, expo, np, vectors);
+      
+      partial = 2.f*(partial1 + partial2);
+      
+      sum = sum + occ*partial;
+    }
+
+    return(sum/(4.f*pi));
+ }
 

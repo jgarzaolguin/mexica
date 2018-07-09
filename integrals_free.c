@@ -417,26 +417,42 @@ double use_upper_incomplete_gamma(double Rc, int a1, int a2, double b1, double b
         }
         return gamma;
  }
- /* This function calculates the integral \int_{0}^{y} t^{(n/2)-1} e^{-t} dt \gamma((n/2,y) = lower incomplete gamma function n >= 2, n = 2,3,4,5,6,7,8,...  */
+ /* This function calculates the integral \int_{0}^{y} t^{(n/2)-1} e^{-t} dt = \gamma(n/2,y) = lower incomplete gamma function n >= 2, n = 2,3,4,5,6,7,8,...  */
  double lower_incomplete_gamma_function(int n2, double y){
         int i, j, iglobal;
         double rho_j;
-        double r0, r1, r[541], f_r[541];
+        double r0, r1, r[691], f_r[691];
         double factor1;
         int key;
-        double result;
+        double pi, result;
         double a, b, c, d, f0, f1, f2, f0_2, f1_2, f2_2, x0, x1, x2, x0_2, x1_2, x2_2, c13, c12;
         factor1 = ((double) n2)/((double) 2);
         factor1 = factor1 - ((double) 1);
         key = 0;
         c12 = ((double) 1)/((double) 2);
         c13 = ((double) 1)/((double) 3);
-        if(n2 == 2){ /* se tiene \int_{0}^y e^{-t} dt */
-        /* la solución es analítica y no hay necesidad de generar la malla */
-          result = ((double) 1) - exp(-y);
-        }
-        else{ /* -------------------- Here begins the numerical integration -------------------- */
-           for(j = 0; j <= 540; j++){ /* ---------- Here begins the construction of the grid ---------- */
+        pi = ((double) 4)*atan(1.f);
+ if(n2 == 1){ /* se tiene el caso \int_{0}^{y} t^{-1/2} e^{-t} dt = \gamma(1/2,y)  */
+    result = sqrt(pi)*erf(sqrt(y));
+ }
+ else
+    if(n2 == 2){ /* se tiene \int_{0}^y e^{-t} dt = \gamma(1,y); la solución es analítica y no hay necesidad de generar la malla */
+      result = ((double) 1) - exp(-y);
+    }
+    else
+       if(n2 == 3){   /* se tiene \int_{0}^y t^{1/2} e^{-t} dt = \gamma(3/2,y) */
+          result = 0.5f*sqrt(pi)*erf(sqrt(y)) - sqrt(y)*exp(-y);
+       }
+       else
+          if(n2 == 4){  /* se tiene \int_{0}^y t^{1} e^{-t} dt = \gamma(2,y) */
+             result = ((double)1) - exp(-y)*(y + (double)1);
+          }
+          else
+             if(n2 == 5){  /* se tiene \int_{0}^y t^{3/2} e^{-t} dt = \gamma(5/2,y) */
+                result = 0.75f*sqrt(pi)*erf(sqrt(y)) - sqrt(y)*exp(-y)*(y + 1.5f);
+             }   /* here we are ;) */
+            else{ /* -------------------- Here begins the numerical integration -------------------- */
+           for(j = 0; j <= 690; j++){ /* ---------- Here begins the construction of the grid ---------- */
               rho_j = ((double) j - 1);  //el nombre de esta variable no tiene nada que ver con la densidad electrónica
               rho_j = rho_j/((double) 30);
               rho_j = rho_j - ((double) 10);
@@ -471,7 +487,7 @@ double use_upper_incomplete_gamma(double Rc, int a1, int a2, double b1, double b
               }
            } /* ---------- Here ends the construction of the grid ---------- */
            result = ((double) 0);   //inicializamos result
-           for(i = 0; i <= 269; i++){
+           for(i = 0; i <= 344; i++){
               iglobal = 2*(i + 1);
 
               x0 = r[iglobal - 2];

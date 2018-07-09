@@ -141,46 +141,53 @@
  alpha_add = 0.f;
  beta_add  = 0.f;
 
- if (z >= 2) {
-   alpha_add = 0.2;
-   beta_add  = 1.2;
- } else {
-      alpha_add = 0.01;
-      beta_add  = 1.1;
-   }
+ if(z >= 2) {
+    alpha_add = 0.2;
+    beta_add  = 1.2;
+ } 
+ else {
+    alpha_add = 0.01;
+    beta_add  = 1.1;
+ }
 
  int unsigned  pasos_a;
  pasos_a = 5000;
  int unsigned  pasos_b;
  pasos_b = 5000;
 
- for (j = 0; j < 36; j++) {
-  rango_a[j]          = 3.5;
-  rango_b[j]          = 3.2;
-  total_a[j]          = (int) pasos_a*rango_a[j];
-  total_b[j]          = (int) pasos_b*rango_b[j];
-  expalpha_opt[j]     = 0.0;
-  expbeta_opt[j]      = 0.0;
-  valpha_opt[j]       = alpha_add;
-  vbeta_opt[j]        = beta_add;
-  expalpha[j]         = 0.f;
-  expbeta[j]          = 0.f;
-  k1[j]               = 0;
-  restric_a[j]        = 0.f;
-  
+ for(j = 0; j < 36; j++) {
+    rango_a[j]          = 3.5;
+    rango_b[j]          = 3.2;
+    total_a[j]          = (int) pasos_a*rango_a[j];
+    total_b[j]          = (int) pasos_b*rango_b[j];
+    expalpha_opt[j]     = 0.0;
+    expbeta_opt[j]      = 0.0;
+    valpha_opt[j]       = alpha_add;
+    vbeta_opt[j]        = beta_add;
+    expalpha[j]         = 0.f;
+    expbeta[j]          = 0.f;
+    k1[j]               = 0;
+    restric_a[j]        = 0.f;
  }
- for (j = 0; j < nt; j++)
+ 
+ for(j = 0; j < nt; j++){
     expo_opt[j] = 0.f;
+ }      
+ char bound_pol[50];     //mike
+ if(strcmp(basis,"GTOs") == 0) {
+    sprintf(bound_pol,"%s", bound);
+    strcpy(bound,"free");
+ }
 
- if (strcmp(bound,"finite") == 0 || strcmp(bound,"dielectricc") == 0 || strcmp(bound,"polarization") == 0) {
-////
+ if(strcmp(bound,"finite") == 0 || strcmp(bound,"dielectricc") == 0 || strcmp(bound,"polarization") == 0 || strcmp(bound,"parabolic") == 0  ||
+    strcmp(bound,"confined") == 0) {     /* begins "if" all cases with gtos */
 
-   todos = 0;
-   index = 0;
-           do {
-               deg        = 1;
-               ang_test   = mang[todos];
-               switch(ang_test) {
+    todos = 0;
+    index = 0;
+    do{
+       deg        = 1;
+       ang_test   = mang[todos];
+       switch(ang_test) {
                  case(1) : deg = 3; break;
                  case(2) : deg = 5; break;
                  case(3) : deg = 7; break;
@@ -189,49 +196,48 @@
                  case(6) : deg = 13; break;
                  case(7) : deg = 15; break;
                  default : deg =  1; break;
-               }
-
-               if (np[todos] == 1)
-               switch(deg) {
+       }
+       if(np[todos] == 1)
+          switch(deg) {
                  case(1)  : index_t = 0; break;
-               }
-               if (np[todos] == 2)
-               switch(deg) {
+          }
+       if(np[todos] == 2)
+          switch(deg) {
                  case(1)  : index_t = 1; break;
                  case(3)  : index_t = 2; break;
-               }
-               if (np[todos] == 3)
-               switch(deg) {
+          }
+       if(np[todos] == 3)
+          switch(deg) {
                  case(1)  : index_t = 3; break;
                  case(3)  : index_t = 4; break;
                  case(5)  : index_t = 5; break;
-               }
-               if (np[todos] == 4)
-               switch(deg) {
+          }
+       if(np[todos] == 4)
+          switch(deg) {
                  case(1)  : index_t = 6; break;
                  case(3)  : index_t = 7; break;
                  case(5)  : index_t = 8; break;
                  case(7)  : index_t = 9; break;
-               }
-               if (np[todos] == 5)
-               switch(deg) {
+          }
+       if(np[todos] == 5)
+          switch(deg) {
                  case(1)  : index_t = 10; break;
                  case(3)  : index_t = 11; break;
                  case(5)  : index_t = 12; break;
                  case(7)  : index_t = 13; break;
                  case(9)  : index_t = 14; break;
-               }
-               if (np[todos] == 6)
-               switch(deg) {
+          }
+       if(np[todos] == 6)
+           switch(deg) {
                  case(1)  : index_t = 15; break;
                  case(3)  : index_t = 16; break;
                  case(5)  : index_t = 17; break;
                  case(7)  : index_t = 18; break;
                  case(9)  : index_t = 19; break;
                  case(11) : index_t = 20; break;
-               }
-               if (np[todos] == 7)
-               switch(deg) {
+           }
+       if(np[todos] == 7)
+           switch(deg) {
                  case(1)  : index_t = 21; break;
                  case(3)  : index_t = 22; break;
                  case(5)  : index_t = 23; break;
@@ -239,9 +245,9 @@
                  case(9)  : index_t = 25; break;
                  case(11) : index_t = 26; break;
                  case(13) : index_t = 27; break;
-               }
-               if (np[todos] == 8)
-               switch(deg) {
+           }
+       if(np[todos] == 8)
+           switch(deg) {
                  case(1)  : index_t = 28; break;
                  case(3)  : index_t = 29; break;
                  case(5)  : index_t = 30; break;
@@ -250,41 +256,39 @@
                  case(11) : index_t = 33; break;
                  case(13) : index_t = 34; break;
                  case(15) : index_t = 35; break;
-               }
+           }
       
-               if (strcmp(using_gamma,"YES") == 0){
+       if(strcmp(using_gamma,"YES") == 0){
+          factor1  = gamma_couple/((1.f - gamma_couple)*Rc);
+          factor2  = (double) (mang[todos] + np[todos])/Rc;
+          valpha_opt[index_t]  = 0.01 + factor1 + factor2; 
+          //restric_a[index_t]   = valpha_opt[index_t];
+          rango_a[index_t] = valpha_opt[index_t] + 3.5;
+       } 
+       else {
+          factor2 = (double) (np[todos] + mang[todos]);
+          valpha_opt[index_t]  = 0.01 + factor2/Rc; 
+          //restric_a[index_t]   = valpha_opt[index_t];
+          rango_a[index_t] = valpha_opt[index_t] + 3.5;
+       }
 
-                   factor1  = gamma_couple/((1.f - gamma_couple)*Rc);
-                   factor2  = (double) (mang[todos] + np[todos])/Rc;
-                   valpha_opt[index_t]  = 0.01 + factor1 + factor2; 
-                   //restric_a[index_t]   = valpha_opt[index_t];
-                   rango_a[index_t] = valpha_opt[index_t] + 3.5;
-
-               } else {
-                     factor2   = (double) (np[todos] + mang[todos]);
-                     valpha_opt[index_t]  = 0.01 + factor2/Rc; 
-                     //restric_a[index_t]   = valpha_opt[index_t];
-                     rango_a[index_t] = valpha_opt[index_t] + 3.5;
-                   }
-
-               for (i = 1; i <= deg; i++) {
-                  index = todos + i - 1;
-               }
-               todos = index + 1;
-           } while(todos < nt);
- for (j = 0; j < 36; j++) {
-  rango_b[j]          = 3.2;
-  total_a[j]          = (int) pasos_a*rango_a[j];
-  total_b[j]          = (int) pasos_b*rango_b[j];
-  expalpha_opt[j]     = 0.0;
-  expbeta_opt[j]      = 0.0;
-  expalpha[j]         = 0.f;
-  expbeta[j]          = 0.f;
-  k1[j]               = 0;
- }
- } else 
-        
-////
+       for(i = 1; i <= deg; i++) {
+          index = todos + i - 1;
+       }
+       todos = index + 1;
+    } while(todos < nt);
+    for(j = 0; j < 36; j++) {
+       rango_b[j]          = 3.2;
+       total_a[j]          = (int) pasos_a*rango_a[j];
+       total_b[j]          = (int) pasos_b*rango_b[j];
+       expalpha_opt[j]     = 0.0;
+       expbeta_opt[j]      = 0.0;
+       expalpha[j]         = 0.f;
+       expbeta[j]          = 0.f;
+       k1[j]               = 0;
+    }
+ }     /* ends "if" for all cases with gtos */ 
+ else 
 
  incr_a   = (double) rango_a[0]/total_a[0];
  incr_b   = (double) rango_b[0]/total_b[0];
@@ -299,7 +303,7 @@
  ident      = 0;
  ident_test = 0;
 
- iteraciones = 8000;
+ iteraciones = 1000;     // mike
 
 
  w = 0;
@@ -415,7 +419,8 @@
                }
 
 
-               if (strcmp(bound,"finite") == 0 || strcmp(bound,"dielectricc") == 0 || strcmp(bound,"polarization") == 0) {
+               if(strcmp(bound,"finite") == 0 || strcmp(bound,"dielectricc") == 0 || strcmp(bound,"polarization") == 0 || strcmp(bound,"parabolic") == 0 ||
+                          strcmp(bound,"confined") == 0) {
                       expo_no_correcto =  check_expotents_finite(using_gamma,
                                                                  gamma_couple,
                                                                  Rc,
@@ -512,53 +517,64 @@
                                                         expo,
                                                         mang,
                                                         nombre);
+           expo_no_correcto = 0;
 
 
-           if (expo_no_correcto == 0) 
-             test_scf = scf(nt,
-                            elecalfa,
-                            elecbeta,
-                            z,
-                            orbital,
-                            tol,
-                            using_gamma,
-                            correlation,
-                            propagador,
-                            save_dft,
-                            weight_dft,
-                            flag_dft,
-                            mezcla,
-                            basis,
-                            expo,
-                            np,
-                            mang,
-                            ncm,
-                            gamma_couple,
-                            tipo,
-                            maxiter,
-                            Rc,
-                            bound,
-                            espin,
-                            &energia,
-                            0,
-                            epsilon,
-                            0,
-                            plasma,
-                           &cusp_kato);
-              else
-                  test_scf = 1;
+           if (expo_no_correcto == 0){           //mike
+            if (strcmp(basis,"GTOs") == 0) {
+              sprintf(bound,"%s", bound_pol);
+            }
+            test_scf = scf(nt,
+                           elecalfa,
+                           elecbeta,
+                           z,
+                           orbital,
+                           tol,
+                           using_gamma,
+                           correlation,
+                           propagador,
+                           save_dft,
+                           weight_dft,
+                           flag_dft,
+                           mezcla,
+                           basis,
+                           expo,
+                           np,
+                           mang,
+                           ncm,
+                           gamma_couple,
+                           tipo,
+                           maxiter,
+                           Rc,
+                           bound,
+                           espin,
+                           &energia,
+                           0,
+                           epsilon,
+                           0,
+                           plasma,
+                          &cusp_kato);
+           } 
+           else
+              test_scf = 1;
 
-            if (test_scf != 0) {
+           if (test_scf != 0) {
               energia   = 1.e10;
               diff_kato_0 = 1000.f;
-            } else {             
-                  diff_kato_0 = fabs(cusp_kato - 1.f);
+           } 
+           else {  /* mike */
+              if(strcmp(basis, "STOs") == 0){           
+                 diff_kato_0 = fabs(cusp_kato - 1.f);
               }
+              else{
+                 diff_kato_0 = 0.f;
+              }
+           }
 
-            if (energia < energia_0 && diff_kato_0 < 1.e-02 /*kato_0*/) {
-               energia_0 = energia;
+           if(energia < energia_0 && diff_kato_0 < 1.e-02 /*kato_0*/) {
+              energia_0 = energia;
                //kato_0 = diff_kato_0;
-               printf("\nHOLA Energy %6.12lf Kato %lf\n", energia, cusp_kato);
+              printf("\nHOLA Energy %6.12lf Kato %lf\n", energia, cusp_kato);
                for (j = 0; j < 36; j++) {
                    expalpha_opt[j] = expalpha[j];
                    expbeta_opt[j]  = expbeta[j];
@@ -566,7 +582,14 @@
               for (j = 0; j < nt; j++)
                  expo_opt[j] = expo[j];
             }
+     if (strcmp(basis,"GTOs") == 0) {
+      sprintf(bound_pol,"%s", bound);
+      strcpy(bound,"free");
+     }
+
    } //primer for q
+
+   
 //mrb if (w == 1) break;
 
 //identifica la mejor condicion de kato cercana a 1 y mejor energia
@@ -712,6 +735,12 @@
 
  for (j = 0; j < nt; j++)
      expo[j] = expo_opt[j];
+
+ // mike
+   if (strcmp(basis,"GTOs") == 0) {
+      sprintf(bound,"%s", bound_pol);
+  }
+
 
 
  return (1);

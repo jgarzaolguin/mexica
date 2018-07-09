@@ -817,6 +817,7 @@ extern int ep2_cpu(char   *espin,
                            char         *using_gamma,
                            int           compara,
                            char         *bound,
+                           char         *basis,
                            int           nt,
                            int           elecalfa,
                            int           elecbeta,
@@ -1175,7 +1176,7 @@ extern int ep2_cpu(char   *espin,
     arreglo_inv_factorial[i] = 1.f/arreglo_factorial[i];
   }
 
-  if(strcmp(bound,"finite") == 0 || strcmp(bound,"dielectricc") == 0 || strcmp(bound,"polarization") == 0) {
+  if(strcmp(bound,"finite") == 0 || strcmp(bound,"dielectricc") == 0 || strcmp(bound,"polarization") == 0 || strcmp(bound,"parabolic") == 0) {
      NC_minus = NULL;
      memoria_double_uni(sizedouble, &NC_minus, "NC_minus");
      NC_plus = NULL;
@@ -1245,6 +1246,14 @@ extern int ep2_cpu(char   *espin,
       strcpy(bound,"free");
     }
  }
+
+ if (strcmp(bound,"parabolic") == 0) {
+    if(strcmp(basis,"STOs") == 0){
+      sprintf(bound_pol,"%s", bound);
+      strcpy(bound,"free");
+    }
+ }     /* mike */
+
 
 
  traslape(using_gamma, 
@@ -1499,6 +1508,7 @@ extern int ep2_cpu(char   *espin,
                         using_gamma,
                         compara,
                         bound,
+                        basis,
                         nt,
                         elecalfa,
                         0,
@@ -1736,6 +1746,7 @@ extern int ep2_cpu(char   *espin,
                               using_gamma,
                               compara,
                               bound,
+                              basis,
                               nt,
                               elecalfa,
                               elecbeta,
@@ -2037,10 +2048,16 @@ extern int ep2_cpu(char   *espin,
                 printf("Nuc-elec energy                      = %15.5f\n", e_v);
              }
              else{
-                printf("Kinetic energy                       = %15.5f\n", e_kin);
-                printf("Kinetic energy internal              = %15.5f\n", e_kinint);
-                printf("Kinetic energy external              = %15.5f\n", e_kinext);     
-                printf("Potential energy (V_int + V_ext)     = %15.5f\n", e_v);
+                if(strcmp(bound,"confined") == 0 ){  /* impenetrable wall */
+                   printf("Kinetic energy internal              = %15.5f\n", e_kinint);
+                   printf("Potential energy (V_internal)        = %15.5f\n", e_v);
+                }
+                else{     /* The rest of the cases: finite, dielec, parabolic */ 
+                   printf("Kinetic energy                       = %15.5f\n", e_kin);
+                   printf("Kinetic energy internal              = %15.5f\n", e_kinint);
+                   printf("Kinetic energy external              = %15.5f\n", e_kinext);    
+                   printf("Potential energy (V_int + V_ext)     = %15.5f\n", e_v);
+                }
              }
              printf("One-electron energy                  = %15.5f\n", e_core);
              printf("Coulomb energy                       = %15.5f\n", e_coul);
@@ -2176,7 +2193,8 @@ extern int ep2_cpu(char   *espin,
                           suma = suma + matp[elemento1]*mats[elemento2];
                        }
                     }          
-                    if(strcmp(bound,"free") == 0 || strcmp(bound,"finite") == 0 || strcmp(bound,"dielectricc") == 0 || strcmp(bound,"parabolic") == 0) {
+                    if(strcmp(bound,"free") == 0 || strcmp(bound,"finite") == 0 || strcmp(bound,"dielectricc") == 0 || strcmp(bound,"parabolic") == 0 || 
+                       strcmp(bound,"confined") == 0 ) {
 //                    if(strcmp(bound,"finite") == 0) {     // esta era la sentencia original mike
                        printf("Number of electrons: = %f\n", suma);
                        printf("---------------------------\n");
@@ -2768,7 +2786,8 @@ extern int ep2_cpu(char   *espin,
              grid = 0;
      }
 
-    if(strcmp(bound_pol,"dielectricc") == 0 || strcmp(bound_pol,"polarization") == 0 || strcmp(bound_pol,"dielectricnc") == 0)
+    if(strcmp(bound_pol,"dielectricc") == 0 || strcmp(bound_pol,"polarization") == 0 || strcmp(bound_pol,"dielectricnc") == 0 || 
+       strcmp(bound_pol, "parabolic") == 0  || strcmp(bound_pol,"confined") == 0)
        sprintf(bound,"%s",bound_pol);
 
     if(iter >= maxiter || energia != energia){ // This is the original

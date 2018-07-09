@@ -31,7 +31,7 @@ void traslape(char   *using_gamma,
  int i, j, k, index_i, index_j, total_elements;
  int ang_i, ang_j, ncm_i, ncm_j;
  int n_mu, n_nu;
- double n_gto_mu, n_gto_nu;
+ double n_gto_mu, n_gto_nu, n_gto_imp_mu, n_gto_imp_nu, limit;     // mike
  double delta, delta1, part_real;
  double num1, num2;
  
@@ -55,7 +55,7 @@ void traslape(char   *using_gamma,
  extern double full_gamma_arg_2(int );
  extern double lower_incomplete_gamma_function(int, double );
  extern double constant_normalization_GTO(int , int , double , double *);
-
+ extern double constant_normalization_GTO_imp(int , int , double , double , double *);
  double pi;
  pi = ((double) 4)*atan(1.f);
 
@@ -80,21 +80,28 @@ void traslape(char   *using_gamma,
           if (delta == (double)0)
             mats[k] = (double)0;
           else {
-             num1 = ((double) n_mu + n_nu + 1.f);
+             num1 = ((double) n_mu + n_nu + 1);
              constant_normalization_GTO(i, n_mu, expo[i], &n_gto_mu);
              constant_normalization_GTO(j, n_nu, expo[j], &n_gto_nu);
              if(strcmp(bound,"confined") == 0){
-                mats[k] = (n_gto_mu*n_gto_nu)/(2.f*pow(expo[i] + expo[j],num1/2.f));
+                limit = (expo[i] + expo[j])*pow(Rc,2.f);
+                constant_normalization_GTO_imp(i, n_mu, expo[i], Rc, &n_gto_imp_mu);
+                constant_normalization_GTO_imp(j, n_nu, expo[j], Rc, &n_gto_imp_nu);
 
-                mats[k] = mats[k]*((double) lower_incomplete_gamma_function(n_mu + n_nu + 1, (expo[i] + expo[j])*pow(Rc,2.f)));
-
-//              printf("S_mu,nu[%d] = %f \n", k, mats[k]);
+                mats[k] = (n_gto_imp_mu*n_gto_imp_nu)/(((double)2)*pow(expo[i] + expo[j],num1/2.f));
+ 
+                mats[k] = mats[k]*(
+                          lower_incomplete_gamma_function(n_mu + n_nu + 1, limit) - 
+                          (((double)2)*lower_incomplete_gamma_function(n_mu + n_nu + 2, limit))/(Rc*sqrt(expo[i] + expo[j])) +
+                          lower_incomplete_gamma_function(n_mu + n_nu + 3, limit)/(pow(Rc,2.f)*(expo[i] + expo[j]))
+                );
+//               printf("S_mu,nu[%d] = %10.15f \n", k, mats[k]);   /* El traslape para la pared impenetrable ya quedo mike */
              }
              else{
-                mats[k] = (n_gto_mu*n_gto_nu)/(2.f*pow(expo[i] + expo[j],num1/2.f));
-
+                mats[k] = (n_gto_mu*n_gto_nu)/(((double)2)*pow(expo[i] + expo[j],num1/2.f));
                 mats[k] = mats[k]*((double) full_gamma_arg_2(n_mu + n_nu + 1));
-             }
+//                printf("S_mu,nu[%d] = %f \n", k, mats[k]);
+             }     /* The rest of the cases */
          }
      }
  } /* Aquí terminan los elementos de matriz con GTOs */ 

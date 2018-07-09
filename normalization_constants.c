@@ -148,3 +148,48 @@ int constants_normalization_finite(int     mu,
     return 1;
  } /* utilizaré esta definición para la construcción de la densidad radial */
 
+  double constant_normalization_GTO_imp(int nu, int n, double alpha, double r0, double *n_gto_imp) {  /* únicamente para el caso de pared impenetrable */
+    extern double lower_incomplete_gamma_function(int , double );
+    double fact1, fact2, fact3, fact4, number1, number2, number3, y, result;
+    
+    number1 = ((double)n) + 0.5f;
+    fact1 = sqrt(2.f*pow(2.f*alpha,number1));
+    fact2 = 1.f + (2.f*((double)n) + 1.f)/(4.f*alpha*pow(r0,2.f));
+    fact3 = 2.f/(r0*sqrt(2.f*alpha));
+    number2 = ((double)n) - 0.5f;
+    number3 = 2.f*((double)n) - 1.f;
+    y = 2.f*alpha*pow(r0,2.f);
+    fact4 = (pow(2.f*alpha,number2)*pow(r0,number3))/exp(y);
+
+    result = fact2*lower_incomplete_gamma_function(2*n + 1, y) - fact3*lower_incomplete_gamma_function(2*(n + 1), y) - fact4;
+    result = fact1/sqrt(result);
+
+    *n_gto_imp = result;
+    return 1;
+    
+ } /* utilizaré esta definición para los elementos de matriz */
+
+   double cte_norm_gto_imp(int *nu, int *np, double *expo, double r0, double *n_gto_imp) {  /* únicamente para el caso de pared impenetrable */
+    extern double lower_incomplete_gamma_function(int , double );
+    double fact1, fact2, fact3, fact4, number1, number2, number3, y, result;
+    int index_nu;
+
+    index_nu = *nu;
+
+    number1 = ((double)np[index_nu]) + 0.5f;
+    fact1 = sqrt(2.f*pow(2.f*expo[index_nu],number1));
+    fact2 = 1.f + (2.f*((double)np[index_nu]) + 1.f)/(4.f*expo[index_nu]*pow(r0,2.f));
+    fact3 = 2.f/(r0*sqrt(2.f*expo[index_nu]));
+    number2 = ((double)np[index_nu]) - 0.5f;
+    number3 = 2.f*((double)np[index_nu]) - 1.f;
+    y = 2.f*expo[index_nu]*pow(r0,2.f);
+    fact4 = (pow(2.f*expo[index_nu],number2)*pow(r0,number3))/exp(y);
+
+    result = fact2*lower_incomplete_gamma_function(2*np[index_nu] + 1, y) - fact3*lower_incomplete_gamma_function(2*(np[index_nu] + 1), y) - fact4;
+    result = fact1/sqrt(result);
+
+    *n_gto_imp = result;
+    return 1;
+
+ } /* utilizaré esta definición para la construcción de la densidad radial */
+
