@@ -125,6 +125,7 @@ int xc_over_grid(int compara, char **save_dft, int flag_dft, double *weight_dft,
  extern void pbegrid(double *rho, double *der_rho, double *arg_secderho,
                      double *abs_grad_rho, double *derabs_grad_rho,  double *varS,
                      double *der_varS, double *grid, double *pot_x);
+ int x_slater(double  rho, double *energy, double *potential);
  varS = (double *)malloc(points*sizeof(double));
  dervarS = (double *)malloc(points*sizeof(double));
  abs_grad_rho = (double *)malloc(points*sizeof(double));
@@ -150,6 +151,15 @@ int xc_over_grid(int compara, char **save_dft, int flag_dft, double *weight_dft,
                   &arg2, &arg3, &arg_grid, &pot_x);
 	 pot_xc_grid[i] = weight*pot_x;
        }
+     }
+     else {
+     if(strcmp(save_dft[dft], "slater") == 0) {
+       for (i = 0; i < points; i++) {
+         arg1 = rho[i];
+         x_slater(arg1, &arg2, &pot_x);
+	 pot_xc_grid[i] = weight*pot_x;
+       }
+     }
      }
    } 
  } 
