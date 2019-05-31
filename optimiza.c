@@ -203,7 +203,7 @@ void optimiza(int     nt,
  sprintf(nombre_ii, "%s_restart", nombre);
     do {
        step_work    = step;
-       while (step_work >= (double)0.0001) {
+       while (step_work >= (double)0.01) { // jgo, Cambiar a 0.0001
         todos_antes  = 0;
         todos        = 0;
         do {
