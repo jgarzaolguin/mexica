@@ -148,7 +148,6 @@ int optimiza_main(int     nt,
      double temp_dble;
      int temp_int;
      i = -1;
- printf("\nENTRAAAA\n");
     
      while (fscanf(archivo_opt,"%s %lf %d", config, &temp_dble, &temp_int) != EOF)
      {
@@ -339,6 +338,7 @@ for(i=0 ; i < 80 ; i++){
                                double   Rc,
                                double   tol,
                                double   mezcla,
+			       char     *basis,
                                int      orbital,
                                int      maxiter,
                                int      nt,
@@ -437,6 +437,7 @@ for(i=0 ; i < 80 ; i++){
                                 Rc,
                                 tol,
                                 mezcla,
+				basis,
                                 orbital,
                                 maxiter,
                                 nt,
