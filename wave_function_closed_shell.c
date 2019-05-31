@@ -32,6 +32,7 @@ int wf_closed_shell(int z, char *using_gamma, int compara, char *bound, char *ba
  extern void memoria_double_uni(int tamanio, double **arreglo, char *titulo);
 
  extern double numerical_int(double *grid, double *grid_fun, int points);
+ extern double integral_three_points(double *grid, double *grid_fun, int flag, int point_1, int point_2);
 
  extern void expected_value_r(int nt, int r_exp, int *np, int *mang, int *ncm, double *expo, 
                               double  Rc, char *bound, char *basis, double *vectsfin, int elecalfa, double gamma_couple,
@@ -92,7 +93,12 @@ int wf_closed_shell(int z, char *using_gamma, int compara, char *bound, char *ba
    else
       printf("\nShannon entropy(%s,%s,Rc: %3.3lf)= %5.4lf\n", tipo, bound, Rc, SHAN);
 
-   printf("\nElectrons from numerical integration= %5.8lf\n\n", 4.f*Pi*numerical_int(grid, grid_rho, n_points));
+// jgo   printf("\nElectrons from numerical integration= %5.8lf\n\n", 4.f*Pi*numerical_int(grid, grid_rho, n_points));
+
+   for (h = 0; h < n_points; h++) {
+     array_i[h] = grid[h]*grid[h]*grid_rho[h];
+   }
+   printf("\nElectrons from numerical integration = %12.8f\n", 4.0*4.0*atan(1.0f)*integral_three_points(grid, array_i, 2, save_i, n_points));
 
    FILE *workout;
    char nameout[200];
