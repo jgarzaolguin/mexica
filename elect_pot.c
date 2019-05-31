@@ -502,7 +502,7 @@ double Elect_Pot_RHO(int nt, double *matp, int *np, int *ang, int *ncm,
 
 int Evaluate_Elect_Pot(double z, int nt, double *matp, int *np, int *mang, int *ncm,
                        double *expo, char *bound, double *arreglo_factorial,
-                       double *arreglo_inv_factorial, double *grid, int n_points, double Rc,
+                       double *arreglo_inv_factorial, double *grid, int save_i, int n_points, double Rc,
                        double *NC_minus, double *NC_plus, char *basis, double *pot_elect_grid)
 {
   int i;
@@ -512,14 +512,19 @@ int Evaluate_Elect_Pot(double z, int nt, double *matp, int *np, int *mang, int *
                               double *arreglo_inv_factorial, double r, double Rc,
                               double *NC_minus, double *NC_plus, char *basis);
 
-  for (i = 0; i < n_points; i=i+2) {
+  for (i = 0; i <= save_i; i=i+2) {
     r = grid[i];
-    if (r < 100.f) 
-      pot = Elect_Pot_RHO(nt, matp, np, mang, ncm, expo, bound,
+    pot = Elect_Pot_RHO(nt, matp, np, mang, ncm, expo, bound,
                           arreglo_factorial, arreglo_inv_factorial, r, Rc,
                           NC_minus, NC_plus, basis);
-    else
-      pot = 0.f;
+    pot_elect_grid[i] = pot;
+  }
+  if (save_i%2 != 0) {
+    i = save_i + 1;
+    r = grid[i];
+    pot = Elect_Pot_RHO(nt, matp, np, mang, ncm, expo, bound,
+                          arreglo_factorial, arreglo_inv_factorial, r, Rc,
+                          NC_minus, NC_plus, basis);
     pot_elect_grid[i] = pot;
   }
 
