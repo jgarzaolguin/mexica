@@ -3,14 +3,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int print_out_arrays(int points, double *grid, double *array1, double *array2, char *name_file) {
+int print_out_arrays(int points, double *grid, double *array1, double *array2, double *array3, char *name_file) {
   int i;
   FILE *target;
 
   target = fopen(name_file,"w");
 
   for (i = 0; i < points; i=i+2) {
-    fprintf(target,"%20.8f  %20.8f %20.8f\n", grid[i], array1[i], array2[i]);
+    fprintf(target,"%20.8f  %20.8f %20.8f %20.8f\n", grid[i], array1[i], array2[i], array3[i]);
     fflush(target);
   }
 
@@ -36,6 +36,7 @@ int x_slater(double  rho,
 double xc_energy(double *correlationc,
                  double *exchangex,
                  int     points, 
+		 int     save_i,
                  int     compara,
                  char   **save_dft,
                  double *weight_dft,
@@ -53,6 +54,7 @@ double xc_energy(double *correlationc,
  extern double numerical_int(double   *grid,
                              double   *grid_fun,
                              int       points);
+ extern double integral_three_points(double *grid, double *function, int flag, int save_i, int n_points);
 
 
  extern int x_slater(double rho, double *energy, double *potential);
@@ -83,74 +85,94 @@ double xc_energy(double *correlationc,
   correlation = 0.f;
 
   if (compara == 0) {
-     for (dft = 1; dft < flag_dft; dft++)
-      {
+    for (dft = 1; dft < flag_dft; dft++) {
       weight = weight_dft[dft];
-     
-      if(strcmp(save_dft[dft], "slater") == 0) {
-     
-            for (cont = 0; cont < points; cont++) {
+      if((strcmp(save_dft[dft], "slater") == 0) && (weight != 0.f)) {
+        for (cont = 0; cont < points; cont++) {
+          if (cont <= save_i) {
               rho_local = rho_alpha[cont];
               x_slater(rho_local, &local_energy, &local_potential);
-              energy_array[cont] = local_energy;
-            }
-            exchange   = 4.f*Pi*numerical_int(grid, energy_array, points)*weight;
-            exchangex[dft] = exchange;
-            total_e_xc = total_e_xc + exchange;
-       } else
-       if(strcmp(save_dft[dft], "pbe") == 0) {
-         for (cont = 0; cont < points; cont++) {
-           rho_local = rho_alpha[cont];
-           drho_local = derho_alpha[cont];
-           pbe_sr_(&rho_local, &drho_local, &local_energy, &local_potential, &nolocal_pot);
-           energy_array[cont] = local_energy;
-          }
-        exchange = 4.f*Pi*numerical_int(grid, energy_array, points)*weight;
+//jgo              energy_array[cont] = local_energy;
+          } else
+              local_energy = 0.f;
+          energy_array[cont] = grid[cont]*grid[cont]*local_energy;
+        }
+//jgo            exchange   = 4.f*Pi*numerical_int(grid, energy_array, points)*weight;
+        exchange   = 4.f*Pi*integral_three_points(grid, energy_array, 1, save_i, points)*weight;
         exchangex[dft] = exchange;
         total_e_xc = total_e_xc + exchange;
-       } else
-       if(strcmp(save_dft[dft], "becke") == 0) {
+      } else
+      if((strcmp(save_dft[dft], "pbe") == 0) && (weight != 0.f)) {
+        for (cont = 0; cont < points; cont++) {
+          if (cont <= save_i ) {
+            rho_local = rho_alpha[cont];
+            drho_local = derho_alpha[cont];
+            pbe_sr_(&rho_local, &drho_local, &local_energy, &local_potential, &nolocal_pot);
+//jgo           energy_array[cont] = local_energy;
+          } else
+              local_energy = 0.f;
+          energy_array[cont] = grid[cont]*grid[cont]*local_energy;
+        }
+//jgo        exchange = 4.f*Pi*numerical_int(grid, energy_array, points)*weight;
+        exchange   = 4.f*Pi*integral_three_points(grid, energy_array, 1, save_i, points)*weight;
+        exchangex[dft] = exchange;
+        total_e_xc = total_e_xc + exchange;
+      } else
+      if((strcmp(save_dft[dft], "becke") == 0) && (weight != 0.f)) {
          for (cont = 0; cont < points; cont++) {
+           if (cont <= save_i ) {
+             rho_local = rho_alpha[cont];
+             drho_local = derho_alpha[cont];
+             d2rho_local = d2rho_alpha[cont];
+             ri = grid[cont];
+             r2 = grid[1];
+             becke_sr_(&ri, &r2, &rho_local, &drho_local, &d2rho_local, &local_energy, &local_potential);
+//jgo           energy_array[cont] = local_energy;
+           } else
+               local_energy = 0.f;
+           energy_array[cont] = grid[cont]*grid[cont]*local_energy;
+         }
+//jgo         exchange   = 4.f*Pi*numerical_int(grid, energy_array, points)*weight;
+         exchange   = 4.f*Pi*integral_three_points(grid, energy_array, 1, save_i, points)*weight;
+         exchangex[dft] = exchange;
+         total_e_xc = total_e_xc + exchange;
+       } else
+       if((strcmp(save_dft[dft], "pwl") == 0) && (weight != 0.f)) {
+         for (cont = 0; cont < points; cont++) {
+           if (cont <= save_i ) {
+             rho_local = rho_alpha[cont];
+             pw92sr_(&rho_local, &local_energy, &local_potential);
+//jgo           energy_array[cont] = local_energy;
+           } else
+               local_energy = 0.f;
+           energy_array[cont] = grid[cont]*grid[cont]*local_energy;
+         }
+//jgo         correlation = 4.f*Pi*numerical_int(grid, energy_array, points)*weight;
+         correlation = 4.f*Pi*integral_three_points(grid, energy_array, 1, save_i, points)*weight;
+         correlationc[dft] = correlation;
+         total_e_xc  = total_e_xc + correlation;
+       }  else 
+       if((strcmp(save_dft[dft], "lyp") == 0) && (weight != 0.f)) {
+         for (cont = 0; cont < points; cont++) {
+           if (cont <= save_i ) {
            rho_local = rho_alpha[cont];
            drho_local = derho_alpha[cont];
            d2rho_local = d2rho_alpha[cont];
            ri = grid[cont];
-           r2 = grid[1];
-           becke_sr_(&ri, &r2, &rho_local, &drho_local, &d2rho_local, &local_energy, &local_potential);
-           energy_array[cont] = local_energy;
+           lyp_sr_(&ri, &rho_local, &drho_local, &d2rho_local, &local_energy, &local_potential);
+//jgo           energy_array[cont] = local_energy;
+           } else
+               local_energy = 0.f;
+           energy_array[cont] = grid[cont]*grid[cont]*local_energy;
          }
-         exchange   = 4.f*Pi*numerical_int(grid, energy_array, points)*weight;
-         exchangex[dft] = exchange;
-               		total_e_xc = total_e_xc + exchange;
-                 
-                 }  else
-                        if(strcmp(save_dft[dft], "pwl") == 0) {
-                          for (cont = 0; cont < points; cont++) {
-                          rho_local = rho_alpha[cont];
-                     	  pw92sr_(&rho_local, &local_energy, &local_potential);
-                          energy_array[cont] = local_energy;
-                         }
-                         correlation = 4.f*Pi*numerical_int(grid, energy_array, points)*weight;
-                         correlationc[dft] = correlation;
-                         total_e_xc  = total_e_xc + correlation;
-                 }  else 
-                               if(strcmp(save_dft[dft], "lyp") == 0) {
-                                  for (cont = 0; cont < points; cont++) {
-                                  rho_local = rho_alpha[cont];
-                                  drho_local = derho_alpha[cont];
-                         	  d2rho_local = d2rho_alpha[cont];
-                         	  ri = grid[cont];
-                                  lyp_sr_(&ri, &rho_local, &drho_local, &d2rho_local, &local_energy, &local_potential);
-                                  energy_array[cont] = local_energy;
-                                 }
-                      		 correlation = 4.f*Pi*numerical_int(grid, energy_array, points)*weight;
-                       		 correlationc[dft] = correlation;
-                       	         total_e_xc  = total_e_xc + correlation;
-                          }  else
-                                  if(strcmp(save_dft[dft],"hf") != 0)
-                                  printf("\n>>>> XC FUCTIONAL NOT IMPLEMENTED YET %s\n", save_dft[dft]);
-     
-                }
+//jgo         correlation = 4.f*Pi*numerical_int(grid, energy_array, points)*weight;
+         correlation = 4.f*Pi*integral_three_points(grid, energy_array, 1, save_i, points)*weight;
+         correlationc[dft] = correlation;
+         total_e_xc  = total_e_xc + correlation;
+       }  else
+       if((strcmp(save_dft[dft],"hf") != 0 ) && (weight != 0))
+         printf("\n>>>> NON-IMPLEMENTED XC FUCTIONAL %s\n", save_dft[dft]);
+    }
   } else {//Open-Shell
       for (dft = 1; dft < flag_dft; dft++)
       {
@@ -237,6 +259,7 @@ double xc_energy(double *correlationc,
  extern double numerical_int(double   *grid,
                              double   *grid_fun,
                              int       points);
+ extern double integral_three_points(double *grid, double *function, int flag, int save_i, int n_points);
 // Definition of different basis set fucntions
 /*free*/
  extern double sto(int mu,double r,double *expo,int *np);
@@ -297,83 +320,94 @@ double xc_energy(double *correlationc,
   }
 
   if(compara == 0) {
-    for (dft = 1; dft < flag_dft; dft++)
-     {
-     weight = weight_dft[dft];
-     if(strcmp(save_dft[dft], "slater") == 0) {
-           for (cont = 0; cont < points; cont++) {
+    for (dft = 1; dft < flag_dft; dft++) { 
+      weight = weight_dft[dft];
+      if((strcmp(save_dft[dft], "slater") == 0) && (weight != 0.f)) {
+        for (cont = 0; cont < points; cont++) {
+          if (cont <= point_interm ){
              rho_local = rho_alpha[cont];
              if (rho_local > 1e-16) 
               x_slater(rho_local, &local_energy, &local_potential);
              else 
               local_potential = 0.f;
-             temp_add = pot_array[cont];
-             pot_array[cont] = temp_add + local_potential*weight;
-           }
-     } else
-        
-        if(strcmp(save_dft[dft], "becke") == 0) {
-              for (cont = 0; cont < points; cont++) {
-                rho_local = rho_alpha[cont];
-                drho_local = derho_alpha[cont];
-                d2rho_local = d2rho_alpha[cont];
-                ri = grid[cont];
-                r2 = grid[1];
-                if (rho_local > 1e-16) 
-                  becke_sr_(&ri, &r2, &rho_local, &drho_local, &d2rho_local, &local_energy, &local_potential);
-                else
-                  local_potential = 0.f;             
-                temp_add = pot_array[cont];
-                pot_array[cont] = temp_add + local_potential*weight;
-              }
-        }  else
-            if(strcmp(save_dft[dft], "pwl") == 0) {
-                  
-                  for (cont = 0; cont < points; cont++) {
-                    rho_local = rho_alpha[cont];
-                    if (rho_local > 1e-16) 
-                     pw92sr_(&rho_local, &local_energy, &local_potential);
-                    else 
-                     local_potential = 0.f;
-                    temp_add = pot_array[cont];
-                    pot_array[cont] = temp_add + local_potential*weight;
-                  }
-            }  else 
-                 if(strcmp(save_dft[dft], "lyp") == 0) {
-                       for (cont = 0; cont < points; cont++) {
-                         rho_local = rho_alpha[cont];
-                         drho_local = derho_alpha[cont];
-                         d2rho_local = d2rho_alpha[cont];
-                         ri = grid[cont];
-                         if (rho_local > 1e-16) 
-                           lyp_sr_(&ri, &rho_local, &drho_local, &d2rho_local, &local_energy, &local_potential);
-                         else
-                           local_potential = 0.f;             
-                         temp_add = pot_array[cont];
-                         pot_array[cont] = temp_add + local_potential*weight;
-                       }
-                  } else
-                  if(strcmp(save_dft[dft], "pbe") == 0) {
-                    for (cont = 0; cont < points; cont++) {
-                      rho_local = rho_alpha[cont];
-                      drho_local = derho_alpha[cont];
-                      if (rho_local > 1e-16) 
-                        pbe_sr_(&rho_local, &drho_local, &local_energy, &local_potential, &nolocal_pot);
-                      else {
-                        local_potential = 0.f;             
-                        nolocal_pot = 0.f;             
-                      }
-                      temp_add = pot_array[cont];
-                      pot_array[cont] = temp_add + local_potential*weight;
-                      nolocal_pot_array[cont] = nolocal_pot*weight;
-                    }
-                  }  else
-                  if(strcmp(save_dft[dft],"hf") != 0)
-                              printf("\n>>>> NOT HAVE THIS FUCTIONAL %s\n", save_dft[dft]);
-     
+	  } else
+	       local_potential = 0.f;
+          temp_add = pot_array[cont];
+          pot_array[cont] = temp_add + local_potential*weight;
+        }
+      } else
+      if((strcmp(save_dft[dft], "becke") == 0) && (weight != 0.f)) {
+        for (cont = 0; cont < points; cont++) {
+	  if (cont <= point_interm ){
+            rho_local = rho_alpha[cont];
+            drho_local = derho_alpha[cont];
+            d2rho_local = d2rho_alpha[cont];
+            ri = grid[cont];
+            r2 = grid[1];
+            if (rho_local > 1e-16) 
+              becke_sr_(&ri, &r2, &rho_local, &drho_local, &d2rho_local, &local_energy, &local_potential);
+            else
+              local_potential = 0.f;             
+	  } else
+	      local_potential = 0.f;
+          temp_add = pot_array[cont];
+          pot_array[cont] = temp_add + local_potential*weight;
+        }
+      } else
+      if((strcmp(save_dft[dft], "pwl") == 0) && (weight != 0.f)) {
+        for (cont = 0; cont < points; cont++) {
+	  if (cont <= point_interm ){
+            rho_local = rho_alpha[cont];
+            if (rho_local > 1e-16) 
+              pw92sr_(&rho_local, &local_energy, &local_potential);
+            else 
+              local_potential = 0.f;
+          } else
+              local_potential = 0.f;
+          temp_add = pot_array[cont];
+          pot_array[cont] = temp_add + local_potential*weight;
+        }
+      } else 
+      if((strcmp(save_dft[dft], "lyp") == 0) && (weight != 0.f)) {
+        for (cont = 0; cont < points; cont++) {
+	  if (cont <= point_interm ){
+            rho_local = rho_alpha[cont];
+            drho_local = derho_alpha[cont];
+            d2rho_local = d2rho_alpha[cont];
+            ri = grid[cont];
+            if (rho_local > 1e-16) 
+              lyp_sr_(&ri, &rho_local, &drho_local, &d2rho_local, &local_energy, &local_potential);
+            else
+              local_potential = 0.f;             
+          } else
+              local_potential = 0.f;
+          temp_add = pot_array[cont];
+          pot_array[cont] = temp_add + local_potential*weight;
+        }
+      } else
+      if((strcmp(save_dft[dft], "pbe") == 0) && (weight != 0.f)) {
+        for (cont = 0; cont < points; cont++) {
+	  if (cont <= point_interm ){
+            rho_local = rho_alpha[cont];
+            drho_local = derho_alpha[cont];
+            if (rho_local > 1e-16) 
+              pbe_sr_(&rho_local, &drho_local, &local_energy, &local_potential, &nolocal_pot);
+            else {
+              local_potential = 0.f;             
+              nolocal_pot = 0.f;             
+            }
+          } else {
+              local_potential = 0.f;             
+              nolocal_pot = 0.f;             
+          }
+          temp_add = pot_array[cont];
+          pot_array[cont] = temp_add + local_potential*weight;
+          nolocal_pot_array[cont] = nolocal_pot*weight;
+        }
+      } else
+      if((strcmp(save_dft[dft],"hf") != 0) && (weight != 0))
+        printf("\n>>>> NON-IMPLEMENTED XC FUCTIONAL %s\n", save_dft[dft]);
      }
-
-
 
      for (k = 0; k < total_elements; k++) {
        indexes(nt, k, &index_i, &index_j);
@@ -394,21 +428,28 @@ double xc_energy(double *correlationc,
            if(strcmp(bound,"finite") == 0) {
              for (i = 0; i < points; i++) {
                p1 = grid[i];
-                 if (i < point_interm){ 
-                    local_int[i]  = pot_array[i]*msto_finite_int(using_gamma, index_i, p1, Rc, np, gamma_couple, expo, NC_minus)*msto_finite_int(using_gamma, index_j, p1, Rc, np, gamma_couple, expo, NC_minus);
+                 if (i <= point_interm){ 
+                    local_int[i]  = pot_array[i]*msto_finite_int(using_gamma, index_i, p1, Rc, np, gamma_couple, expo, NC_minus)*
+			                         msto_finite_int(using_gamma, index_j, p1, Rc, np, gamma_couple, expo, NC_minus);
                   
-                   temp_potnol=msto_finite_int(using_gamma, index_i, p1, Rc, np, gamma_couple, expo, NC_minus)*der_msto_finite_int(using_gamma,index_j, p1, Rc, np, gamma_couple,expo, NC_minus);
+                   temp_potnol=msto_finite_int(using_gamma, index_i, p1, Rc, np, gamma_couple, expo, NC_minus)*
+			       der_msto_finite_int(using_gamma,index_j, p1, Rc, np, gamma_couple,expo, NC_minus);
 
-                  temp_potnol = temp_potnol +msto_finite_int(using_gamma, index_j, p1, Rc, np, gamma_couple, expo, NC_minus)*der_msto_finite_int(using_gamma, index_i, p1, Rc, np, gamma_couple, expo, NC_minus);
+                  temp_potnol = temp_potnol + msto_finite_int(using_gamma, index_j, p1, Rc, np, gamma_couple, expo, NC_minus)*
+			                      der_msto_finite_int(using_gamma, index_i, p1, Rc, np, gamma_couple, expo, NC_minus);
                    local_int[i] = local_int[i] + nolocal_pot_array[i]*temp_potnol;
 	       
                 } else {
-                 local_int[i]  = pot_array[i]*msto_finite_ext(index_i, p1, Rc, mang, gamma_couple, zetas, NC_plus)*msto_finite_ext(index_j, p1, Rc, mang, gamma_couple, zetas, NC_plus);
+                 local_int[i]  = pot_array[i]*msto_finite_ext(index_i, p1, Rc, mang, gamma_couple, zetas, NC_plus)*
+			                      msto_finite_ext(index_j, p1, Rc, mang, gamma_couple, zetas, NC_plus);
                     
-                   temp_potnol= msto_finite_ext(index_i, p1, Rc, mang, gamma_couple, zetas, NC_plus)*der_msto_finite_ext(index_j, p1, Rc, mang, gamma_couple, zetas, NC_plus);
+                   temp_potnol= msto_finite_ext(index_i, p1, Rc, mang, gamma_couple, zetas, NC_plus)*
+			        der_msto_finite_ext(index_j, p1, Rc, mang, gamma_couple, zetas, NC_plus);
                    
-                  temp_potnol=temp_potnol+msto_finite_ext(index_j, p1, Rc, mang, gamma_couple, zetas, NC_plus)*der_msto_finite_ext(index_i, p1, Rc, mang, gamma_couple, zetas, NC_plus);
+                  temp_potnol=temp_potnol+msto_finite_ext(index_j, p1, Rc, mang, gamma_couple, zetas, NC_plus)*
+			      der_msto_finite_ext(index_i, p1, Rc, mang, gamma_couple, zetas, NC_plus);
                    local_int[i]=local_int[i] + nolocal_pot_array[i]*temp_potnol;
+		   local_int[i] = 0.f;
                    
              }
             }
@@ -429,14 +470,20 @@ double xc_energy(double *correlationc,
            if(strcmp(bound,"confined") == 0) {
              for (i = 0; i < points; i++) {
              p1 = grid[i];
-             local_int[i]  = pot_array[i]*msto(index_i, p1, Rc, expo, np, arreglo_factorial, arreglo_inv_factorial)*msto(index_j, p1, Rc, expo, np, arreglo_factorial, arreglo_inv_factorial);
-             temp_potnol = msto(index_i, p1, Rc, expo, np, arreglo_factorial, arreglo_inv_factorial)*der_msto_r(index_j, p1, Rc, expo, np, arreglo_factorial, arreglo_inv_factorial);
-             temp_potnol = temp_potnol + msto(index_j, p1, Rc, expo, np, arreglo_factorial, arreglo_inv_factorial)*der_msto_r(index_i, p1, Rc, expo, np, arreglo_factorial, arreglo_inv_factorial);
+             local_int[i]  = pot_array[i]*msto(index_i, p1, Rc, expo, np, arreglo_factorial, arreglo_inv_factorial)*
+		                          msto(index_j, p1, Rc, expo, np, arreglo_factorial, arreglo_inv_factorial);
+             temp_potnol = msto(index_i, p1, Rc, expo, np, arreglo_factorial, arreglo_inv_factorial)*
+		           der_msto_r(index_j, p1, Rc, expo, np, arreglo_factorial, arreglo_inv_factorial);
+             temp_potnol = temp_potnol + msto(index_j, p1, Rc, expo, np, arreglo_factorial, arreglo_inv_factorial)*
+		           der_msto_r(index_i, p1, Rc, expo, np, arreglo_factorial, arreglo_inv_factorial);
              local_int[i]  = local_int[i] + nolocal_pot_array[i]*temp_potnol;
              }
            } else 
               printf("\nI do not have correct flag\n");
-           mat_ks[k] = numerical_int(grid, local_int, points);
+//jgo           mat_ks[k] = numerical_int(grid, local_int, points);
+           for (i = 0; i <= point_interm; i++) 
+             local_int[i] = grid[i]*grid[i]*local_int[i];
+           mat_ks[k] = integral_three_points(grid, local_int, 1, point_interm, points);
          }
        }
        else {
