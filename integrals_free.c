@@ -528,5 +528,118 @@ double use_upper_incomplete_gamma(double Rc, int a1, int a2, double b1, double b
         return result;
  }
 
+double upper_incomplete_gamma_5_points(double Rc, int a, double b, int n_points, int save_i, double *grid) {
+// Evaluation of 
+//               \int_{R_c}^{\infty} r^{-a} exp(-b r)
+ int i, indice, blocks;
+ double x0, x1, x2, x3, x4, f0, f1, f2, f3, f4;
+ double decae, total_integral;
 
+ extern double integral_five_points(double x_0, double x_1, double x_2, double x_3, double x_4,
+                                    double f_0, double f_1, double f_2, double f_3, double f_4);
 
+ if(a == 0)
+   total_integral = exp(-b*Rc)/b;
+ else {
+   decae = -(double) a;
+   blocks = (n_points - save_i + 1)/5;
+
+   total_integral = 0.f;
+   for (i = 0; i < blocks; i++) {
+       indice = 4*i + save_i;
+       x0 = grid[indice];     f0 = pow(x0,decae)*exp(-b*x0);
+       x1 = grid[indice + 1]; f1 = pow(x1,decae)*exp(-b*x1);
+       x2 = grid[indice + 2]; f2 = pow(x2,decae)*exp(-b*x2);
+       x3 = grid[indice + 3]; f3 = pow(x3,decae)*exp(-b*x3);
+       x4 = grid[indice + 4]; f4 = pow(x4,decae)*exp(-b*x4);
+       total_integral = total_integral + integral_five_points(x0, x1, x2, x3, x4, f0, f1, f2, f3, f4);
+   }
+ }
+
+ return(total_integral);
+}
+
+double use_upper_incomplete_gamma_5_points(double Rc, int a1, int a2, double b1, double b2, int n_points, int save_i, double *grid) {
+// Evaluation of 
+//               \int_{R_c}^{\infty} r^{-a1} exp(-b1 r) Int2(a2, b2, r1)
+ int i, indice, blocks;
+ double x0, x1, x2, x3, x4, f0, f1, f2, f3, f4;
+ double decae, total_integral;
+
+ extern double integral_five_points(double x_0, double x_1, double x_2, double x_3, double x_4,
+                                    double f_0, double f_1, double f_2, double f_3, double f_4);
+ extern double upper_incomplete_gamma_5_points(double Rc, int a, double b, int n_points, int save_i, double *grid);
+
+ if (a1 == 0) {
+   total_integral = exp(-b1*Rc)/b1;
+ } else {
+   decae = -(double) a1;
+   blocks = (n_points - save_i + 1)/5;
+
+   total_integral = 0.f;
+   for (i = 0; i < blocks; i++) {
+       indice = 4*i + save_i;
+       x0 = grid[indice];     f0 = pow(x0,decae)*exp(-b1*x0)*upper_incomplete_gamma_5_points(x0, a2, b2, n_points, save_i, grid);
+       x1 = grid[indice + 1]; f1 = pow(x1,decae)*exp(-b1*x1)*upper_incomplete_gamma_5_points(x1, a2, b2, n_points, save_i, grid);
+       x2 = grid[indice + 2]; f2 = pow(x2,decae)*exp(-b1*x2)*upper_incomplete_gamma_5_points(x2, a2, b2, n_points, save_i, grid);
+       x3 = grid[indice + 3]; f3 = pow(x3,decae)*exp(-b1*x3)*upper_incomplete_gamma_5_points(x3, a2, b2, n_points, save_i, grid);
+       x4 = grid[indice + 4]; f4 = pow(x4,decae)*exp(-b1*x4)*upper_incomplete_gamma_5_points(x4, a2, b2, n_points, save_i, grid);
+       total_integral = total_integral + integral_five_points(x0, x1, x2, x3, x4, f0, f1, f2, f3, f4);
+   }
+ }
+ return(total_integral);
+}
+
+// Function to evaluate numerically \int_{x_0}^{x_4} f(x) dx with five points
+//
+double integral_five_points(double x_0, double x_1, double x_2, double x_3, double x_4,
+                           double f_0, double f_1, double f_2, double f_3, double f_4) {
+  double total, num1, num2, num3, num4, num5, denom1, denom2, denom3, denom4, denom5,
+         term1, term2, term3, term4, term5;
+  double dif_x4x0, dif_x4x1, dif_x4x3, dif_x3x2, dif_x3x1, dif_x3x0, dif_x4x2, dif_x2x1, dif_x2x0,
+	 dif_x1x0;
+
+  dif_x4x0 = x_4 - x_0;
+  dif_x4x1 = x_4 - x_1;
+  dif_x4x2 = x_4 - x_2;
+  dif_x4x3 = x_4 - x_3;
+  dif_x3x2 = x_3 - x_2;
+  dif_x3x1 = x_3 - x_1;
+  dif_x3x0 = x_3 - x_0;
+  dif_x2x1 = x_2 - x_1;
+  dif_x2x0 = x_2 - x_0;
+  dif_x1x0 = x_1 - x_0;
+
+  num1 = 3.f*x_0*x_0 + 10.f*x_1*x_2 - 5.f*x_0*(x_1 + x_2) + 4.f*x_0*x_4 - 5.f*(x_1 + x_2)*x_4 + 3.f*x_4*x_4;
+  num1 = f_3*dif_x4x0*dif_x4x0*num1;
+  denom1 = dif_x3x0*dif_x3x1*dif_x3x2*dif_x4x3;
+  term1 = -num1/denom1;
+
+  num2 = 3.f*x_0*x_0 + 10.f*x_1*x_3 - 5.f*x_0*(x_1 + x_3) + 4.f*x_0*x_4 - 5.f*(x_1 + x_3)*x_4 + 3.f*x_4*x_4;
+  num2 = f_2*dif_x4x0*dif_x4x0*num2;
+  denom2 = -dif_x2x0*dif_x2x1*dif_x3x2*dif_x4x2;
+  term2 = -num2/denom2;
+
+  num3 = 3.f*x_0*x_0 + 10.f*x_2*x_3 - 5.f*x_0*(x_2 + x_3) + 4.f*x_0*x_4 - 5.f*(x_2 + x_3)*x_4 + 3.f*x_4*x_4;
+  num3 = f_1*dif_x4x0*dif_x4x0*num3;
+  denom3 = dif_x1x0*dif_x2x1*dif_x3x1*dif_x4x1;
+  term3 = -num3/denom3;
+
+  num4 = 12.f*x_0*x_0*x_0 - 30.f*x_1*x_2*x_3 + 10.f*(x_2*x_3 + x_1*(x_2 + x_3))*x_4;
+  num4 = num4 - 5.f*(x_1 + x_2 + x_3)*x_4*x_4 + 3.f*x_4*x_4*x_4 + 3.f*x_0*x_0*(-5.f*(x_1 + x_2 + x_3) + 3.f*x_4);
+  num4 = num4 + 2.f*x_0*(10.f*(x_2*x_3 + x_1*(x_2 + x_3)) - 5.f*(x_1 + x_2 + x_3)*x_4 + 3.f*x_4*x_4);
+  num4 = f_0*num4;
+  denom4 = -dif_x1x0*dif_x2x0*dif_x3x0;
+  term4 = -num4/denom4;
+
+  num5 = 3.f*x_0*x_0*x_0 - 30.f*x_1*x_2*x_3 + 20.f*(x_2*x_3 + x_1*(x_2 + x_3))*x_4;
+  num5 = num5 - 15.f*(x_1 + x_2 + x_3)*x_4*x_4 + 12.f*x_4*x_4*x_4 + x_0*x_0*(-5.f*(x_1 + x_2 + x_3) + 6.f*x_4);
+  num5 = num5 + x_0*(10.f*(x_2*x_3 + x_1*(x_2 + x_3)) - 10.f*(x_1 + x_2 + x_3)*x_4 + 9.f*x_4*x_4);
+  num5 = f_4*num5;
+  denom5 = -dif_x4x1*dif_x4x2*dif_x4x3;
+  term5 = num5/denom5;
+
+  total = -dif_x4x0/60.f;
+  total = total*(term1 + term2 + term3 + term4 + term5);
+  return (total);
+  }
