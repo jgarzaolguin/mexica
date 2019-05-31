@@ -32,7 +32,7 @@ extern  int bielectronicas_CPU(char   *using_gamma,
                                double *N_minus, 
                                double *N_plus,
                                double *arreglo_factorial, 
-                               double *arreglo_inv_factorial)
+                               double *arreglo_inv_factorial, int n_points, int save_i, double *grid)
 {
   int i, indice_i, indice_j, indice_k, indice_l;
   int cuad, cubo, cuart, high_l;
@@ -54,7 +54,7 @@ extern  int bielectronicas_CPU(char   *using_gamma,
   cubo = cuad*nt;
   cuart = cubo*nt;
   inv_Rc = 1.f/Rc;
-  #pragma omp parallel shared(integrales_bie, Rc, bound, expo, np, mang, ncm, cuad, cubo, cuart, nt, gamma_couple, two_l_plus_1) private(i, indice_i,indice_j, indice_k, indice_l, integral_cpu)
+  #pragma omp parallel shared(integrales_bie, Rc, bound, expo, np, mang, ncm, cuad, cubo, cuart, nt, gamma_couple, two_l_plus_1, n_points, save_i, grid) private(i, indice_i,indice_j, indice_k, indice_l, integral_cpu)
   {
     #pragma omp for
     for (i = 0; i < cuart; i++) {
@@ -729,7 +729,7 @@ extern int ep2_cpu(char   *espin,
                                double *N_minus, 
                                double *N_plus,
                                double *arreglo_factorial, 
-                               double *arreglo_inv_factorial);
+                               double *arreglo_inv_factorial, int n_points, int save_i, double *grid);
  extern double factorial(int);
 
  extern int grid_rhorad(int           z,
@@ -843,6 +843,7 @@ extern int ep2_cpu(char   *espin,
  extern double xc_energy(double *correlationc,
                          double *exchangex,
                          int     points,
+			 int     save_i,
                          int     compara,
                          char   **save_dft,
                          double *weight_dft,
@@ -904,6 +905,9 @@ extern int ep2_cpu(char   *espin,
  extern double numerical_int(double   *grid,
                              double   *grid_fun,
                              int       points);
+
+ extern double integral_three_points(double *grid, double *function, int flag, int point_1, int point_2);
+
  extern int building_grid(int      z,
                           char    *bound,
                           double  Rc,
@@ -916,10 +920,10 @@ extern int ep2_cpu(char   *espin,
 
  extern int Evaluate_Elect_Pot(double z, int nt, double *matp, int *np, int *ang, int *ncm,
                       double *expo, char *bound, double *arreglo_factorial,
-                      double *arreglo_inv_factorial, double *grid, int n_points, double Rc,
+                      double *arreglo_inv_factorial, double *grid, int save_i,int n_points, double Rc,
                       double *NC_minus, double *NC_plus, char *basis, double *pot_elect_grid);
 
- extern int print_out_arrays(int points, double *grid, double *array1, double *array2, char *name_file);
+ extern int print_out_arrays(int points, double *grid, double *array1, double *array2, double *array3, char *name_file);
 
 
  time_t time_scf_ini, time_scf_fin, time_bie_ini, time_bie_fin, time_3, time_4;
@@ -951,7 +955,7 @@ extern int ep2_cpu(char   *espin,
  cx_D = -0.7386f;
  coef_HF = 0.f;
  save_coef_HF = 0;
- n_points = 600;               //número de puntos
+ n_points = 2000;               //número de puntos
  grid = NULL;
  memoria_double_uni(n_points*(sizeof(double)), &grid, "Grid");
  grid[0] = 0.f;
@@ -976,6 +980,7 @@ extern int ep2_cpu(char   *espin,
    coef_HF = 0.f;
 
  save_i = 0;
+
 
  building_grid(z,
               bound,
@@ -1176,6 +1181,7 @@ extern int ep2_cpu(char   *espin,
     arreglo_inv_factorial[i] = 1.f/arreglo_factorial[i];
   }
 
+
   if(strcmp(bound,"finite") == 0 || strcmp(bound,"dielectricc") == 0 || strcmp(bound,"polarization") == 0 || strcmp(bound,"parabolic") == 0) {
      NC_minus = NULL;
      memoria_double_uni(sizedouble, &NC_minus, "NC_minus");
@@ -1314,7 +1320,7 @@ extern int ep2_cpu(char   *espin,
                           NC_minus, 
                           NC_plus, 
                           arreglo_factorial,
-                          arreglo_inv_factorial);
+                          arreglo_inv_factorial, n_points, save_i, grid);
  time_bie_fin = time(NULL);
  printf("Two-electron integrals (%g) in %.1f s\n", (float) cuart, (float) (time_bie_fin - time_bie_ini));
  
@@ -1534,6 +1540,7 @@ extern int ep2_cpu(char   *espin,
            e_xc = xc_energy(correlationc,
                             exchangex,
                             n_points,
+			    save_i,
                             compara,
                             save_dft,
                             weight_dft,
@@ -1772,6 +1779,7 @@ extern int ep2_cpu(char   *espin,
                  e_xc = xc_energy(correlationc,
                                   exchangex,
                                   n_points,
+				  save_i,
                                   compara,
                                   save_dft,
                                   weight_dft,
@@ -2114,11 +2122,11 @@ extern int ep2_cpu(char   *espin,
                                  grid, grid_rho, NULL, grid_der, NULL, n_points,
                                  arreglo_factorial, arreglo_inv_factorial,
                                  matp, mats, &iter, save_i, print_vectors, cusp_kato);
-                  Evaluate_Elect_Pot(z, nt, matp, np, mang, ncm, expo, bound,
-                                      arreglo_factorial, arreglo_inv_factorial, 
-                                      grid, n_points, Rc, NC_minus, NC_plus, basis,
-				      pot_elect_grid);
-                  print_out_arrays(n_points, grid, pot_xc_grid, pot_elect_grid, "results.dat");
+//jgo                  Evaluate_Elect_Pot(z, nt, matp, np, mang, ncm, expo, bound,
+//jgo                                      arreglo_factorial, arreglo_inv_factorial, 
+//jgo                                      grid, save_i, n_points, Rc, NC_minus, NC_plus, basis,
+//jgo				      pot_elect_grid);
+                  print_out_arrays(n_points, grid, grid_rho, pot_xc_grid, pot_elect_grid, "results.dat");
 		  free(pot_elect_grid);
 		  pot_elect_grid = 0;
 		  free(pot_xc_grid);
@@ -2352,7 +2360,6 @@ extern int ep2_cpu(char   *espin,
                    SHAN = 4.f*Pi*numerical_int(grid,
                                                array_ii,
                                                n_points);
-
                    printf("\n Number electrons from integral rho %5.8lf \n \n", SHAN);
 
                    FILE *workout;
@@ -2365,8 +2372,8 @@ extern int ep2_cpu(char   *espin,
 		      pot_elect_grid = (double *)malloc(n_points*sizeof(double));
                       Evaluate_Elect_Pot(z, nt, matp, np, mang, ncm, expo, bound,
                                     arreglo_factorial, arreglo_inv_factorial,
-                                    grid, n_points, Rc, NC_minus, NC_plus, basis, pot_elect_grid);
-                      print_out_arrays(n_points, grid, array_i, NULL, "xc.dat");
+                                    grid, save_i, n_points, Rc, NC_minus, NC_plus, basis, pot_elect_grid);
+                      print_out_arrays(n_points, grid, array_ii,  array_i, NULL, "xc.dat");
 		      free(pot_elect_grid);
 		      pot_elect_grid = 0;
                     }
