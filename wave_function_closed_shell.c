@@ -88,7 +88,8 @@ int wf_closed_shell(int z, char *using_gamma, int compara, char *bound, char *ba
 
    SHAN = 4.f*Pi*numerical_int(grid, array_i, n_points);
 
-   if(strcmp(bound,"free") == 0 && Rc == 0.f)
+//   if(strcmp(bound,"free") == 0 && Rc == 0.f)
+   if(strcmp(bound,"free") == 0)
       printf("\nShannon entropy(%s,%s)= %5.4lf\n", tipo, bound, SHAN);
    else
       printf("\nShannon entropy(%s,%s,Rc: %3.3lf)= %5.4lf\n", tipo, bound, Rc, SHAN);
@@ -103,7 +104,8 @@ int wf_closed_shell(int z, char *using_gamma, int compara, char *bound, char *ba
    FILE *workout;
    char nameout[200];
 
-   if (strcmp(bound, "free") == 0 && Rc == 0.f)
+//   if (strcmp(bound, "free") == 0 && Rc == 0.f)
+   if (strcmp(bound, "free") == 0)
      sprintf(nameout, "%s_%s_rho_and_der", bound, tipo);
    else
      sprintf(nameout, "%3.3f_%s_%s_rho_and_der", Rc, bound, tipo);

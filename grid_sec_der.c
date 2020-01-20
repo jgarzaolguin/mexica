@@ -118,7 +118,7 @@
  int unsigned i;
  double p1;
 
- if(strcmp(basis,"STOs") == 0){     /* begins stos */
+ if(strcmp(basis,"stos") == 0){     /* begins stos */
    if (strcmp(bound,"free") == 0) {
      for (i = 0; i < n_points; i++) { //for save_temp
         p1 = grid[i];
@@ -183,7 +183,7 @@
       } //if finite
   } /* ends stos */
   else{
-     if(strcmp(basis,"GTOs") == 0){
+     if(strcmp(basis,"gtos") == 0){
         if(strcmp(bound,"confined") == 0){
            for(i = 0; i < n_boundary; i++) { //for save_temp
               p1 = grid[i];

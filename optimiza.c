@@ -37,8 +37,7 @@ void optimiza(int     nt,
               int    *opt_flag, 
 	      double  epsilon, 
 	      int     imprime,
-              int     plasma,
-              char   *properties)
+              int     plasma)
 {
  int i, j, k;
  int index, todos, ang_test, deg, test_scf;
@@ -109,8 +108,7 @@ void optimiza(int     nt,
                 double  epsilon, 
                 int     imprime,
                 int     plasma,
-                double *cusp_kato,
-                char   *properties);
+                double *cusp_kato);
 
 
  extern int checking_linear_dependece(int       nt,
@@ -268,8 +266,7 @@ void optimiza(int     nt,
                                  epsilon,
                                  0,
                                  plasma,
-                                 &cusp_kato,
-                                 properties);
+                                 &cusp_kato);
 
                   if(test_scf == 0)
                      ener_array[1] = energia;
@@ -311,8 +308,7 @@ void optimiza(int     nt,
                                  epsilon,
                                  0,
                                  plasma,
-                                 &cusp_kato,
-                                 properties);
+                                 &cusp_kato);
 
                   if(test_scf == 0)
                      ener_array[0] = energia;
@@ -326,7 +322,7 @@ void optimiza(int     nt,
                         index = todos + i - 1;
                         expo[index] = x2;
                      }
-//                     if(strcmp(basis, "STOs") || strcmp(basis, "stos") == 0 ) {   
+//                     if(strcmp(basis, "stos") == 0 ) {   
 //                        if(strcmp(bound, "finite") || strcmp(bound, "dielectricc") == 0 || strcmp(bound,"polarization") == 0) {
 //                           checking_expo = check_expotents_finite(using_gamma,
 //                                                                  gamma_couple,
@@ -366,8 +362,7 @@ void optimiza(int     nt,
                                           epsilon,
                                           0,
                                           plasma,
-                                          &cusp_kato,
-                                          properties);
+                                          &cusp_kato);
 //                        }
 //                        else {
 //                           test_scf = 1;

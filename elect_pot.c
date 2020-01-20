@@ -471,7 +471,7 @@ double Elect_Pot_RHO(int nt, double *matp, int *np, int *ang, int *ncm,
               if (coef2 != (double)0) {
                 partial = matp[mu*nt + nu]*coef1*coef2*Spherical_Harmonics_at_zero(l,m);
                 if (strcmp(bound,"free") == 0) {
-                  if (strcmp(basis,"STOs") == 0)
+                  if (strcmp(basis,"stos") == 0)
                     sumatot = sumatot + partial*Elect_Pot_Free_RHO(mu, nu, l, nt, matp, np, expo,
                                                              arreglo_factorial,
                                                              arreglo_inv_factorial, r);

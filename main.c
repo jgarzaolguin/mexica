@@ -6,6 +6,7 @@
 // by penetrable or impenetrable walls.
 // Authors: Jorge Garza (jgo@xanum.uam.mx)
 //          Mariano Rodriguez-Bautista (marianorodbau@gmail.com)
+//          Michael Adán Martínez Sánchez (quim91adan@gmail.com)
 // Version 1.0. Sept, 2015.
 // Please cite this work as:
 //--------------------------------------------------------------------------------------------------
@@ -51,8 +52,7 @@ int optimiza_main(int     nt,
 		  char   *config,
                   char   *nombre, 
 		  int     imprime,
-                  int plasma,
-                  char   *properties)
+                  int plasma)
 { //Function to optimize exponents in the basis set
  int i, j;
  double maxdiff;
@@ -90,8 +90,7 @@ int optimiza_main(int     nt,
 		      int    *opt_flag,
                       double  epsilon, 
 		      int     imprime,
-                      int plasma,
-                      char   *properties);
+                      int plasma);
 
 //mrb    for (i = 0; i < nt; i++) expo_diff[i] = 0.f;
 //mrb    i = 0;
@@ -131,8 +130,7 @@ int optimiza_main(int     nt,
 	  	   opt_flag,
                    epsilon, 
 		   imprime,
-                   plasma,
-                   properties);
+                   plasma);
 
 //mrb          for (j = 0; j < nt; j++) 
 //mrb             {
@@ -176,7 +174,7 @@ int optimiza_main(int     nt,
   double x0, x1, x2, energia_0, energia_1, temp_gam;
   char config[4], read_base[10], bound[15], tipo[16],  opt[10],
        espin[10], nombre[100], correlation[10], propagador[10], using_gamma[10],
-       properties[10], basis[15];
+       basis[15];
   double energy_array[500], gamma_array[500];
  
   char kind_of_cal[10];
@@ -254,8 +252,7 @@ for(i=0 ; i < 80 ; i++){
                             double *count_temp, 
                             double *count_final, 
                             int    *steps,
-                            int    *plasma,
-                            char   *properties);
+                            int    *plasma);
   
  extern int           scf(int     nt, 
                            int     elecalfa, 
@@ -286,8 +283,7 @@ for(i=0 ; i < 80 ; i++){
                            double  epsilon,
                            int     imprime,
                            int     plasma,
-                           double *cusp_kato,
-                           char   *properties);
+                           double *cusp_kato);
  
  extern int optimiza_main( int     nt, 
                            char   *opt,
@@ -320,8 +316,7 @@ for(i=0 ; i < 80 ; i++){
                            char   *config,
                            char   *nombre, 
                            int     imprime,
-                           int     plasma,
-                           char   *properties);
+                           int     plasma);
 
  extern int  main_finite_global(double   z,
                                int      elecalfa,
@@ -357,10 +352,7 @@ for(i=0 ; i < 80 ; i++){
                                double   count_final,
                                int      steps,
                                double  *energia,
-                               int      plasma,
-                               char    *properties);
-
-
+                               int      plasma);
  
  // Maximum size of the Fock matrix and related matrices, you can change it and recompile
  int maxfun = 800;
@@ -410,8 +402,7 @@ for(i=0 ; i < 80 ; i++){
  		  &count_temp, 
   		  &count_final, 
  		  &steps,
-                  &plasma,
-                   properties);
+                  &plasma);
 
 // for (i = 0; i < 80; i++) {
 // printf("%s %lf %d\n", save_dft[i], weight_dft[i], flag_dft);
@@ -420,7 +411,7 @@ for(i=0 ; i < 80 ; i++){
   
  if(test_inp == 0) {
     if(strcmp(opt,"opt") == 0 || strcmp(opt,"optfull") == 0) {       //Optimization of exponents in the basis set
-       if(strcmp(basis,"STOs") == 0 || strcmp(basis,"stos") == 0) {  //begins stos
+       if(strcmp(basis,"stos") == 0) {  //begins stos
           if(strcmp(bound,"finite") == 0 || strcmp(bound,"dielectricc") == 0 || strcmp(bound,"polarization") == 0) { //Confinement imposed by penetrable walls
              main_finite_global(z,
                                 elecalfa,
@@ -456,8 +447,7 @@ for(i=0 ; i < 80 ; i++){
                                 count_final,
                                 steps,
                                 &energia,
-                                plasma,
-                                properties);
+                                plasma);
           } 
           else { //Procedure for free atoms or confinement imposed by impenetrable walls
              optimiza_main(nt, 
@@ -491,8 +481,7 @@ for(i=0 ; i < 80 ; i++){
                            config, 
                            nombre, 
                            0,
-                           plasma,
-                           properties);
+                           plasma);
              scf(nt, 
                  elecalfa, 
                  elecbeta, 
@@ -522,12 +511,11 @@ for(i=0 ; i < 80 ; i++){
                  epsilon, 
                  1,
                  plasma,
-                 &cusp_kato,
-                 properties);
+                 &cusp_kato);
           }
        }    // ends stos
        else {
-          if(strcmp(basis,"GTOs") == 0 || strcmp(basis,"gtos") == 0) {
+          if(strcmp(basis,"gtos") == 0) {
              optimiza_main(nt,
                            opt,
                            elecalfa,
@@ -559,8 +547,7 @@ for(i=0 ; i < 80 ; i++){
                            config,
                            nombre,
                            0,
-                           plasma,
-                           properties); 
+                           plasma);
              scf(nt,
                  elecalfa,
                  elecbeta,
@@ -590,8 +577,7 @@ for(i=0 ; i < 80 ; i++){
                  epsilon,
                  1,
                  plasma,
-                 &cusp_kato,
-                 properties);
+                 &cusp_kato);
           }
        }    // ends gtos
     }       // ends opt calculation 
@@ -625,8 +611,7 @@ for(i=0 ; i < 80 ; i++){
            epsilon, 
            1,
            plasma,
-           &cusp_kato,
-           properties);
+           &cusp_kato);
     }
 //
 // Reporting final energy

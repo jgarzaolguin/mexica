@@ -81,8 +81,8 @@
  int unsigned i;
  double p1;
 
-   if(strcmp(bound,"free") == 0) {
-      if(strcmp(basis,"STOs") == 0){
+   if(strcmp(bound,"free") == 0 || strcmp(bound,"debye") == 0 || strcmp(bound,"yukawa") == 0) {
+      if(strcmp(basis,"stos") == 0){
          for(i = 0; i < n_points; i++) { //for save_temp
             p1 = grid[i];
             if(compara == 0) {
@@ -98,7 +98,7 @@
          }
       } /* ends gtos */
       else {
-         if(strcmp(basis,"GTOs") == 0){
+         if(strcmp(basis,"gtos") == 0){
             for(i = 0; i < n_points; i++) { 
                p1 = grid[i];
                if(compara == 0) {
@@ -114,7 +114,7 @@
    } /* ends Free */ 
    else {
       if(strcmp(bound,"finite") == 0){
-         if(strcmp(basis,"STOs") == 0){
+         if(strcmp(basis,"stos") == 0){
             for(i = 0; i < n_boundary; i++) { //for save_temp
                p1 = grid[i];
                if(compara == 0) {
@@ -143,7 +143,7 @@
             }
          }  /* ends stos */
          else {
-            if(strcmp(basis,"GTOs") == 0){
+            if(strcmp(basis,"gtos") == 0){
                for(i = 0; i < n_points; i++) {
                   p1 = grid[i]; 
                   if(compara == 0) {
@@ -159,7 +159,7 @@
       } /* ends Finite */
       else {
          if(strcmp(bound,"dielectricc") == 0){
-            if(strcmp(basis,"GTOs") == 0){
+            if(strcmp(basis,"gtos") == 0){
                for(i = 0; i < n_points; i++) {
                   p1 = grid[i];
                   if(compara == 0) {
@@ -174,7 +174,7 @@
          } /* ends dielectricc*/
          else {
             if(strcmp(bound,"parabolic") == 0){
-               if(strcmp(basis,"GTOs") == 0){
+               if(strcmp(basis,"gtos") == 0){
                   for(i = 0; i < n_points; i++) {
                      p1 = grid[i];
                      if(compara == 0) {
@@ -189,7 +189,7 @@
             }  /* ends parabolic */
             else {
                if(strcmp(bound,"confined") == 0){
-                  if(strcmp(basis,"STOs") == 0){
+                  if(strcmp(basis,"stos") == 0){
                      for(i = 0; i < n_boundary; i++) { //for save_temp
                         p1 = grid[i];
                         if(compara == 0) {
@@ -205,7 +205,7 @@
                      } //for save_temp
                   } /* ends stos */
                   else{
-                     if(strcmp(basis,"GTOs") == 0){
+                     if(strcmp(basis,"gtos") == 0){
                         for(i = 0; i < n_boundary; i++) { //for save_temp
                            p1 = grid[i];
                            if(compara == 0) {

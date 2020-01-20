@@ -24,7 +24,8 @@ extern  int bielectronicas_CPU(char   *using_gamma,
                                int    *mang, 
                                int    *ncm, 
                                double *expo,
-                               char   *bound, 
+                               char   *bound,
+			       double  u0, 
                                double  Rc, 
                                double  gamma_couple, 
                                double *integrales_bie, 
@@ -32,16 +33,34 @@ extern  int bielectronicas_CPU(char   *using_gamma,
                                double *N_minus, 
                                double *N_plus,
                                double *arreglo_factorial, 
-                               double *arreglo_inv_factorial, int n_points, int save_i, double *grid)
+                               double *arreglo_inv_factorial, 
+			       int n_points, 
+			       int save_i, 
+			       double *grid)
 {
   int i, indice_i, indice_j, indice_k, indice_l;
   int cuad, cubo, cuart, high_l;
   double integral_cpu, inv_Rc, pi, *two_l_plus_1;
 
-  extern double doselec(char *using_gamma, int mu, int nu, int lam, int sig, double Rc,
-                        double inv_Rc, double gamma_couple, char *bound, double *expo, int *np,
-                        int *ang, int    *ncm, double *zeta, double *N_minus, double *N_plus,
-                        double *arreglo_factorial, double *arreglo_inv_factorial,
+  extern double doselec(char *using_gamma, 
+		        int mu, 
+			int nu, 
+			int lam, 
+			int sig, 
+			double Rc,
+                        double inv_Rc, 
+			double gamma_couple, 
+			char *bound, 
+			double cte,     // mike
+			double *expo, 
+			int *np,
+                        int *ang, 
+			int    *ncm, 
+			double *zeta, 
+			double *N_minus, 
+			double *N_plus,
+                        double *arreglo_factorial, 
+			double *arreglo_inv_factorial,
                         double *two_l_plus_1);
 
   pi = 4.f*atan(1.f);
@@ -54,9 +73,9 @@ extern  int bielectronicas_CPU(char   *using_gamma,
   cubo = cuad*nt;
   cuart = cubo*nt;
   inv_Rc = 1.f/Rc;
-  #pragma omp parallel shared(integrales_bie, Rc, bound, expo, np, mang, ncm, cuad, cubo, cuart, nt, gamma_couple, two_l_plus_1, n_points, save_i, grid) private(i, indice_i,indice_j, indice_k, indice_l, integral_cpu)
-  {
-    #pragma omp for
+//  #pragma omp parallel shared(integrales_bie, Rc, bound, expo, np, mang, ncm, cuad, cubo, cuart, nt, gamma_couple, two_l_plus_1, n_points, save_i, grid) private(i, indice_i,indice_j, indice_k, indice_l, integral_cpu)
+//  {  // begins omp
+//    #pragma omp for
     for (i = 0; i < cuart; i++) {
        indice_i = i/cubo;
        indice_j = i - indice_i*cubo;
@@ -73,7 +92,8 @@ extern  int bielectronicas_CPU(char   *using_gamma,
                               Rc, 
                               inv_Rc,                               
                               gamma_couple,  
-                              bound, 
+                              bound,
+			      u0, 
                               expo, 
                               np, 
                               mang, 
@@ -82,11 +102,12 @@ extern  int bielectronicas_CPU(char   *using_gamma,
                               N_minus, 
                               N_plus, 
                               arreglo_factorial, 
-                              arreglo_inv_factorial, two_l_plus_1);
+                              arreglo_inv_factorial, 
+			      two_l_plus_1);
 
        integrales_bie[i] = integral_cpu;                
      }                                                                                                 
-    }  // Termina openmp 
+//    }  // Termina openmp 
   free(two_l_plus_1);
   return 0;
 }
@@ -142,6 +163,7 @@ int compute_energy(int     compara,
        element1 = j*nt + i;
        element2 = i*nt + j;
        suma3 += (double)0.5*matp[element2]*matg_exch[element1];
+//       printf("mat_ex[%d] = %f \n", element1, matg_exch[element1]);  // mike
      }
  } else {
    for (i = 0; i < nt; i++)
@@ -197,8 +219,7 @@ extern  int scf(int     nt,
                 double  epsilon,
                 int     imprime,
                 int     plasma,
-                double *cusp_kato,
-                char *properties)
+                double *cusp_kato)
 {
  float          tiempo_usado;
  int i, j, selected_orb, compara, iter, iter_inter, dim, elec, valor, bandera;
@@ -208,7 +229,7 @@ extern  int scf(int     nt,
  unsigned long long int cuad, cubo, cuart;
  double arreglo_factorial[100];
  double arreglo_inv_factorial[100];
-double rho_int,  
+ double rho_int,  
        rho,
        rho_ini,
        der_rho_int,
@@ -722,6 +743,7 @@ extern int ep2_cpu(char   *espin,
                                int    *ncm, 
                                double *expo, 
                                char   *bound,
+			       double  u0,
                                double  Rc, 
                                double  gamma_couple, 
                                double *integrales_bie,
@@ -845,6 +867,7 @@ extern int ep2_cpu(char   *espin,
                          int     points,
 			 int     save_i,
                          int     compara,
+                         char   *bound,
                          char   **save_dft,
                          double *weight_dft,
                          int     flag_dft,
@@ -955,7 +978,7 @@ extern int ep2_cpu(char   *espin,
  cx_D = -0.7386f;
  coef_HF = 0.f;
  save_coef_HF = 0;
- n_points = 2000;               //número de puntos
+ n_points = 2000;     //número de puntos
  grid = NULL;
  memoria_double_uni(n_points*(sizeof(double)), &grid, "Grid");
  grid[0] = 0.f;
@@ -963,9 +986,13 @@ extern int ep2_cpu(char   *espin,
  double correlationc[flag_dft];
  double exchangex[flag_dft];
 
+// printf("flag_dft = %d \n", flag_dft); // mike
+// printf("--------------------------------- \n"); // mike
+
  for (i = 0; i < flag_dft; i++) {
  correlationc[i] = 0.f;
  exchangex[i]    = 0.f;
+// printf("corr_scf[%d] = %f, exch_scf[%d] = %f\n", i, correlationc[i], i, exchangex[i]); // mike
  }
 //identifica Hartree Fock
  for (i = 1; i < flag_dft; i++) {
@@ -988,6 +1015,8 @@ extern int ep2_cpu(char   *espin,
               grid,
               n_points,
               &save_i);
+
+// printf("save_i_scf = %d \n", save_i);
 
  if(strcmp(bound,"confined") == 0)  n_points = save_i + 1;
 
@@ -1037,16 +1066,17 @@ extern int ep2_cpu(char   *espin,
    compara = 0;
  else
    compara = 1;
- if (compara == 0) printf("Restricted wave-function\n");
- else              printf("Unrestricted wave function\n");
+ if(compara == 0) 
+	 printf("Restricted wave-function\n");
+ else              
+	 printf("Unrestricted wave function\n");
 
- if (compara == 0) {
- printf("\n DFT ");
- for (i = 1; i < flag_dft; i++)
-    printf("  %s    %5.2lf", save_dft[i], weight_dft[i]);
- printf("\n\n");
- } else
-    printf("  %s    %5.2lf", save_dft[i], weight_dft[i]);
+  if(strcmp(save_dft[0], "xc") == 0) {
+	  printf("\n DFT ");
+	  for (i = 1; i < flag_dft; i++)
+		  printf("  %s    %5.2lf", save_dft[i], weight_dft[i]);
+	  printf("\n\n");
+ }
 
  elec = elecalfa + elecbeta;
 
@@ -1189,7 +1219,7 @@ extern int ep2_cpu(char   *espin,
      memoria_double_uni(sizedouble, &NC_plus, "NC_plus");
      zetas = NULL;
      memoria_double_uni(sizedouble, &zetas, "zetas");
-     if(strcmp(basis,"STOs") == 0 || strcmp(basis,"stos") == 0){
+     if(strcmp(basis,"stos") == 0){
         for (i = 0; i < nt; i++){
           constants_normalization_finite(i, np, mang, expo, Rc,
                                          arreglo_factorial, arreglo_inv_factorial,
@@ -1210,54 +1240,48 @@ extern int ep2_cpu(char   *espin,
  charge_int = 0.f;
  iter_pol   = 0;
  
- potencial(using_gamma,
-           nt, 
-           z, 
-           matv, 
-           np, 
-           mang, 
-           ncm, 
-           expo,
-           basis,
-           Rc, 
-           gamma_couple,  
-           bound, 
-           iter_pol,
-           charge_int,
-           epsilon, 
-           NC_minus, 
-           NC_plus,
-           arreglo_factorial, 
-           arreglo_inv_factorial,
-           elec,
-           plasma);
+
+ if (strcmp(bound,"free") == 0) {
+   sprintf(bound_pol,"%s", bound);
+ }
+
+ if (strcmp(bound,"debye") == 0) {  // here we are mike
+   sprintf(bound_pol,"%s", bound);
+//   strcpy(bound,"free");
+ }
+
+  if (strcmp(bound,"yukawa") == 0) {  // here we are mike
+   sprintf(bound_pol,"%s", bound);
+//   strcpy(bound,"free");
+  }
+
 
  if (strcmp(bound,"polarization") == 0) {
-    if(strcmp(basis,"STOs") == 0){
+//    if(strcmp(basis,"stos") == 0){
        sprintf(bound_pol,"%s", bound);
        strcpy(bound,"finite");
-    }
+//    }
  }
 
  if (strcmp(bound,"dielectricc") == 0) {
-    if(strcmp(basis,"STOs") == 0){
+//    if(strcmp(basis,"stos") == 0){
       sprintf(bound_pol,"%s", bound);
       strcpy(bound,"finite");
-    }
+//    }
  }
 
  if (strcmp(bound,"dielectricnc") == 0) {
-    if(strcmp(basis,"STOs") == 0){
+//    if(strcmp(basis,"stos") == 0){
       sprintf(bound_pol,"%s", bound);
       strcpy(bound,"free");
-    }
+//    }
  }
 
  if (strcmp(bound,"parabolic") == 0) {
-    if(strcmp(basis,"STOs") == 0){
+//    if(strcmp(basis,"stos") == 0){
       sprintf(bound_pol,"%s", bound);
       strcpy(bound,"free");
-    }
+//    }
  }     /* mike */
 
 
@@ -1297,6 +1321,27 @@ extern int ep2_cpu(char   *espin,
           arreglo_factorial,
           arreglo_inv_factorial);
 
+  potencial(using_gamma,
+           nt,
+           z,
+           matv,
+           np,
+           mang,
+           ncm,
+           expo,
+           basis,
+           Rc,
+           gamma_couple,
+           bound,
+           iter_pol,
+           charge_int,
+           epsilon,
+           NC_minus,
+           NC_plus,
+           arreglo_factorial,
+           arreglo_inv_factorial,
+           elec,
+           plasma);
 
  printf("Two-electron integrals on CPU\n");
  integrales_bie = (double *)malloc(cuart*sizeof(double *));
@@ -1313,6 +1358,7 @@ extern int ep2_cpu(char   *espin,
                           ncm, 
                           expo, 
                           bound, 
+			  epsilon,     // mike
                           Rc, 
                           gamma_couple,
                           integrales_bie,
@@ -1330,7 +1376,7 @@ extern int ep2_cpu(char   *espin,
  coef1 = (double)1;
  summat(dim, coef1, matk, coef1, matv, matcore);
  transforma(nt, mats, matx);
-          // To start SCF
+// To start SCF
    if (compara == 0)
       copiamat(dim, matcore, matfock);
    else {
@@ -1364,8 +1410,8 @@ extern int ep2_cpu(char   *espin,
    
    iter_inter = 0;
    bandera = 0;
-   revisa = 0;
-   revisa1 = 0;
+//   revisa = 0;
+//   revisa1 = 0;
    
    do {
        iter++;
@@ -1377,7 +1423,7 @@ extern int ep2_cpu(char   *espin,
              mat_ks[i]    = (double) 0.0;
           }
 
-         if (strcmp(bound_pol,"polarization") == 0 && iter_pol > 1) {
+         if (strcmp(bound_pol,"polarization") == 0 && iter_pol > 1) { // begins polatization
 
             eigensystem_matdens(nt, tipo, elec, matx, matfock, valores,
                                 vectsfin, matp, &revisa);
@@ -1444,7 +1490,8 @@ extern int ep2_cpu(char   *espin,
                                   vectsfin, matp, &revisa);
 
            
-         } else {
+         } // ends polatization 
+	 else {
              eigensystem_matdens(nt, tipo, elec, matx, matfock, valores,
                                  vectsfin, matp, &revisa);
          }
@@ -1542,6 +1589,7 @@ extern int ep2_cpu(char   *espin,
                             n_points,
 			    save_i,
                             compara,
+                            bound,
                             save_dft,
                             weight_dft,
                             flag_dft,
@@ -1781,6 +1829,7 @@ extern int ep2_cpu(char   *espin,
                                   n_points,
 				  save_i,
                                   compara,
+                                  bound,
                                   save_dft,
                                   weight_dft,
                                   flag_dft,
@@ -2043,57 +2092,74 @@ extern int ep2_cpu(char   *espin,
 //jgo       fclose(write_out);
 //jgo     }
 
-             if(compara == 0) {
-                double v_e;
-                v_e = 0;
-                for(i = 0; i < (elec/2); i++)
-                   v_e = v_e + valores[i];
-                printf("Var Energy                           = %15.5f\n", e_kin - e_v - 2.f*e_coul - 2.f*v_e);
-             }
+//           if(compara == 0) {
+//              double v_e;
+//              v_e = 0;
+//              for(i = 0; i < (elec/2); i++)
+//                 v_e = v_e + valores[i];
+//              printf("Var Energy                           = %15.5f\n", e_kin - e_v - 2.f*e_coul - 2.f*v_e);
+//           }
 
-             if(strcmp(bound,"free") == 0 || strcmp(bound,"FREE") == 0){
+             if(strcmp(bound,"free") == 0 || strcmp(bound,"debye") == 0 ||  strcmp(bound,"yukawa") == 0){
                 printf("Kinetic energy                       = %15.5f\n", e_kin);
                 printf("Nuc-elec energy                      = %15.5f\n", e_v);
              }
              else{
                 if(strcmp(bound,"confined") == 0 ){  /* impenetrable wall */
                    printf("Kinetic energy internal              = %15.5f\n", e_kinint);
-                   printf("Potential energy (V_internal)        = %15.5f\n", e_v);
+                   printf("Nuc-elec energy: V(r)_internal       = %15.5f\n", e_v);
                 }
                 else{     /* The rest of the cases: finite, dielec, parabolic */ 
                    printf("Kinetic energy                       = %15.5f\n", e_kin);
                    printf("Kinetic energy internal              = %15.5f\n", e_kinint);
                    printf("Kinetic energy external              = %15.5f\n", e_kinext);    
-                   printf("Potential energy (V_int + V_ext)     = %15.5f\n", e_v);
+                   printf("V_inside + V_outside                 = %15.5f\n", e_v);
                 }
              }
              printf("One-electron energy                  = %15.5f\n", e_core);
              printf("Coulomb energy                       = %15.5f\n", e_coul);
-  //QUITAR DESPUES
-             if (compara == 0) {
-               if(strcmp(save_dft[1],"hf") == 0 && flag_dft == 2)
-                 printf("Exchange energy                      = %15.5f\n", coef_HF*e_exch);
-               else  {
-                 printf("Exchange-Correlation energy          = %15.5f\n", coef_HF*e_exch + e_xc);
-                 if (coef_HF*e_exch != 0)
-                 printf("Exact-Exchange energy                = %15.5f\n", coef_HF*e_exch);
-                 
-                 for (i = 1; i < flag_dft; i++) { 
-                 if (exchangex[i] != 0)               
-                 printf("Functional %8s Exchange         = %15.5f\n", save_dft[i], exchangex[i]);
-                 if (correlationc[i] != 0)
-                 printf("Functional %8s Correlation      = %15.5f\n", save_dft[i], correlationc[i]);
-                 }
-                  
-               }
-             } 
-             else
-                printf("Exchange energy                      = %15.5f\n", e_exch);
-             if(strcmp(save_dft[1],"hf") == 0 && flag_dft == 2) 
-                printf("Hartree-Fock energy                  = %15.5f (%15.5f Ryd)\n", energia, 2.f*energia);
-             else 
-                printf("DFT energy                           = %15.5f (%15.5f Ryd)\n", energia, 2.f*energia);
- 
+  // Here we are
+//  if(compara == 0){ // this is for closed shell
+	  if(strcmp(save_dft[1],"hf") == 0 && flag_dft == 2){ 
+		  // -----> A "Hartree-Fock calculation" <-----
+		  // this is the only case where flag_dft can be equals to 2
+		  // important: the line here must be "xc  hf  1.0  end"
+                  printf("Hartree-Fock energy                  = %15.5f (%15.5f Ryd)\n", energia, 2.f*energia);
+		  printf("Exchange (Hartree-Fock) energy       = %15.5f \n", coef_HF*e_exch);
+	  }
+	  else{
+		  printf("DFT energy                           = %15.5f (%15.5f Ryd)\n", energia, 2.f*energia); 
+		  if(strcmp(save_dft[1],"hf") == 0 && coef_HF != 0 && flag_dft == 3){
+//			  This is for -----> "hydrid exchange functionals" <-----, for example pbe0
+//			  the line here must be "xc  hf  0.5  pb3  0.5  end" or another combination
+//			  printf("|------------ Hybrid exchange functional ------------| \n");
+		          printf("Exchange energy (%f %8s)  = %15.5f \n", coef_HF, save_dft[1], coef_HF*e_exch);
+		          printf("Exchange energy (%f %8s)  = %15.5f \n", weight_dft[2], save_dft[2], exchangex[2]);  // mike
+		          printf("Total exchange energy                = %15.5f \n",  coef_HF*e_exch + exchangex[2]);  // mike
+		  }
+		  else
+			  if(strcmp(save_dft[1],"hf") == 0 && coef_HF == 0 && flag_dft == 4){
+//				  This is for -----> "exchange correlation functionals" <-----
+//				  The line here must be "xc  hf  0.0  slater  1.0  pwl  1.0  end" or another combination
+//			          printf("|--------- Exchange correlation functional ----------| \n");
+				  for(i = 2; i < flag_dft; i++){
+					  if(exchangex[i] != 0)
+						  printf("Exchange energy (%8s)           = %15.5f\n", save_dft[i], exchangex[i]);
+					  if(correlationc[i] != 0)
+						  printf("Correlation energy (%8s)        = %15.5f\n", save_dft[i], correlationc[i]);
+				  }
+			  }
+			  else
+				  if(strcmp(save_dft[1],"hf") == 0 && coef_HF == 0 && flag_dft == 3){
+//					  This is for -----> "Exchange functionals" <-----
+//			                  the line here must be "xc  hf  0.0  slater  1.0  end" or another exchange functional
+//					  printf("|------------- Only Exchange functional -------------| \n");
+					  for(i = 1; i <= flag_dft; i++)
+						  if(exchangex[i] != 0)
+							  printf("Exchange energy (%8s)           = %15.5f\n", save_dft[i], exchangex[i]);
+				  }
+	  }
+//  } // ends closed shell
             
              printf("POT/KIN                              = %15.5f\n", (e_v + e_coul + e_exch)/e_kin);
            
@@ -2106,34 +2172,200 @@ extern int ep2_cpu(char   *espin,
              printf("SCF time  = %16ld s.\n", time_scf_fin - time_scf_ini);
            
              printf("------------------- EIGENVALUES -------------------\n");
-             if( compara == 0 ) {
+             if( compara == 0 ) { // begins closed shell
                 for(i = 0; i < nt; i++) 
                    printf("Eigenvalue %d: %8.5f\n", i, valores[i]);
+		grid_rhorad(z,
+                            using_gamma,
+                            compara,
+                            bound,
+                            basis,
+                            nt,
+                            elecalfa,
+                            0,
+                            Rc,
+                            expo,
+                            np,
+                            zetas,
+                            mang,
+                            vectsfin,
+                            NULL,
+                            tipo,
+                            NC_minus,
+                            NC_plus,
+                            gamma_couple,
+                            grid,
+                            grid_rho,
+                            grid_rho_beta,
+                            n_points,
+                            save_i,
+                            arreglo_factorial,
+                            arreglo_inv_factorial);
+		grid_derrad(z,
+                            using_gamma,
+                            compara,
+                            bound,
+                            basis,
+                            nt,
+                            elecalfa,
+                            0,
+                            Rc,
+                            expo,
+                            np,
+                            zetas,
+                            mang,
+                            vectsfin,
+                            NULL,
+                            tipo,
+                            NC_minus,
+                            NC_plus,
+                            gamma_couple,
+                            grid,
+                            grid_der,
+                            grid_der_beta,
+                            n_points,
+                            save_i,
+                            arreglo_factorial,
+                            arreglo_inv_factorial);
 
-                if(strcmp(properties,"property") == 0) {
-		  double *pot_xc_grid, *pot_elect_grid;
-		  pot_xc_grid = (double *)malloc(n_points*sizeof(double));
-		  pot_elect_grid = (double *)malloc(n_points*sizeof(double));
-                  xc_over_grid(compara, save_dft, flag_dft, weight_dft, n_points, save_i,  grid,
-                              grid_rho, grid_der, grid_secder, pot_xc_grid);
-                  wf_closed_shell(z, using_gamma, compara, bound, basis, nt, elecalfa, elecbeta,
-                                 Rc, expo, np, zetas, mang, ncm, vectsfin, NULL,
-                                 tipo, NC_minus, NC_plus, gamma_couple,
-                                 grid, grid_rho, NULL, grid_der, NULL, n_points,
-                                 arreglo_factorial, arreglo_inv_factorial,
-                                 matp, mats, &iter, save_i, print_vectors, cusp_kato);
-//jgo                  Evaluate_Elect_Pot(z, nt, matp, np, mang, ncm, expo, bound,
-//jgo                                      arreglo_factorial, arreglo_inv_factorial, 
-//jgo                                      grid, save_i, n_points, Rc, NC_minus, NC_plus, basis,
-//jgo				      pot_elect_grid);
-                  print_out_arrays(n_points, grid, grid_rho, pot_xc_grid, pot_elect_grid, "results.dat");
-		  free(pot_elect_grid);
-		  pot_elect_grid = 0;
-		  free(pot_xc_grid);
-		  pot_xc_grid = 0;
-                }
-             } 
-             else { // Section for open-shell atoms
+		if(print_vectors == 1) {  // begins print vectors
+			int mu, nu, elemento1, elemento2;
+			double suma, rho_0, drho_0;
+                        suma = 0.f;
+			for(mu = 0; mu < nt; mu++) {
+				for(nu = 0; nu < nt; nu++) {
+					elemento1 = mu*nt + nu;
+					elemento2 = nu*nt + mu;
+					suma = suma + matp[elemento1]*mats[elemento2];
+				}
+			}
+			printf("Number of electrons: = %8.5f\n", suma);
+			printf("---------------------------\n");
+			expected_value_r(nt,
+                                         -1,
+                                         np,
+                                         mang,
+                                         ncm,
+                                         expo,
+                                         Rc,
+                                         bound,
+                                         basis,
+                                         vectsfin,
+                                         elecalfa,
+                                         gamma_couple,
+                                         NC_minus,
+                                         NC_plus,
+                                         arreglo_factorial,
+                                         arreglo_inv_factorial,
+                                         using_gamma,
+                                         zetas,
+                                         grid);
+			printf("---------------------------\n");
+			expected_value_r(nt,
+                                         1,
+                                         np,
+                                         mang,
+                                         ncm,
+                                         expo,
+                                         Rc,
+                                         bound,
+                                         basis,
+                                         vectsfin,
+                                         elecalfa,
+                                         gamma_couple,
+                                         NC_minus,
+                                         NC_plus,
+                                         arreglo_factorial,
+                                         arreglo_inv_factorial,
+                                         using_gamma,
+                                         zetas,
+                                         grid);
+			printf("---------------------------\n");
+			expected_value_r(nt,
+                                         2,
+                                         np,
+                                         mang,
+                                         ncm,
+                                         expo,
+                                         Rc,
+                                         bound,
+                                         basis,
+                                         vectsfin,
+                                         elecalfa,
+                                         gamma_couple,
+                                         NC_minus,
+                                         NC_plus,
+                                         arreglo_factorial,
+                                         arreglo_inv_factorial,
+                                         using_gamma,
+                                         zetas,
+                                         grid);
+			printf("---------------------------\n");
+			double SHAN;
+			for(h = 0; h < n_points; h++)
+				array_i[h] = 0.f;
+			array_i[0] = 0;
+			array_i[n_points - 1] = 0;
+			for(h = 1; h < n_points - 1; h++){
+				if(grid_rho[h]  > 1e-20)
+					array_i[h] = -1.f*grid_rho[h]*log(grid_rho[h]);
+			}
+			SHAN = 4.f*Pi*numerical_int(grid,
+                                                    array_i,
+                                                    n_points);
+
+			if(strcmp(bound,"free") == 0)
+				printf("%s Shannon entropy_(%s) =  %5.4lf\n", tipo, bound, SHAN);
+			else
+				if(strcmp(bound,"finite") == 0)
+					printf("%s Shannon entropy_(%s, U0 = %3.3lf, Rc = %3.3lf) = %5.4lf\n", tipo, bound, epsilon, Rc, SHAN);
+				else
+					if(strcmp(bound,"debye") == 0 || strcmp(bound,"yukawa") == 0)
+						printf("%s Shannon entropy_(%s, lambda = %3.3lf) = %5.4lf \n", tipo, bound, epsilon, SHAN);
+			printf("---------------------------\n");
+                	for(h = 0; h < n_points; h++) {
+                		array_ii[h] = 0.f;
+                		array_ii[h] = grid_rho[h];
+                	}
+                	SHAN = 4.f*Pi*numerical_int(grid,
+                                                    array_ii,
+                                                    n_points);
+                	printf("Number electrons from integral rho %8.5lf \n", SHAN);
+
+			FILE *workout;
+			char nameout[200];
+			if (strcmp(bound, "free") == 0) {
+				sprintf(nameout, "%s_%s_rho_drho_+drho_rdf_divdrhorho", bound, tipo);
+			}
+			else
+				if(strcmp(bound,"finite") == 0)
+					sprintf(nameout, "%3.3f_%3.3f_%s_%s_rho_drho_+drho_rdf_divdrhorho", Rc, epsilon, bound, tipo);
+				else
+					if(strcmp(bound,"debye") == 0 || strcmp(bound,"yukawa") == 0)
+						sprintf(nameout, "%3.3f_%s_%s_rho_drho_+drho_rdf_divdrhorho", epsilon, bound, tipo);
+
+			workout = fopen(nameout, "w");
+			for(h = 0; h < n_points; h++)
+				if(grid_rho[h] > 1.e-16)
+					fprintf(workout,"%5.4f  %24.14f  %24.14f  %24.14f  %24.14f %24.14f %24.14f\n", grid[h],
+                                                                                                                       grid_rho[h],
+                                                                                                                       grid_der[h],
+                                                                                                                       -1.f*grid_der[h],
+                                                                                                                       4.f*Pi*grid[h]*grid[h]*grid_rho[h],
+                                                                                                                       grid_der[h]/grid_rho[h],
+                                                                                                                       -1.f*grid_der[h]/(2.f*z*grid_rho[h] ));
+			fclose(workout);
+		} // ends print vectors
+		printf("rho(0)                = %.4f\n", grid_rho[0]);
+                printf("rho'(0)               = %.4f\n", grid_der[0]);
+                printf("KATO CUSP = %4.4f\n", -grid_der[0]/(2.f*z*grid_rho[0]));
+                *cusp_kato = -grid_der[0]/(2.f*z*grid_rho[0]);
+                if(strcmp(basis, "stos") == 0){
+			if(-grid_der[0]/(2.f*z*grid_rho[0])  < 0.8 || -grid_der[0]/(2.f*z*grid_rho[0]) > 1.2)
+				iter = 1e7;  // ojo ;) 
+                } 
+             } // ends close shell
+             else { // begins open-shell atoms
                 for(i = 0; i < nt; i++) 
                    printf("Eigenvalue %d: alpha | beta = %8.5f  %8.5f\n", i, valoresalfa[i], valoresbeta[i]);
                 grid_rhorad(z,
@@ -2190,7 +2422,7 @@ extern int ep2_cpu(char   *espin,
                            arreglo_inv_factorial);
             
            
-                if (print_vectors == 1) {
+                if (print_vectors == 1) {  // begins print vectors
                     int mu, nu, elemento1, elemento2;
                     double suma, rho_0, drho_0;
                     suma = 0.f;
@@ -2201,8 +2433,8 @@ extern int ep2_cpu(char   *espin,
                           suma = suma + matp[elemento1]*mats[elemento2];
                        }
                     }          
-                    if(strcmp(bound,"free") == 0 || strcmp(bound,"finite") == 0 || strcmp(bound,"dielectricc") == 0 || strcmp(bound,"parabolic") == 0 || 
-                       strcmp(bound,"confined") == 0 ) {
+//                    if(strcmp(bound,"free") == 0 || strcmp(bound,"finite") == 0 || strcmp(bound,"dielectricc") == 0 || strcmp(bound,"parabolic") == 0 || 
+//                       strcmp(bound,"confined") == 0 ) { // begins confinement cases
 //                    if(strcmp(bound,"finite") == 0) {     // esta era la sentencia original mike
                        printf("Number of electrons: = %f\n", suma);
                        printf("---------------------------\n");
@@ -2329,7 +2561,7 @@ extern int ep2_cpu(char   *espin,
                                         zetas,
                                         grid);
                        printf("---------------------------\n");
-                    }  //End if finite, free, dielec, parabolic
+//                    }  //End if finite, free, dielec, parabolic
 
                    double SHAN;
                    for(h = 0; h < n_points; h++)
@@ -2347,7 +2579,8 @@ extern int ep2_cpu(char   *espin,
                                                array_i,
                                                n_points);
 
-                   if(strcmp(bound,"free") == 0 && Rc == 0.f)
+//                   if(strcmp(bound,"free") == 0 && Rc == 0.f)
+                   if(strcmp(bound,"free") == 0)
                      printf("\n%s %s Shannon entropy  %5.4lf\n", tipo, bound, SHAN);
                    else
                     printf("\n%s %s Shannon entropy %3.3lf %5.4lf\n", tipo, bound, Rc, SHAN);
@@ -2365,18 +2598,9 @@ extern int ep2_cpu(char   *espin,
                    FILE *workout;
                    char nameout[200];
 
-                   if (strcmp(bound, "free") == 0 && Rc == 0.f) {
+//                   if (strcmp(bound, "free") == 0 && Rc == 0.f) {
+                   if (strcmp(bound, "free") == 0) {
                     sprintf(nameout, "%s_%s_rho_drho_+drho_rdf_divdrhorho", bound, tipo);
-                    if (strcmp(properties,"property") == 0) {
-		      double *pot_elect_grid;
-		      pot_elect_grid = (double *)malloc(n_points*sizeof(double));
-                      Evaluate_Elect_Pot(z, nt, matp, np, mang, ncm, expo, bound,
-                                    arreglo_factorial, arreglo_inv_factorial,
-                                    grid, save_i, n_points, Rc, NC_minus, NC_plus, basis, pot_elect_grid);
-                      print_out_arrays(n_points, grid, array_ii,  array_i, NULL, "xc.dat");
-		      free(pot_elect_grid);
-		      pot_elect_grid = 0;
-                    }
                    }
                    else
                     sprintf(nameout, "%3.3f_%s_%s_rho_drho_+drho_rdf_divdrhorho", Rc, bound, tipo);
@@ -2401,7 +2625,7 @@ extern int ep2_cpu(char   *espin,
           printf("rho'(0)               = %.4f\n", grid_der[0] + grid_der_beta[0]);
           printf("KATO CUSP = %4.4f\n", -(grid_der[0] + grid_der_beta[0])/(2.f*z*(grid_rho[0] + grid_rho_beta[0])));
           *cusp_kato = -(grid_der[0] + grid_der_beta[0])/(2.f*z*(grid_rho[0] + grid_rho_beta[0]));
-          if(strcmp(basis, "STOs") == 0 || strcmp(basis, "stos") == 0){
+          if(strcmp(basis, "stos") == 0){
              if(-(grid_der[0] + grid_der_beta[0])/(2.f*z*(grid_rho[0] + grid_rho_beta[0]))  < 0.98 || -(grid_der[0] + grid_der_beta[0])/(2.f*z*(grid_rho[0] + grid_rho_beta[0])) > 1.20){
                 iter = 1e7;
              //   printf("ojo \n"); mike: here was the problem

@@ -5,11 +5,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifdef _OPENMP
- #include <omp.h>
-#else
- #define omp_get_thread_num() 0
-#endif
+//#ifdef _OPENMP
+// #include <omp.h>
+//#else
+// #define omp_get_thread_num() 0
+//#endif
 
 void traslape(char   *using_gamma,
               int     nt, 
@@ -61,7 +61,7 @@ void traslape(char   *using_gamma,
 
  total_elements = nt*nt;
 
- if (strcmp(basis,"GTOs") == 0 || strcmp(basis,"gtos") == 0) { /* aquí empiezan los cálculos para los GTOs */
+ if (strcmp(basis,"gtos") == 0) { /* aquí empiezan los cálculos para los gtos */
        for (k = 0; k < total_elements; k++) {
           indexes(nt, k, &index_i, &index_j);
           index_i = index_i - 1;
@@ -104,18 +104,18 @@ void traslape(char   *using_gamma,
              }     /* The rest of the cases */
          }
      }
- } /* Aquí terminan los elementos de matriz con GTOs */ 
+ } /* Aquí terminan los elementos de matriz con gtos */ 
  else {
- /* Aquí empiezan los elementos de matriz construidos con STOs */
+ /* Aquí empiezan los elementos de matriz construidos con stos */
 
-#pragma omp parallel shared(total_elements, nt, mats, np, mang, ncm, expo, Rc, gamma_couple, bound, U_0, NC_minus, NC_plus, arreglo_factorial, arreglo_inv_factorial) 
+//#pragma omp parallel shared(total_elements, nt, mats, np, mang, ncm, expo, Rc, gamma_couple, bound, U_0, NC_minus, NC_plus, arreglo_factorial, arreglo_inv_factorial) 
 
-#pragma omp parallel private(i, j, k, index_i, index_j, ang_i, ang_j, ncm_i, ncm_j, delta, delta1, total, enes, eles, alphas, zetas)
+//#pragma omp parallel private(i, j, k, index_i, index_j, ang_i, ang_j, ncm_i, ncm_j, delta, delta1, total, enes, eles, alphas, zetas)
 
-{
- int TID = omp_get_thread_num();
- if (strcmp(bound,"free") == 0) {
-   #pragma omp for
+//{ // begins omp 
+// int TID = omp_get_thread_num();
+ if (strcmp(bound,"free") == 0 || strcmp(bound,"debye") == 0 || strcmp(bound,"yukawa") == 0) {
+//   #pragma omp for
    for (k = 0; k < total_elements; k++) {
      indexes(nt, k, &index_i, &index_j);
      index_i = index_i - 1;
@@ -132,12 +132,14 @@ void traslape(char   *using_gamma,
      delta = delta*delta1;
      if (delta == (double)0) 
        mats[k] = (double)0;
-     else 
+     else{
        mats[k] = intl(index_i, index_j, 2, expo, np, arreglo_factorial);
+//       printf("S_free[%d] = %f \n", k, mats[k]); // mike
+     } 
    }
  }
  else if (strcmp(bound,"finite") == 0) {
-   #pragma omp for
+//   #pragma omp for
    for (k = 0; k <  total_elements; k++) { //label for omp
      indexes(nt, k, &index_i, &index_j);
      index_i = index_i - 1;
@@ -191,6 +193,7 @@ void traslape(char   *using_gamma,
 
 
                mats[k] = total;
+//	       printf("S_finite[%d] = %f \n", k, mats[k]); // mike
                
                }//label 2
 
@@ -198,7 +201,7 @@ void traslape(char   *using_gamma,
      }
    }//label for omp
  } else {
-   #pragma omp for
+//   #pragma omp for
    for (k = 0; k <  total_elements; k++) {
      indexes(nt, k, &index_i, &index_j);
      index_i = index_i - 1;
@@ -217,7 +220,7 @@ void traslape(char   *using_gamma,
                        arreglo_inv_factorial);
    }
  }
- }//Termina omp
-} //termina el else para STOs
+// }//Termina omp
+} //termina el else para stos
 }
 

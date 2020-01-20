@@ -4,12 +4,13 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <complex.h>
 
-#ifdef _OPENMP
- #include <omp.h>
-#else
- #define omp_get_thread_num() 0
-#endif
+//#ifdef _OPENMP
+// #include <omp.h>
+//#else
+// #define omp_get_thread_num() 0
+//#endif
 void expected_value_r(int     nt, 
 		      int     r_exp, 
 		      int    *np, 
@@ -95,7 +96,7 @@ void expected_value_r(int     nt,
  //#pragma omp parallel shared(nt, Rc, total_elements, mang, ncm, expo, np, z, matv) private(index_i, index_j, i, j, ang_i, ang_j, ncm_i, ncm_j, k, delta, delta1)
  //{
  // int TID = omp_get_thread_num();
- if(strcmp(basis,"GTOs") == 0 || strcmp(basis,"gtos") == 0){     // begins GTOs
+ if(strcmp(basis,"gtos") == 0){     // begins gtos
     for(orbital = 0; orbital < elecalfa; orbital++){
        suma = ((double) 0);
        for(k = 0; k < total_elements; k++){
@@ -181,11 +182,11 @@ void expected_value_r(int     nt,
        }
        printf("Orbital %d, <r^%d>=%10.5f\n", orbital, r_exp, suma);
     }
- }  // ends GTOs
+ }  // ends gtos
  else{     
-    if(strcmp(basis,"STOs") == 0 || strcmp(basis,"stos") == 0){  // begins STOs
-       if(strcmp(bound,"free") == 0) {
- //   #pragma omp for
+//    if(strcmp(basis,"stos") == 0){  // begins stos
+       if(strcmp(bound,"free") == 0 || strcmp(bound,"debye") == 0 || strcmp(bound,"yukawa") == 0) {
+///   #pragma omp for
           for(orbital = 0; orbital < elecalfa; orbital++) {
              suma = 0.f;
              for(k = 0; k < total_elements; k++) {
@@ -205,7 +206,7 @@ void expected_value_r(int     nt,
                    mat_r_i_j = (double)0;
                 else 
                    mat_r_i_j = intl(i, j, 2 + r_exp, expo, np, arreglo_factorial);
-//     suma = suma + matp[element2]*mat_r_i_j;
+//		suma = suma + matp[element2]*mat_r_i_j;
                 suma = suma + vectsfin[i*nt + orbital]*vectsfin[j*nt + orbital]*mat_r_i_j;
              }
              printf("Orbital %d, <r^%d>=%10.5f\n", orbital, r_exp, suma); 
@@ -264,11 +265,28 @@ void expected_value_r(int     nt,
              }
           }  
           free(array_temp);
-    }   // ends STOs
+//    }   // ends stos
  }  
 //} Cierra openmp
 } //aquí cierra expected value
 
+ double complex v_ne_yukawa(int n_mu, int n_nu, double expo_mu, double expo_nu, double alpha){
+ // This is for the debye potential with the factor cos(\beta * r)
+         extern double factorial(int );
+         double beta, e1, n1, c1;
+         double complex b1, b2, partial;
+
+         beta = (double) 1/alpha;
+         b1 = beta - beta*I;
+         b2 = beta + beta*I;
+         n1 = (double) n_mu + n_nu;
+         e1 = expo_mu + expo_nu;
+         c1 = (double) 1;
+         partial = factorial(n_mu + n_nu - 1)*(c1/cpow(e1 + b1,n1) + c1/cpow(e1 + b2,n1));
+//       printf("Re = %20.15f, Im = %20.15f \n", creal(partial), cimag(partial));
+//       return(creal(partial));
+         return(partial);
+ }
 
 void potencial(char   *using_gamma,
                int     nt, 
@@ -300,13 +318,13 @@ void potencial(char   *using_gamma,
  double total, adicional;
  int ang_i, ang_j, ncm_i, ncm_j;
  int enes, eles;
- int n_mu, n_nu;
+ int n_mu, n_nu;                                                   // mike
  double n_gto_mu, n_gto_nu, n_gto_imp_mu, n_gto_imp_nu, limit;     // mike
+ double num2, num3, num4, num5, num6, y, n_sto_mu, n_sto_nu;       // mike
+ double num0, num1, pi;                                            // mike
  double alphas, zetas;
- double num1, pi;
-
+ double result1, result2;
 // double *array_temp, *array_temp_2;
-
  extern int indexes(int, int, int*, int*);
  extern double intl(int, int, int, double*, int*, double*);
  extern double int1c(int, int, int, double, double* , int*, double*, double*);
@@ -318,17 +336,19 @@ void potencial(char   *using_gamma,
  extern double intc(int a, double b, double r, double*, double*);
  extern double upper_incomplete_gamma(double, int, double);
  extern int constant_normalization_free(int*, double*, int*, double*);
-
-// extern long long int factorial_mike(int );
+// mike--------------------------------------------------------------------
  extern double full_gamma_arg_2(int );
  extern double lower_incomplete_gamma_function(int, double );
  extern double constant_normalization_GTO(int , int , double , double *);
  extern double constant_normalization_GTO_imp(int , int , double , double , double *);
+ extern long long int factorial_mike(int );
+ extern double constant_normalization_sto(int , int , double , double *);
+ extern double complex v_ne_yukawa(int , int , double , double , double );
 
  total_elements = nt*nt;
  pi = 4.f*atan(1.f);
 
- if (strcmp(basis,"GTOs") == 0 || strcmp(basis,"gtos") == 0) { //aquí empiezan los cálculos para los GTOs
+ if (strcmp(basis,"gtos") == 0) { //aquí empiezan los cálculos para los gtos
      for (k = 0; k < total_elements; k++) {
           indexes(nt, k, &index_i, &index_j);
           index_i = index_i - 1;
@@ -409,15 +429,14 @@ void potencial(char   *using_gamma,
      }
           /* Atención, al parecer hay una especie de reasignación pues epsilon ya está definida en data.c sin embargo, para evitar poner mas argumentos en la función de potencial lo que se hizo fue reemplazar U_0 por la constante dieléctrica */
  } 
- else {//aquí empieza el else para los STOs
+ else {//aquí empieza el else para los stos
 
-#pragma omp parallel shared(total_elements, nt, z, matv, np, mang, ncm, expo, Rc, gamma_couple, bound, U_0, NC_minus, NC_plus, arreglo_factorial, arreglo_inv_factorial, iter_pol, charge_int) private(i, j, k, index_i, index_j, delta, delta1, total, ang_i, ang_j, ncm_i, ncm_j, enes, eles, alphas, zetas, adicional)
+//#pragma omp parallel shared(total_elements, nt, z, matv, np, mang, ncm, expo, Rc, gamma_couple, bound, U_0, NC_minus, NC_plus, arreglo_factorial, arreglo_inv_factorial, iter_pol, charge_int) private(i, j, k, index_i, index_j, delta, delta1, total, ang_i, ang_j, ncm_i, ncm_j, enes, eles, alphas, zetas, adicional)
 
-{
- int TID = omp_get_thread_num();
+//{ // begins omp
+// int TID = omp_get_thread_num();
  if (strcmp(bound,"free") == 0) {
- double result1, result2;
-   #pragma omp for
+//   #pragma omp for
    for (k = 0; k < total_elements; k++) {
      indexes(nt, k, &index_i, &index_j);
      index_i = index_i - 1;
@@ -436,14 +455,77 @@ void potencial(char   *using_gamma,
      else
 	{ 
           matv[k] = -z*intl(i, j, 1, expo, np, arreglo_factorial);  
+//	  printf("V_free[%d] = %f \n", k, matv[k]); // mike
        }
    }
  }
- else 
+ else
+      if(strcmp(bound,"debye") == 0){ // begins Debye
+//         printf("lambda = %f \n", U_0);
+//         printf("1/lambda = %f \n", 1.f/U_0);
+         for(k = 0; k < total_elements; k++) {
+            indexes(nt, k, &index_i, &index_j);
+            index_i = index_i - 1;
+            index_j = index_j - 1;
+            i = index_i;
+            j = index_j;
+            n_mu =np[i];
+            n_nu =np[j];
+            ang_i = mang[i];
+            ang_j = mang[j];
+            delta_kro_(&ang_i, &ang_j, &delta);
+            ncm_i = ncm[i];
+            ncm_j = ncm[j];
+            delta_kro_(&ncm_i, &ncm_j, &delta1);
+            delta = delta*delta1;
+            if(delta == (double)0)
+               matv[k] = (double)0;
+            else{
+               constant_normalization_sto(i, n_mu, expo[i], &n_sto_mu);
+               constant_normalization_sto(j, n_nu, expo[j], &n_sto_nu);
 
+               num0 = ((double) 1)/U_0;  // 1/lambda_d
+               num1 = n_mu + n_nu;
+               num2 = expo[i] + expo[j] + num0;
+               num3 = pow(num2, (double) num1);
+
+               matv[k] = -z*n_sto_mu*n_sto_nu*factorial_mike(n_mu + n_nu - 1)/num3;
+
+//               printf("V_debye[%d,%d] = %f \n", i,j, matv[k]); // mike
+            }
+         }
+      } // ends Debye
+      else
+              if(strcmp(bound,"yukawa") == 0){
+//                    printf("lambda = %f \n", U_0);
+                      for(k = 0; k < total_elements; k++) {
+                              indexes(nt, k, &index_i, &index_j);
+                              index_i = index_i - 1;
+                              index_j = index_j - 1;
+                              i = index_i;
+                              j = index_j;
+                              n_mu =np[i];
+                              n_nu =np[j];
+                              ang_i = mang[i];
+                              ang_j = mang[j];
+                              delta_kro_(&ang_i, &ang_j, &delta);
+                              ncm_i = ncm[i];
+                              ncm_j = ncm[j];
+                              delta_kro_(&ncm_i, &ncm_j, &delta1);
+                              delta = delta*delta1;
+                              if(delta == (double) 0)
+                                      matv[k] = (double)0;
+                              else{
+                                      constant_normalization_sto(i, n_mu, expo[i], &n_sto_mu);
+                                      constant_normalization_sto(j, n_nu, expo[j], &n_sto_nu);
+                                      matv[k] = -z*n_sto_mu*n_sto_nu*v_ne_yukawa(n_mu, n_nu, expo[i], expo[j], U_0)/((double) 2);
+//                                    printf("V_yukawa[%d,%d] = %f \n", i,j, matv[k]); // mike
+                              }
+                      }
+              }  // ends yukawa
+              else	      
  if (strcmp(bound,"dielectricnc") == 0) {
- double result1, result2;
-   #pragma omp for
+//   #pragma omp for
    for (k = 0; k < total_elements; k++) {
      indexes(nt, k, &index_i, &index_j);
      index_i = index_i - 1;
@@ -471,7 +553,7 @@ void potencial(char   *using_gamma,
  else 
 
 if (strcmp(bound,"finite") == 0) {
-   #pragma omp for
+//   #pragma omp for
    for (k = 0; k <  total_elements; k++) {
      indexes(nt, k, &index_i, &index_j);
      index_i = index_i - 1;
@@ -520,6 +602,7 @@ if (strcmp(bound,"finite") == 0) {
         total = total + 0.5*U_0*NC_plus[index_i]*NC_plus[index_j]*upper_incomplete_gamma(Rc, eles, alphas);
 
         matv[k] = total;
+//	printf("V_finite[%d] = %f \n", k, matv[k]); // mike
 
 
             }//label 2
@@ -531,7 +614,7 @@ if (strcmp(bound,"finite") == 0) {
  else
 
  if (strcmp(bound,"dielectricc") == 0 && strcmp(using_gamma,"NO") == 0) {
-   #pragma omp for
+//   #pragma omp for
    for (k = 0; k <  total_elements; k++) {
      indexes(nt, k, &index_i, &index_j);
      index_i = index_i - 1;
@@ -566,7 +649,7 @@ if (strcmp(bound,"finite") == 0) {
  } 
  else
   if (strcmp(bound,"polarization") == 0 && strcmp(using_gamma,"NO") == 0) {
-   #pragma omp for
+//   #pragma omp for
    for (k = 0; k <  total_elements; k++) {
      indexes(nt, k, &index_i, &index_j);
      index_i = index_i - 1;
@@ -601,7 +684,7 @@ if (strcmp(bound,"finite") == 0) {
    }
   }
  else {
-   #pragma omp for
+//   #pragma omp for
    for (k = 0; k < total_elements; k++) {
      indexes(nt, k, &index_i, &index_j);
      index_i = index_i - 1;
@@ -630,7 +713,7 @@ if (strcmp(bound,"finite") == 0) {
    }
  }
 
- } //termina omp
-}// aquí termina el else para las STOs
+// } //termina omp
+}// aquí termina el else para las stos
 }
 

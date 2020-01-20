@@ -29,7 +29,8 @@
     point_r = 1.f - cos(pi*((double) i/(2.f*(n_points+1))));
     p1 = 200.f*point_r;
 
-    if((p1 == Rc && strcmp(bound,"finite") == 0) || (strcmp(bound,"dielectricc") == 0) || (strcmp(bound,"polarization") == 0)){
+//    if((p1 == Rc && strcmp(bound,"finite") == 0) || (strcmp(bound,"dielectricc") == 0) || (strcmp(bound,"polarization") == 0)){
+    if((p1 == Rc && strcmp(bound,"free") == 0 ||  strcmp(bound,"finite") == 0) || (strcmp(bound,"dielectricc") == 0) || (strcmp(bound,"polarization") == 0)){
       point_r = -5.f + (double) (i)/damping;                         // maya tipo Froese Fischer
       p1 = exp(point_r)/z;    
      }
@@ -37,7 +38,8 @@
     grid[i] = p1;
 
     if (save_temp == 0) // Ya definiste save_temp = 0 va a entrar este cíclo
-      if (strcmp(bound,"polarization") == 0 || strcmp(bound,"finite") == 0 || strcmp(bound,"dielectricc") == 0 || strcmp(bound,"confined") == 0) { //if finite confined
+//      if (strcmp(bound,"polarization") == 0 || strcmp(bound,"finite") == 0 || strcmp(bound,"dielectricc") == 0 || strcmp(bound,"confined") == 0) { //if finite confined
+      if (strcmp(bound,"free") == 0 ||  strcmp(bound,"polarization") == 0 || strcmp(bound,"finite") == 0 || strcmp(bound,"dielectricc") == 0 || strcmp(bound,"confined") == 0) { //if finite confined
         if (p1 > Rc) {   //este if sólo se cumple en cuanto p1 es mayor que R_{c} 
           if (i%2 != 0) {  //Acuerdate que el % es el operador de módulo o resto de una división (i/2) en este caso para i impar
              i = i + 1;    //reasignación

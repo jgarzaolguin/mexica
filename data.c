@@ -77,8 +77,7 @@ int input(double *z,
           double *count_temp, 
           double *count_final, 
           int    *steps,
-          int    *plasma,
-          char   *properties)
+          int    *plasma)
 {
  FILE* file_1;
  int i, j, c, d, entero1, entero2, z_temp, charge, mult, alfa, beta, prev, test_input;
@@ -173,7 +172,6 @@ int input(double *z,
        return 1;
      }
 
-
       //propuesta para leer funcionales dft
       scanf("%s", save_dft[0]);
       weight_dft[0] = 0.f;
@@ -193,7 +191,7 @@ int input(double *z,
            } else {
               scanf("%lf",&weight_dft[dft]);
              }
-          //printf("\nHOLA    %s %lf\n", save_dft[dft], weight_dft[dft]);
+//          printf("\n save_dft_data[%d] = %s, weight_data[%d] = %lf \n",dft, save_dft[dft], dft, weight_dft[dft]);
           dft++; 
         } while (ident != 1); 
 
@@ -219,97 +217,101 @@ int input(double *z,
      epsilon_temp = 0e00;
      *plasma = 0;
      scanf("%s", bound);
-     if (strcmp(bound,"free") == 0 || strcmp(bound,"Free") == 0 || strcmp(bound,"FREE") == 0) {
-       *Rc = 0.00000;
+     if(strcmp(bound,"free") == 0 || strcmp(bound,"Free") == 0 || strcmp(bound,"FREE") == 0) {
+//       *Rc = (double) 0;
+       *Rc = (double) 50; // this is for practical purposes mike
        printf("|----- Free atom calculation -----| \n");
      } 
      else
-           if(strcmp(bound,"parabolic") == 0){
-             scanf("%lf %lf", &Rc_temp, &epsilon_temp);
-             *Rc = Rc_temp;
-             *epsilon = epsilon_temp;
-             printf("|----- Confinement by a parabolic potential -----| \n");
-             printf("confinement radius, r0 = %f \n", Rc_temp);
-             printf("angular frequency, omega  = %f \n", epsilon_temp);
+	     if(strcmp(bound,"parabolic") == 0){
+		     scanf("%lf %lf", &Rc_temp, &epsilon_temp);
+                     *Rc = Rc_temp;
+                     *epsilon = epsilon_temp;
+                     printf("|----- Confinement by a parabolic potential -----| \n");
+                     printf("confinement radius, r0 = %f \n", Rc_temp);
+                     printf("angular frequency, omega  = %f \n", epsilon_temp);
            }
            else
-             if (strcmp(bound,"dielectricnc") == 0 || strcmp(bound,"Dielectricnc") == 0 || strcmp(bound,"DIELECTRICNC") == 0) {
-                scanf("%lf %lf", &Rc_temp, &epsilon_temp);
-                *Rc = Rc_temp;
-                *epsilon = epsilon_temp;
-                printf("Dielectric confined with asymtotic behavior incorrect\n");
-             } 
-             else 
-             if (strcmp(bound,"dielectricc")  == 0  || 
-                 strcmp(bound,"Dielectricc")  == 0  || 
-                 strcmp(bound,"DIELECTRICC")  == 0  || 
-                 strcmp(bound,"polarization") == 0  || 
-                 strcmp(bound,"Polarization") == 0  || 
-                 strcmp(bound,"POLARIZATION") == 0) {
-                 scanf("%lf %lf", &Rc_temp, &epsilon_temp);
-                 *Rc = Rc_temp;
-                 *epsilon = epsilon_temp;
-                 printf("|----- Confinement by a continuum dielectric -----| \n");
-                 printf("confinement radius = %f \n", Rc_temp);
-                 printf("Dielectric constant, epsilon = %f \n", epsilon_temp);
-                 scanf("%s",using_gamma);
-                if (strcmp(using_gamma,"n") == 0 || strcmp(using_gamma,"no") == 0 || strcmp(using_gamma,"NO") == 0 || strcmp(using_gamma,"No") == 0)
-                  strcpy(using_gamma,"NO");
-                  if (strcmp(bound,"polarization") == 0)
-                    printf("Polarization with asymtotic behavior correct\n");
+		   if(strcmp(bound,"dielectricnc") == 0 || strcmp(bound,"Dielectricnc") == 0 || strcmp(bound,"DIELECTRICNC") == 0) {
+			   scanf("%lf %lf", &Rc_temp, &epsilon_temp);
+                           *Rc = Rc_temp;
+                           *epsilon = epsilon_temp;
+                           printf("Dielectric confined with asymtotic behavior incorrect\n");
+		   }
+		   else 
+  // return to the begining 
+  if(strcmp(bound,"dielectricc")  == 0  || 
+     strcmp(bound,"Dielectricc")  == 0  || 
+     strcmp(bound,"DIELECTRICC")  == 0  || 
+     strcmp(bound,"polarization") == 0  || 
+     strcmp(bound,"Polarization") == 0  || 
+     strcmp(bound,"POLARIZATION") == 0) {
+	  scanf("%lf %lf", &Rc_temp, &epsilon_temp);
+          *Rc = Rc_temp;
+          *epsilon = epsilon_temp;
+          printf("|----- Confinement by a continuum dielectric -----| \n");
+          printf("confinement radius = %f \n", Rc_temp);
+          printf("Dielectric constant, epsilon = %f \n", epsilon_temp);
+          scanf("%s",using_gamma);
+          if(strcmp(using_gamma,"n") == 0 || strcmp(using_gamma,"no") == 0 || strcmp(using_gamma,"NO") == 0 || strcmp(using_gamma,"No") == 0)
+		  strcpy(using_gamma,"NO");
+                  if(strcmp(bound,"polarization") == 0)
+			  printf("Polarization with asymtotic behavior correct\n");
                   else
-                    printf("Dielectric confined with asymtotic behavior correct\n");
-             }  
-             else {
-     if (strcmp(bound,"impenetrable") == 0 || strcmp(bound,"Impenetrable") == 0 || strcmp(bound,"IMPENETRABLE") == 0) {
-       strcpy(bound,"confined");
-       printf("Atom confined by impenetrable walls, please give the confinement radius\n");
-       scanf("%lf", &Rc_temp);
-       *Rc = Rc_temp;
-       printf("Impenetrable walls at Rc=%f\n", *Rc);
-     } else {
-     if (strcmp(bound,"penetrable") == 0 || strcmp(bound,"Penetrable") == 0 || strcmp(bound,"PENETRABLE") == 0) {  /* Here begins for penetrable walls */
-       strcpy(bound,"finite");
-       printf("Atom confined by penetrable walls,\n");
-       printf("provide the confinement radius and the height of the barrier\n");
-       scanf("%lf %lf", &Rc_temp, &epsilon_temp);
-       *Rc = Rc_temp;
-       *epsilon = epsilon_temp;
-       printf("Penetrable walls at Rc= %f and height = Uo = %f\n", *Rc, *epsilon);
-          strcpy(using_gamma,"NO");
-          strcpy(kind_of_cal,"NO");
-          temp_g = 7e-1;
-          *gamma_couple = temp_g;
-          temp1 = 1e-9;
-          temp2 = 98e-2;
-          temp3 = 20;
-          *count_temp = temp1; 
-          *count_final = temp2; 
-          *steps = temp3;
-          printf("Auxiliar function in the basis set? (y/n)\n");
-          scanf("%s", using_gamma);
-          if (strcmp(using_gamma,"y") == 0 || strcmp(using_gamma,"yes") == 0 || strcmp(using_gamma,"YES") == 0) {
-            strcpy(using_gamma,"YES");
-            printf("Optimization of gamma in auxiliar function? (y/n)\n");
-            scanf("%s", kind_of_cal);
-            if (strcmp(kind_of_cal,"y") == 0 || strcmp(kind_of_cal,"yes") == 0 || strcmp(kind_of_cal,"YES") == 0) {
-              strcpy(kind_of_cal,"YES");
-              temp_g = 5e-01;
-              *gamma_couple = temp_g;
-              printf("Gamma optimization\n");
-            } else {
-                 printf("No optimization for gamma, please provide its value\n");
-                 scanf("%lf", &temp_g);
-                 *gamma_couple = temp_g;
-                 printf("Auxiliar functions without optimization of gamma, gamma=%f\n", *gamma_couple);
-              }
-          }
-          else {
-            strcpy(using_gamma,"NO");
-            printf("No auxiliar funtion in the basis set\n");
-          }
+                          printf("Dielectric confined with asymtotic behavior correct\n");
+  }
+  else
+	  if(strcmp(bound,"impenetrable") == 0 || strcmp(bound,"Impenetrable") == 0 || strcmp(bound,"IMPENETRABLE") == 0) {
+		  strcpy(bound,"confined");
+                  printf("Atom confined by impenetrable walls, please give the confinement radius\n");
+                  scanf("%lf", &Rc_temp);
+                  *Rc = Rc_temp;
+                  printf("Impenetrable walls at Rc=%f\n", *Rc);
+	  }
+	  else
+		 if(strcmp(bound,"penetrable") == 0 || strcmp(bound,"Penetrable") == 0 || strcmp(bound,"PENETRABLE") == 0) {  /* Here begins for penetrable walls */
+			 strcpy(bound,"finite");
+                         printf("Atom confined by penetrable walls,\n");
+                         printf("provide the confinement radius and the height of the barrier\n");
+                         scanf("%lf %lf", &Rc_temp, &epsilon_temp);
+                         *Rc = Rc_temp;
+                         *epsilon = epsilon_temp;
+                         printf("Penetrable walls at Rc= %f and height = Uo = %f\n", *Rc, *epsilon);
+                         strcpy(using_gamma,"NO");
+                         strcpy(kind_of_cal,"NO");
+                         temp_g = 7e-1;
+                         *gamma_couple = temp_g;
+                         temp1 = 1e-9;
+                         temp2 = 98e-2;
+                         temp3 = 20;
+                         *count_temp = temp1; 
+                         *count_final = temp2; 
+                         *steps = temp3;
+                         printf("Auxiliar function in the basis set? (y/n)\n");
+                         scanf("%s", using_gamma);
+			 if(strcmp(using_gamma,"y") == 0 || strcmp(using_gamma,"yes") == 0 || strcmp(using_gamma,"YES") == 0) {
+				 strcpy(using_gamma,"YES");
+                                 printf("Optimization of gamma in auxiliar function? (y/n)\n");
+                                 scanf("%s", kind_of_cal);
+				 if(strcmp(kind_of_cal,"y") == 0 || strcmp(kind_of_cal,"yes") == 0 || strcmp(kind_of_cal,"YES") == 0) {
+					 strcpy(kind_of_cal,"YES");
+					 temp_g = 5e-01;
+					 *gamma_couple = temp_g;
+					 printf("Gamma optimization\n");
+				 }
+				 else{
+					 printf("No optimization for gamma, please provide its value\n");
+					 scanf("%lf", &temp_g);
+                                         *gamma_couple = temp_g;
+                                         printf("Auxiliar functions without optimization of gamma, gamma=%f\n", *gamma_couple);
+				 }
+			 }
+			 else{
+				 strcpy(using_gamma,"NO");
+				 printf("No auxiliar funtion in the basis set\n");
+			 }
      } /* Here ends for penetrable walls */ 
-     else {
+     else 
          if (strcmp(bound,"plasma") == 0 || strcmp(bound,"Plasma") == 0 || strcmp(bound,"PLASMA") == 0) {
            strcpy(bound,"confined");
            printf("Atom confined by plasma model, please give the confinement radius\n");
@@ -318,19 +320,55 @@ int input(double *z,
            *plasma = 1;
            printf("Plasma model with impenetrable walls at Rc=%f\n", *Rc);
          }
-     }
-     }
-     }
+	 else
+		 if(strcmp(bound,"Debye") == 0 || strcmp(bound,"DEBYE") == 0 || strcmp(bound,"debye") == 0){
+			 strcpy(bound,"debye");
+                         printf("The atom is in Debye plasma environment, please give the Debye screening length lambda \n");
+                         scanf("%lf", &epsilon_temp);
+                         *epsilon = epsilon_temp; // here is the asignation of lambda, the Debye screening length.
+                         *Rc = (double) 50; // this is for practical purposes mike
+                         printf("The Debye screening length is = %f \n", *epsilon);
+		 }
+		 else
+			 if(strcmp(bound,"Yukawa") == 0 || strcmp(bound,"YUKAWA") == 0 || strcmp(bound,"yukawa") == 0){
+				 strcpy(bound,"yukawa");
+                                 printf("The atom is in Debye (Yukawa) plasma environment \n");
+                                 printf("|----- In this case, in addition to the exponential factor, we have a cos(x) in the potential -----| \n");
+                                 printf("please give the Debye screening length lambda \n");
+                                 scanf("%lf", &epsilon_temp);
+                                 *epsilon = epsilon_temp; // here is the asignation of lambda, the Debye screening length.
+                                 *Rc = (double) 50; // this is for practical purposes mike
+                                 printf("The Debye screening length is = %f \n", *epsilon);
+			 }
+			 else
+				 printf("I do not have those spatial restrictions");     
+     
+     
 
-     scanf("%s", properties);
-     printf("Exponents optimization : ");
-     if ((strcmp(opt,"opt") == 0) || (strcmp(opt,"OPT") == 0) || (strcmp(opt,"Opt") == 0))
-       printf("yes\n");
-     else
-       printf("no\n");
+//     printf("Exponents optimization : ");
+//     if ((strcmp(opt,"opt") == 0) || (strcmp(opt,"OPT") == 0) || (strcmp(opt,"Opt") == 0))
+//       printf("yes\n");
+//     else
+//       printf("no\n");
 
-     scanf("%s", basis);
-     scanf("%s", read_base);
+   scanf("%s", basis);
+
+   if(strcmp(basis,"STOS") == 0 || strcmp(basis,"stos") == 0 || strcmp(basis,"STOs") == 0 || strcmp(basis,"Stos") == 0) {
+      strcpy(basis,"stos");
+      printf("|--------------------------------------------------| \n");
+      printf("|----- The calculation will be made with STOS -----| \n");
+      printf("|--------------------------------------------------| \n");
+   }
+   else {
+      if(strcmp(basis,"GTOS") == 0 || strcmp(basis,"gtos") == 0 || strcmp(basis,"GTOs") == 0 || strcmp(basis,"Gtos") == 0){
+         strcpy(basis,"gtos");
+         printf("|--------------------------------------------------| \n");
+         printf("|----- The calculation will be made with GTOS -----| \n");
+         printf("|--------------------------------------------------| \n");
+      }
+   }
+     
+   scanf("%s", read_base);
 
      if (strcmp(read_base,"bunge")    == 0 || 
 	 strcmp(read_base,"clementi") == 0 || 

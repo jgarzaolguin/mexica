@@ -5,11 +5,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifdef _OPENMP
- #include <omp.h>
-#else
- #define omp_get_thread_num() 0
-#endif
+//#ifdef _OPENMP
+// #include <omp.h>
+//#else
+// #define omp_get_thread_num() 0
+//#endif
 
 void cinetica(char   *using_gamma,
               int     nt, 
@@ -71,10 +71,7 @@ void cinetica(char   *using_gamma,
 
  total_elements = nt*nt;
 
- if(strcmp(basis,"GTOs") == 0 || strcmp(basis,"gtos") == 0) { /* Aquí empieza la maquinaria para GTOs */
-    printf("|--------------------------------------------------| \n");
-    printf("|----- The calculation will be made with GTOs -----| \n");
-    printf("|--------------------------------------------------| \n"); 
+ if(strcmp(basis,"gtos") == 0) { /* Aquí empieza la maquinaria para gtos */
        for(k = 0; k < total_elements; k++) {
           indexes(nt, k, &index_i, &index_j);
           index_i = index_i - 1;
@@ -164,18 +161,15 @@ void cinetica(char   *using_gamma,
           }   // ends principal else 
        }   // ends for
     }   // ends GTOs
- else { /* Aquí empieza toda la maquinaria para los STOs */
-    printf("|--------------------------------------------------| \n");
-    printf("|----- The calculation will be made with STOs -----| \n");
-    printf("|--------------------------------------------------| \n");
-#pragma omp parallel shared(total_elements, nt, matk, np, mang, ncm, expo, Rc, gamma_couple, NC_minus, NC_plus)
+ else { /* Aquí empieza toda la maquinaria para los stos */
+//#pragma omp parallel shared(total_elements, nt, matk, np, mang, ncm, expo, Rc, gamma_couple, NC_minus, NC_plus)
 
-#pragma omp parallel private(i, j, k, index_i, index_j, ang_i, ang_j, ncm_i, ncm_j, delta, delta1, entero1, doble1, doble2, num1, num2, num3, num4, num5, num6, result1, result2, total, alpha_nu, alpha_mu, zetas, alphas, n_mu, n_nu, enes, eles, total1, zeta_nu, zeta_mu, totaltemp)
+//#pragma omp parallel private(i, j, k, index_i, index_j, ang_i, ang_j, ncm_i, ncm_j, delta, delta1, entero1, doble1, doble2, num1, num2, num3, num4, num5, num6, result1, result2, total, alpha_nu, alpha_mu, zetas, alphas, n_mu, n_nu, enes, eles, total1, zeta_nu, zeta_mu, totaltemp)
 
-{
- int TID = omp_get_thread_num();
- if (strcmp(bound,"free") == 0) {
-   #pragma omp for
+//{ // begins omp
+// int TID = omp_get_thread_num();
+ if (strcmp(bound,"free") == 0 || strcmp(bound,"debye") == 0 || strcmp(bound,"yukawa") == 0) {
+//   #pragma omp for
    for (k = 0; k < total_elements; k++) {
      indexes(nt, k, &index_i, &index_j);
      index_i = index_i - 1;
@@ -197,11 +191,12 @@ void cinetica(char   *using_gamma,
         num3 = (double)(np[j]*(np[j] - 1) - mang[j]*(mang[j] + 1));
         num3 = num3*intl(i, j, 0, expo, np, arreglo_factorial);
         matk[k] = -((double)0.5)*(num1 - num2 + num3);
+//	printf("K_free[%d] = %f \n", k, matk[k]); // mike
      }
    }
  }
  else if (strcmp(bound,"finite") == 0) {
-   #pragma omp for
+//   #pragma omp for
    for (k = 0; k <  total_elements; k++) {
      indexes(nt, k, &index_i, &index_j);
      index_i = index_i - 1;
@@ -279,11 +274,12 @@ void cinetica(char   *using_gamma,
              matkext[k] = -0.5*totaltemp;
              total = -0.5*(total + totaltemp);
              matk[k] = total;
+//	     printf("K_finite[%d] = %f \n", k, matk[k]); // mike
              }//label 2
      }
    }
  } else {
-   #pragma omp for
+//   #pragma omp for
    for (k = 0; k < total_elements; k++) {
      indexes(nt, k, &index_i, &index_j);
      index_i = index_i - 1;
@@ -324,7 +320,7 @@ void cinetica(char   *using_gamma,
      }
    }
  }
- }//Termina omp
+// }//Termina omp
  }
 
  }

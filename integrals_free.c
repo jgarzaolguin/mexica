@@ -6,6 +6,9 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <complex.h>  // important for complex numbers
+
+
 
 double bielectronic_integral_free(int     ang, 
 				  int     mu, 
@@ -643,3 +646,325 @@ double integral_five_points(double x_0, double x_1, double x_2, double x_3, doub
   total = total*(term1 + term2 + term3 + term4 + term5);
   return (total);
   }
+/* ------------------------------------------------------------------------------------------ */
+/* This is for the Debye plasma (only exponential without cos(r - r') ) */
+/* The basis set functions for this case are only STOs */
+/* Mike Nov 5, 2019 */
+ double h_f1(int ang, int mu, int nu, int lam, int sig, int *np, double *expo, double alpha, int m, int k){
+         extern double factorial(int );
+         int s;
+         double beta, b2, c0, c1, c2, n1, n2, e1, e2, hs;
+         // parameters
+         beta = (double) 1/alpha;
+         b2 = (double) 2*beta;
+         c0 = (double) -1;
+         c1 = pow(c0, (double) k);
+         c2 = pow(c0, (double) ang + 1);
+         n1 = (double) np[mu] + np[nu];
+         n2 = (double) np[sig] + np[lam];
+         e1 = expo[mu] + expo[nu];
+         e2 = e1 + expo[sig] + expo[lam];
+         hs = (double) 0;
+         for(s = 0; s <= np[mu] + np[nu] - k - 1; s++){
+                 hs = hs + (factorial(np[sig] + np[lam] + s - m - 1)/factorial(s))*(c1/(pow(e1 - beta, (double) n1 - s - k)*pow(e2, (double) n2 + s - m)) +
+                                 c2/(pow(e1 + beta, (double) n1 - s - k)*pow(e2 + b2, (double) n2 + s - m)));
+         }
+         return(hs);
+  }
+
+ double h_f2(int ang, int mu, int nu, int lam, int sig, int *np, double *expo, double alpha, int m){
+         extern double h_f1(int , int , int , int , int , int *, double *, double , int , int );
+         extern double factorial(int );
+         int k;
+         double beta, b2, c0, c1, c2, c3, n1, n2, e1, e2, hs;
+         // parameters
+         beta = (double) 1/alpha;
+         b2 = (double) 2*beta;
+         c0 = (double) -1;
+         c2 = pow(c0, ang + 1);
+         n1 = (double) np[mu] + np[nu];
+         n2 = (double) np[sig] + np[lam];
+         e1 = expo[mu] + expo[nu];
+         e2 = expo[sig] + expo[lam];
+         hs = (double) 0;
+         for(k = 0; k <= ang; k++){
+                 c1 = pow(c0, (double) k);
+                 c3 = pow(b2, (double) k + 1);
+                 hs = hs + ((factorial(ang + k)*factorial(np[mu] + np[nu] - k - 1))/(factorial(k)*factorial(ang - k)*c3))*
+                         ((factorial(np[sig] + np[lam] - m - 1)/pow(e2 + beta, (double) n2 - m))*
+                          (c1/pow(e1 - beta, (double) n1 - k) + c2/pow(e1 + beta, (double) n1 - k)) - h_f1(ang, mu, nu, lam, sig, np, expo, alpha, m, k));
+         }
+         return(hs);
+ }
+
+ double h_l(int ang, int mu, int nu, int lam, int sig, int *np, double *expo, double alpha){
+         extern double h_f2(int , int , int , int , int , int *, double *, double , int );
+         extern double factorial(int );
+         int m;
+         double beta, b2, b3, hs;
+         // parameters
+         beta = (double) 1/alpha;
+         b2 = (double) 2*beta;
+         hs = (double) 0;
+         for(m = 0; m <= ang; m++){
+                 b3 = pow(b2,m);
+                 hs = hs + (factorial(ang + m)/(factorial(m)*factorial(ang - m)*b3*beta))*h_f2(ang, mu, nu, lam, sig, np, expo, alpha, m);
+         }
+         return(hs);
+ } // This is ready 
+
+ double g_f1(int ang, int mu, int nu, int lam, int sig, int *np, double *expo, double alpha, int m, int k){
+         extern double factorial(int );
+         int s;
+         double beta, b2, c0, c1, c2, n2, e1, e2, hs;
+         // parameters
+         beta = (double) 1/alpha;
+         b2 = (double) 2*beta;
+         c0 = (double) -1;
+         c1 = pow(c0, (double) m);
+         c2 = pow(c0, (double) ang + 1);
+         n2 = (double) np[sig] + np[lam];
+         e1 = expo[mu] + expo[nu];
+         e2 = e1 + expo[sig] + expo[lam];
+         hs = (double) 0;
+         for(s = 0; s <= np[mu] + np[nu] - k - 1; s++){
+                 hs = hs + ((pow(e1 + beta, s)*factorial(np[sig] + np[lam] + s - m - 1))/factorial(s))*
+                         (c1/pow(e2, n2 + s - m) + c2/pow(e2 + b2, n2 + s - m));
+         }
+         return(hs);
+ }
+
+ double g_f2(int ang, int mu, int nu, int lam, int sig, int *np, double *expo, double alpha, int m){
+         extern double g_f1(int , int , int , int , int , int *, double *, double , int , int );
+         extern double factorial(int );
+         int k;
+         double beta, b3, c3, n1, e1, hs;
+         // parameters
+         beta = (double) 1/alpha;
+         n1 = (double) np[mu] + np[nu];
+         e1 = expo[mu] + expo[nu];
+         hs = (double) 0;
+         for(k = 0; k <= ang; k++){
+                 c3 = pow((double) 2,k);
+                 b3 = pow(beta, (double) k + 1);
+                 hs = hs + ((factorial(ang + k)*factorial(np[mu] + np[nu] - k - 1))/(factorial(k)*factorial(ang - k)*c3*b3*pow(e1 + beta, n1 - k)))*
+                         g_f1(ang, mu, nu, lam, sig, np, expo, alpha, m, k);
+         }
+         return(hs);
+ }
+
+ double g_l(int ang, int mu, int nu, int lam, int sig, int *np, double *expo, double alpha){
+         extern double g_f2(int , int , int , int , int , int *, double *, double , int );
+         extern double factorial(int );
+         int m;
+         double beta, b2, c1, hs;
+         // parameters
+         beta = (double) 1/alpha;
+         b2 = (double) 2*beta;
+         hs = (double) 0;
+         for(m = 0; m <= ang; m++){
+                 c1 = pow(b2, (double) m + 1);
+                 hs = hs + (factorial(ang + m)/(factorial(m)*factorial(ang - m)*c1))*g_f2(ang, mu, nu, lam, sig, np, expo, alpha, m);
+         }
+         return(hs);
+ } // This is ready
+
+ double bielectronic_integral_debye(int ang, int mu, int nu, int lam, int sig, int *np, double *expo, double alpha){
+         extern double h_l(int , int , int , int , int , int *, double *, double );
+         extern double g_l(int , int , int , int , int , int *, double *, double );
+         extern int constant_normalization_free(int*, double*, int*, double*);
+         double n_sto_mu, n_sto_nu, n_sto_lam, n_sto_sig, factor, rad;
+
+         constant_normalization_free(&mu, expo, np, &n_sto_mu);
+         constant_normalization_free(&nu, expo, np, &n_sto_nu);
+         constant_normalization_free(&lam, expo, np, &n_sto_lam);
+         constant_normalization_free(&sig, expo, np, &n_sto_sig);
+
+         factor = ((double) 2*ang + 1)*n_sto_mu*n_sto_nu*n_sto_lam*n_sto_sig/alpha;
+         rad = factor*(h_l(ang, mu, nu, lam, sig, np, expo, alpha) + g_l(ang, mu, nu, lam, sig, np, expo, alpha));
+
+         return(rad);
+ }
+/* ------------------------------------------------------------------------------------------ */
+/* This is for the Debye plasma with the factor cos(r - r') ) */
+/* The basis set functions for this case are only STOs */
+/* Mike Nov 22, 2019 */
+  double complex h_f1_c(int ang, int mu, int nu, int lam, int sig, int *np, double *expo, double alpha, int m, int k, int phase){
+         extern double factorial(int );
+         int s;
+         double beta, c0, c1, c2, n1, n2, e1, e2;
+         double complex b, b2, hs;
+         // convention
+         beta = (double) 1/alpha;
+         if(phase == 1)
+                 b = beta - beta*I;
+         else
+                 b = beta + beta*I;
+         // parameters
+         b2 = (double) 2*b;
+         c0 = (double) -1;
+         c1 = pow(c0, (double) k);
+         c2 = pow(c0, (double) ang + 1);
+         n1 = (double) np[mu] + np[nu];
+         n2 = (double) np[sig] + np[lam];
+         e1 = expo[mu] + expo[nu];
+         e2 = e1 + expo[sig] + expo[lam];
+         hs = (double complex) 0;
+         for(s = 0; s <= np[mu] + np[nu] - k - 1; s++){
+                 hs = hs + (factorial(np[sig] + np[lam] + s - m - 1)/factorial(s))*(c1/(cpow(e1 - b, (double) n1 - s - k)*pow(e2, (double) n2 + s - m)) +
+                                 c2/(cpow(e1 + b, (double) n1 - s - k)*cpow(e2 + b2, (double) n2 + s - m)));
+         }
+         return(hs);
+  }
+  double complex h_f2_c(int ang, int mu, int nu, int lam, int sig, int *np, double *expo, double alpha, int m, int phase){
+         extern double complex h_f1_c(int , int , int , int , int , int *, double *, double , int , int , int );
+         extern double factorial(int );
+         int k;
+         double beta, c0, c1, c2, n1, n2, e1, e2;
+         double complex b, b2, c3, hs;
+         // convention
+         beta = (double) 1/alpha;
+         if(phase == 1)
+                 b = beta - beta*I;
+         else
+                 b = beta + beta*I;
+         // parameters
+         b2 = (double) 2*b;
+         c0 = (double) -1;
+         c2 = pow(c0, ang + 1);
+         n1 = (double) np[mu] + np[nu];
+         n2 = (double) np[sig] + np[lam];
+         e1 = expo[mu] + expo[nu];
+         e2 = expo[sig] + expo[lam];
+         hs = (double complex) 0;
+         for(k = 0; k <= ang; k++){
+                 c1 = pow(c0, (double) k);
+                 c3 = cpow(b2, (double) k + 1);
+                 hs = hs + ((factorial(ang + k)*factorial(np[mu] + np[nu] - k - 1))/(factorial(k)*factorial(ang - k)*c3))*
+                         ((factorial(np[sig] + np[lam] - m - 1)/cpow(e2 + b, (double) n2 - m))*
+                          (c1/cpow(e1 - b, (double) n1 - k) + c2/cpow(e1 + b, (double) n1 - k)) - h_f1_c(ang, mu, nu, lam, sig, np, expo, alpha, m, k, phase));
+         }
+         return(hs);
+ }
+
+  double complex h_l_c(int ang, int mu, int nu, int lam, int sig, int *np, double *expo, double alpha, int phase){
+         extern double complex h_f2_c(int , int , int , int , int , int *, double *, double , int , int );
+         extern double factorial(int );
+         int m;
+         double beta;
+         double complex b, b2, b3, hs;
+         // convention
+         beta = (double) 1/alpha;
+         if(phase == 1)
+                 b = beta - beta*I;
+         else
+                 b = beta + beta*I;
+         // parameters
+         b2 = (double) 2*b;
+         hs = (double complex) 0;
+         for(m = 0; m <= ang; m++){
+                 b3 = cpow(b2,m);
+                 hs = hs + (factorial(ang + m)/(factorial(m)*factorial(ang - m)*b3*b))*h_f2_c(ang, mu, nu, lam, sig, np, expo, alpha, m, phase);
+         }
+         return(hs);
+ }
+
+ double complex g_f1_c(int ang, int mu, int nu, int lam, int sig, int *np, double *expo, double alpha, int m, int k, int phase){
+         extern double factorial(int );
+         int s;
+         double beta, c0, c1, c2, n2, e1, e2;
+         double complex b, b2, hs;
+         // convention
+         beta = (double) 1/alpha;
+         if(phase == 1)
+                 b = beta - beta*I;
+         else
+                 b = beta + beta*I;
+         // parameters
+         b2 = (double) 2*b;
+         c0 = (double) -1;
+         c1 = pow(c0, (double) m);
+         c2 = pow(c0, (double) ang + 1);
+         n2 = (double) np[sig] + np[lam];
+         e1 = expo[mu] + expo[nu];
+         e2 = e1 + expo[sig] + expo[lam];
+         hs = (double complex) 0;
+         for(s = 0; s <= np[mu] + np[nu] - k - 1; s++){
+                 hs = hs + ((cpow(e1 + b, s)*factorial(np[sig] + np[lam] + s - m - 1))/factorial(s))*
+                         (c1/pow(e2, n2 + s - m) + c2/cpow(e2 + b2, n2 + s - m));
+         }
+         return(hs);
+ }
+
+ double complex g_f2_c(int ang, int mu, int nu, int lam, int sig, int *np, double *expo, double alpha, int m, int phase){
+         extern double complex g_f1_c(int , int , int , int , int , int *, double *, double , int , int, int );
+         extern double factorial(int );
+         int k;
+         double beta, c3, n1, e1;
+         double complex b, b2, b3, hs;
+         // convention
+         beta = (double) 1/alpha;
+         if(phase == 1)
+                 b = beta - beta*I;
+         else
+                 b = beta + beta*I;
+         // parameters
+         n1 = (double) np[mu] + np[nu];
+         e1 = expo[mu] + expo[nu];
+         hs = (double) 0 + 0*I;  // ojo
+         for(k = 0; k <= ang; k++){
+                 c3 = pow((double) 2,k);
+                 b3 = cpow(b, (double) k + 1);
+                 hs = hs + ((factorial(ang + k)*factorial(np[mu] + np[nu] - k - 1))/(factorial(k)*factorial(ang - k)*c3*b3*cpow(e1 + b, n1 - k)))*
+                         g_f1_c(ang, mu, nu, lam, sig, np, expo, alpha, m, k, phase);
+         }
+         return(hs);
+ }
+
+ double complex g_l_c(int ang, int mu, int nu, int lam, int sig, int *np, double *expo, double alpha, int phase){
+         extern double complex g_f2_c(int , int , int , int , int , int *, double *, double , int, int );
+         extern double factorial(int );
+         int m;
+         double beta;
+         double complex c1, b, b2, hs;
+         // convention
+         beta = (double) 1/alpha;
+         if(phase == 1)
+                 b = beta - beta*I;
+         else
+                 b = beta + beta*I;
+         // parameters
+         b2 = (double) 2*b;
+         hs = (double) 0 + 0*I;  // ojo
+         for(m = 0; m <= ang; m++){
+                 c1 = cpow(b2, (double) m + 1);
+                 hs = hs + (factorial(ang + m)/(factorial(m)*factorial(ang - m)*c1))*g_f2_c(ang, mu, nu, lam, sig, np, expo, alpha, m, phase);
+         }
+         return(hs);
+ }
+
+ double complex bielectronic_integral_yukawa(int ang, int mu, int nu, int lam, int sig, int *np, double *expo, double alpha){
+         extern double complex h_l_c(int , int , int , int , int , int *, double *, double, int );
+         extern double complex g_l_c(int , int , int , int , int , int *, double *, double, int );
+         extern int constant_normalization_free(int*, double*, int*, double*);
+         double n_sto_mu, n_sto_nu, n_sto_lam, n_sto_sig, beta, factor, re;
+         double complex b1, b2, rad, rad1, rad2;
+
+         constant_normalization_free(&mu, expo, np, &n_sto_mu);
+         constant_normalization_free(&nu, expo, np, &n_sto_nu);
+         constant_normalization_free(&lam, expo, np, &n_sto_lam);
+         constant_normalization_free(&sig, expo, np, &n_sto_sig);
+         beta = (double) 1/alpha;
+         b1 = beta - beta*I;
+         b2 = beta + beta*I;
+         factor = ((double) 2*ang + 1)*n_sto_mu*n_sto_nu*n_sto_lam*n_sto_sig/((double) 2);
+         rad1 = b1*(h_l_c(ang, mu, nu, lam, sig, np, expo, alpha, 1) + g_l_c(ang, mu, nu, lam, sig, np, expo, alpha, 1));
+         rad2 = b2*(h_l_c(ang, mu, nu, lam, sig, np, expo, alpha, 2) + g_l_c(ang, mu, nu, lam, sig, np, expo, alpha, 2));
+
+         rad = factor*(rad1 + rad2);
+//       printf("Re = %20.15f Im = %20.15f \n", creal(rad1), cimag(rad1));
+//       printf("Im1 = %20.15f Im2 = %20.15f \n", cimag(rad1), cimag(rad2));
+         return(rad);
+ }
+
+

@@ -38,6 +38,7 @@ double xc_energy(double *correlationc,
                  int     points, 
 		 int     save_i,
                  int     compara,
+		 char   *bound,
                  char   **save_dft,
                  double *weight_dft,
                  int     flag_dft,
@@ -84,24 +85,41 @@ double xc_energy(double *correlationc,
   double correlation;
   correlation = 0.f;
 
+  double proff;  // this is to corroborate a result, mike
+
   if (compara == 0) {
-    for (dft = 1; dft < flag_dft; dft++) {
-      weight = weight_dft[dft];
-      if((strcmp(save_dft[dft], "slater") == 0) && (weight != 0.f)) {
-        for (cont = 0; cont < points; cont++) {
-          if (cont <= save_i) {
-              rho_local = rho_alpha[cont];
-              x_slater(rho_local, &local_energy, &local_potential);
-//jgo              energy_array[cont] = local_energy;
-          } else
-              local_energy = 0.f;
-          energy_array[cont] = grid[cont]*grid[cont]*local_energy;
-        }
-//jgo            exchange   = 4.f*Pi*numerical_int(grid, energy_array, points)*weight;
-        exchange   = 4.f*Pi*integral_three_points(grid, energy_array, 1, save_i, points)*weight;
-        exchangex[dft] = exchange;
-        total_e_xc = total_e_xc + exchange;
-      } else
+    for(dft = 1; dft < flag_dft; dft++) {
+       weight = weight_dft[dft];
+       if((strcmp(save_dft[dft], "slater") == 0) && (weight != 0.f)){ // begins slater
+//	       if(strcmp(bound,"free") == 0){ // begins free, this will be for Debye and Yukawa
+//		       for(cont = 0; cont < points; cont++){
+//			       rho_local = rho_alpha[cont];
+//			       x_slater(rho_local, &local_energy, &local_potential);
+//			       energy_array[cont] = local_energy;
+//		       }
+//		       proff = numerical_int(grid, energy_array, points);
+//		       printf("I_free = %f \n", proff);  // mike
+//		       exchange   = 4.f*Pi*numerical_int(grid, energy_array, points)*weight;
+//		       exchangex[dft] = exchange;
+//		       total_e_xc = total_e_xc + exchange;
+//	       }     // ends free
+//	       else{ // this is for the rest of the cases: finite, dielec, polarization, etc...
+		       for(cont = 0; cont < points; cont++) {
+			       if(cont <= save_i) {
+				       rho_local = rho_alpha[cont];
+				       x_slater(rho_local, &local_energy, &local_potential);
+			       } else
+				       local_energy = 0.f;
+			       energy_array[cont] = grid[cont]*grid[cont]*local_energy;
+		       }
+		       proff = integral_three_points(grid, energy_array, 1, save_i, points);
+//		       printf("I = %f \n", proff);  // mike
+		       exchange   = 4.f*Pi*integral_three_points(grid, energy_array, 1, save_i, points)*weight;
+		       exchangex[dft] = exchange;
+		       total_e_xc = total_e_xc + exchange;
+//	       }
+       }     // ends slater
+      else
       if((strcmp(save_dft[dft], "pbe") == 0) && (weight != 0.f)) {
         for (cont = 0; cont < points; cont++) {
           if (cont <= save_i ) {
@@ -455,7 +473,7 @@ double xc_energy(double *correlationc,
             }
           } else
 //LIBRE    
-           if(strcmp(bound,"free") == 0) {
+           if(strcmp(bound,"free") == 0 || strcmp(bound,"debye") == 0 || strcmp(bound,"yukawa") == 0) { // mike
               for (i = 0; i < points; i++) {
                             p1 = grid[i];
                  local_int[i]  = pot_array[i]*sto(index_i, p1, expo, np)*sto(index_j, p1, expo, np);
@@ -575,7 +593,7 @@ double xc_energy(double *correlationc,
                  }
                 } else
          
-               if(strcmp(bound,"free") == 0) {
+               if(strcmp(bound,"free") == 0 || strcmp(bound,"debye") == 0 || strcmp(bound,"yukawa") == 0) { // mike
                  for (i = 0; i < points; i++) {
                    p1 = grid[i];
                    msto_all = sto(index_i, p1, expo, np)*sto(index_j, p1, expo, np);

@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <complex.h>
 
 //
 //    Funciones para evaluar las integrales bielectronicas
@@ -80,19 +81,37 @@
 //    Probablemente se puede evitar la multiplicacion de (2*l + 1)
 //    en int3Y_1 y en int3Y_2, hay que intentar optimizarlo.
 //
-      double doselec(char *using_gamma, int mu, int nu, int lam, int sig,
-                     double Rc, double inv_Rc, double gamma_couple, char *bound,
-                     double *expo, int *np, int *ang, int *ncm, double *zeta,
-                     double *N_minus, double *N_plus, double *arreglo_factorial,
-                     double *arreglo_inv_factorial, double *two_l_plus_1)
+      double doselec(char *using_gamma, 
+		     int mu, 
+		     int nu, 
+		     int lam, 
+		     int sig,
+                     double Rc, 
+		     double inv_Rc, 
+		     double gamma_couple, 
+		     char *bound,
+                     double *expo,
+		     double cte,     // mike  
+		     int *np, 
+		     int *ang, 
+		     int *ncm, 
+		     double *zeta,
+                     double *N_minus, 
+		     double *N_plus, 
+		     double *arreglo_factorial,
+                     double *arreglo_inv_factorial, 
+		     double *two_l_plus_1)
       {
       int entero1, l, m, dif1, dif2, down, up, pot, lmu, lnu, llam, lsig;
       int mmu, mnu, mlam, msig, ndim, test;
       int sumam1, sumam2, compara1, compara2, compara3;
       double prod, sumatot, coef1, coef2, total, sumint, partrad;
+      double complex partrad1;    // mike
 
       extern double bielectronic_integral_confined(int, int, int, int, int, double, double, double*, int*, double*, double*);
       extern double bielectronic_integral_free(int, int, int, int, int, int*, double*, double*, double*);
+      extern double bielectronic_integral_debye(int , int , int , int , int , int *, double *, double );
+      extern  double complex bielectronic_integral_yukawa(int , int , int , int , int , int *, double *, double );                       // mike
       extern double int3Y_1(int, int, int, int, int ,int );
       extern double int3Y_2(int, int, int, int, int ,int );
       extern double bielectronic_integral_finite(char  *using_gamma,
@@ -126,109 +145,53 @@
       dif1 = lnu + lmu;
       dif2 = lsig + llam;
       up = (dif1 > dif2 ? dif1 : dif2);
-      sumatot = 0.f;
-//**************************
-      if (strcmp(bound,"free") == 0) 
-      for (l = down; l <= up; l++) {
-        entero1 = lnu + lmu + l;
-        test = fmod(entero1, 2);
-        entero1 = llam + lsig + l;
-        test = test*fmod(entero1,2);
-        if (test == 0) {
-          coef1 = two_l_plus_1[l];
-          sumint = 0.f;
-          for (m = -l; m <= l; m++) {
-            sumam1 = mmu + m;
-            sumam2 = msig + m;
-            if (mnu == sumam1 && mlam == sumam2) {
-              coef2 = int3Y_1(lnu, lmu, l, mnu, mmu, m);
-              coef2 = coef2*int3Y_2(llam, lsig, l, mlam, msig, m);
-              if (coef2 != 0.f) 
-                partrad = bielectronic_integral_free(l, mu, nu, lam, sig, np, expo,
-                                    arreglo_factorial, arreglo_inv_factorial);
-              else
-                partrad = 0.f;
-              coef2 = coef2*partrad;
-            }
-            else
-              coef2 = 0.f;
-            sumint = sumint + coef2;
-          }
-          total = coef1*sumint;
-        }
-        else
-          total = 0.f;
-        sumatot = sumatot + total;
-      }
-      else {
-      if (strcmp(bound,"confined") == 0)
-//**************************
-      for (l = down; l <= up; l++) {
-        entero1 = lnu + lmu + l;
-        test = fmod(entero1, 2);
-        entero1 = llam + lsig + l;
-        test = test*fmod(entero1,2);
-        if (test == 0) {
-          coef1 = two_l_plus_1[l];
-          sumint = 0.f;
-          for (m = -l; m <= l; m++) {
-            sumam1 = mmu + m;
-            sumam2 = msig + m;
-            if (mnu == sumam1 && mlam == sumam2) {
-              coef2 = int3Y_1(lnu, lmu, l, mnu, mmu, m);
-              coef2 = coef2*int3Y_2(llam, lsig, l, mlam, msig, m);
-              if (coef2 != (double)0) 
-                  partrad = bielectronic_integral_confined(l, mu, nu, lam, sig, Rc, inv_Rc, expo, np, arreglo_factorial,
-                                    arreglo_inv_factorial);
-              else
-                partrad = 0.f;
-              coef2 = coef2*partrad;
-            }
-            else
-              coef2 = 0.f;
-            sumint = sumint + coef2;
-          }
-          total = coef1*sumint;
-        }
-        else
-          total = 0.f;
-        sumatot = sumatot + total;
-      }
-      else
-//*************************
-      for (l = down; l <= up; l++) {
-        entero1 = lnu + lmu + l;
-        test = fmod(entero1, 2);
-        entero1 = llam + lsig + l;
-        test = test*fmod(entero1,2);
-        if (test == 0) {
-          coef1 = two_l_plus_1[l];
-          sumint = 0.f;
-          for (m = -l; m <= l; m++) {
-            sumam1 = mmu + m;
-            sumam2 = msig + m;
-            if (mnu == sumam1 && mlam == sumam2) {
-              coef2 = int3Y_1(lnu, lmu, l, mnu, mmu, m);
-              coef2 = coef2*int3Y_2(llam, lsig, l, mlam, msig, m);
-              if (coef2 != 0.f) 
-                partrad = bielectronic_integral_finite(using_gamma, l, mu, nu, lam, sig, np, ang, expo, zeta, Rc,
-                                                       arreglo_factorial, arreglo_inv_factorial, gamma_couple, N_minus, N_plus);
-              else
-                partrad = 0.f;
-              coef2 = coef2*partrad;
-            }
-            else
-              coef2 = 0.f;
-            sumint = sumint + coef2;
-          }
-          total = coef1*sumint;
-        }
-        else
-          total = 0.f;
-        sumatot = sumatot + total;
-      }
-      }
-//****************************
+      sumatot = (double) 0;
+      for(l = down; l <= up; l++){ // begins principal for
+	      entero1 = lnu + lmu + l;
+	      test = fmod(entero1, 2);
+	      entero1 = llam + lsig + l;
+	      test = test*fmod(entero1,2);
+	      if(test == 0){ // begins principal if
+		      coef1 = two_l_plus_1[l];
+		      sumint = (double) 0;
+		      for(m = -l; m <= l; m++){  // begins for
+			      sumam1 = mmu + m;
+                              sumam2 = msig + m;
+			      if(mnu == sumam1 && mlam == sumam2){ // begins second if
+				      coef2 = int3Y_1(lnu, lmu, l, mnu, mmu, m);
+                                      coef2 = coef2*int3Y_2(llam, lsig, l, mlam, msig, m);
+				      if (coef2 != 0.f){  // begins coef
+					      if(strcmp(bound,"confined") == 0)
+					        partrad = bielectronic_integral_confined(l, mu, nu, lam, sig, Rc, inv_Rc, expo, np, arreglo_factorial, arreglo_inv_factorial);
+					      else
+					        if(strcmp(bound,"free") == 0)
+					          partrad = bielectronic_integral_free(l, mu, nu, lam, sig, np, expo, arreglo_factorial, arreglo_inv_factorial);
+						else
+					          if(strcmp(bound,"debye") == 0)
+			                            partrad = bielectronic_integral_debye(l, mu, nu, lam, sig, np, expo, cte);  // cte is the lambda for the debye screnning potential
+					          else
+		                                    if(strcmp(bound,"yukawa") == 0)
+                                                      partrad = bielectronic_integral_yukawa(l, mu, nu, lam, sig, np, expo, cte);
+						    else
+					              if(strcmp(bound,"finite") == 0)
+					                partrad = bielectronic_integral_finite(using_gamma, l, mu, nu, lam, sig, np, ang, expo, zeta, Rc, arreglo_factorial, arreglo_inv_factorial, gamma_couple, N_minus, N_plus);
+						      else
+						        printf("Caution: I do not have those spatial restrictions \n");
+				      }  // ends coef
+				      else
+				        partrad = (double) 0;
+				      coef2 = coef2*partrad;
+			      }     // ends second if
+			      else
+				      coef2 = (double) 0;
+			      sumint = sumint + coef2;
+		      }      // ends for 
+		      total = coef1*sumint;
+	      }              // ends principal if
+	      else
+	              total = (double) 0;
+	      sumatot = sumatot + total;
+      }                      // ends principal for 
       return(sumatot);
       }
 //

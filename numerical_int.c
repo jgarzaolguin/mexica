@@ -62,7 +62,7 @@
 
     suma1 = suma1 + coef13*m*(pow(p3,3.f) - pow(p1,3.f)) + (1.f/2.f)*n*(powp3 - powp1) + l*(p3 - p1);
  }
-
+// printf("I = %f \n", suma1);   // mike
  return suma1;
  }//function
 
@@ -111,6 +111,6 @@ double integral_three_points(double *grid, double *function, int flag, int point
     x1 = grid[indice + 3];  f1 = function[indice + 3];;
     integral = integral + integral_two_points_interval(x0, x1, f0, f1);
   }
-  
+//  printf("I3 = %f \n", integral);   // mike
   return(integral);
 }

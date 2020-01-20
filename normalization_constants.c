@@ -193,3 +193,20 @@ int constants_normalization_finite(int     mu,
 
  } /* utilizaré esta definición para la construcción de la densidad radial */
 
+  double constant_normalization_sto(int nu, int n, double alpha, double *n_sto) {
+
+    extern long long int factorial_mike(int );
+    double exponent;
+    double factor;
+    double result;
+
+    exponent = ((double) 2*n + 1);
+    factor = ((double) 2)*alpha;
+    factor = pow(factor,exponent);
+    factor = factor/((double) factorial_mike(2*n));
+    result = sqrt(factor);
+    *n_sto = result;
+    return 1;
+ } /* utilizaré esta definición para los elementos de matriz */
+
+

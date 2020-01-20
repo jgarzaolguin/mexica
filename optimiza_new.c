@@ -174,7 +174,7 @@
     expo_opt[j] = 0.f;
  }      
  char bound_pol[50];     //mike
- if(strcmp(basis,"GTOs") == 0) {
+ if(strcmp(basis,"gtos") == 0) {
     sprintf(bound_pol,"%s", bound);
     strcpy(bound,"free");
  }
@@ -421,13 +421,15 @@
 
                if(strcmp(bound,"finite") == 0 || strcmp(bound,"dielectricc") == 0 || strcmp(bound,"polarization") == 0 || strcmp(bound,"parabolic") == 0 ||
                           strcmp(bound,"confined") == 0) {
-                      expo_no_correcto =  check_expotents_finite(using_gamma,
-                                                                 gamma_couple,
-                                                                 Rc,
-                                                                 np,
-                                                                 mang,
-                                                                 expo,
-                                                                 todos);
+		       if(strcmp(basis,"stos") == 0){ // mike
+                          expo_no_correcto =  check_expotents_finite(using_gamma,
+                                                                     gamma_couple,
+                                                                     Rc,
+                                                                     np,
+                                                                     mang,
+                                                                     expo,
+                                                                     todos);
+		       }
                }
 //mrb1              if (expo_no_correcto == 1) {
 //mrb1                for (j = 0; j < 36; j++) {
@@ -521,7 +523,7 @@
 
 
            if (expo_no_correcto == 0){           //mike
-            if (strcmp(basis,"GTOs") == 0) {
+            if (strcmp(basis,"gtos") == 0) {
               sprintf(bound,"%s", bound_pol);
             }
             test_scf = scf(nt,
@@ -563,7 +565,7 @@
               diff_kato_0 = 1000.f;
            } 
            else {  /* mike */
-              if(strcmp(basis, "STOs") == 0){           
+              if(strcmp(basis, "stos") == 0){           
                  diff_kato_0 = fabs(cusp_kato - 1.f);
               }
               else{
@@ -737,7 +739,7 @@
      expo[j] = expo_opt[j];
 
  // mike
-   if (strcmp(basis,"GTOs") == 0) {
+   if (strcmp(basis,"gtos") == 0) {
       sprintf(bound,"%s", bound_pol);
   }
 

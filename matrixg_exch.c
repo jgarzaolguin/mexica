@@ -5,11 +5,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifdef _OPENMP
- #include <omp.h>
-#else
- #define omp_get_thread_num() 0
-#endif
+//#ifdef _OPENMP
+// #include <omp.h>
+//#else
+// #define omp_get_thread_num() 0
+//#endif
 
 void matrixg_exch(int nt, double* matp, double* matg, int* np,
                   int* mang, int* ncm, double* expo, double Rc, char* bound, 
@@ -24,8 +24,6 @@ void matrixg_exch(int nt, double* matp, double* matg, int* np,
 
  double sum1, sum2, num2;
  extern int indexes(int, int, int*, int*);
- extern double doselec(int, int, int, int, double, char*, double*, int*,
-                       int*, int*);
 //mrb extern void memoria_double_uni(int, double**, char*);
  extern void memoria_double_uni(int      tamanio,
                                 double **arreglo,
@@ -35,10 +33,10 @@ void matrixg_exch(int nt, double* matp, double* matg, int* np,
 
  factor = ( (strcmp(tipo,"rhf") == 0) ? (double)0.5 : (double)1.0);
 
-#pragma omp parallel shared(nt, total_elements, factor, integrales_bie, matg, matp) private(k2, index_i, index_j, i, j, k, m, num2, sum1, sum2, element_bie, elemento1)
-{
- int TID = omp_get_thread_num();
- #pragma omp for
+//#pragma omp parallel shared(nt, total_elements, factor, integrales_bie, matg, matp) private(k2, index_i, index_j, i, j, k, m, num2, sum1, sum2, element_bie, elemento1)
+//{ // begins omp
+// int TID = omp_get_thread_num();
+// #pragma omp for
  for (k2 = 0; k2 < total_elements; k2++) {
    indexes(nt, k2, &index_i, &index_j);
    index_i = index_i - 1;
@@ -49,8 +47,6 @@ void matrixg_exch(int nt, double* matp, double* matg, int* np,
    for (k = 0; k < nt; k++) {
      sum2 = (double)0;
      for (m = 0; m < nt; m++)  {
-//       num2 = factor*doselec(i, m, k, j, Rc, bound, expo, np, mang,
-//                                  ncm);
        element_bie = i*nt*nt*nt + m*nt*nt + k*nt + j;
        num2 = factor*integrales_bie[element_bie];
        elemento1 = m*nt + k;
@@ -62,6 +58,6 @@ void matrixg_exch(int nt, double* matp, double* matg, int* np,
 matg[k2] = sum1;
  } 
 
- }
+// } // ends omp
 
  }
