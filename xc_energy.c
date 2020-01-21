@@ -105,6 +105,7 @@ double xc_energy(double *correlationc,
 //	       }     // ends free
 //	       else{ // this is for the rest of the cases: finite, dielec, polarization, etc...
 		       for(cont = 0; cont < points; cont++) {
+//			       printf("save_i = %d \n",save_i);
 			       if(cont <= save_i) {
 				       rho_local = rho_alpha[cont];
 				       x_slater(rho_local, &local_energy, &local_potential);
@@ -474,6 +475,7 @@ double xc_energy(double *correlationc,
           } else
 //LIBRE    
            if(strcmp(bound,"free") == 0 || strcmp(bound,"debye") == 0 || strcmp(bound,"yukawa") == 0) { // mike
+//		   printf("Hi there \n");
               for (i = 0; i < points; i++) {
                             p1 = grid[i];
                  local_int[i]  = pot_array[i]*sto(index_i, p1, expo, np)*sto(index_j, p1, expo, np);
