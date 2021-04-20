@@ -18,25 +18,26 @@
 // Function to distribute two-electron integrals over several cores
 // by using OpenMP programming techniques
 //
-extern  int bielectronicas_CPU(char   *using_gamma,
-                               int     nt, 
-                               int    *np, 
-                               int    *mang, 
-                               int    *ncm, 
-                               double *expo,
-                               char   *bound,
-			       double  u0, 
-                               double  Rc, 
-                               double  gamma_couple, 
-                               double *integrales_bie, 
-                               double *zeta,
-                               double *N_minus, 
-                               double *N_plus,
-                               double *arreglo_factorial, 
-                               double *arreglo_inv_factorial, 
-			       int n_points, 
-			       int save_i, 
-			       double *grid)
+  int bielectronicas_CPU(char   *using_gamma,
+                         int     nt, 
+                         int    *np, 
+                         int    *mang, 
+                         int    *ncm, 
+                         double *expo,
+                         char   *bound,
+			 double  u0, 
+			 double  Rc, 
+                         double  gamma_nicp,  // mike 
+                         double  gamma_couple, 
+                         double *integrales_bie, 
+                         double *zeta,
+                         double *N_minus, 
+                         double *N_plus,
+                         double *arreglo_factorial, 
+                         double *arreglo_inv_factorial, 
+			 int n_points, 
+			 int save_i, 
+			 double *grid)
 {
   int i, indice_i, indice_j, indice_k, indice_l;
   int cuad, cubo, cuart, high_l;
@@ -51,7 +52,8 @@ extern  int bielectronicas_CPU(char   *using_gamma,
                         double inv_Rc, 
 			double gamma_couple, 
 			char *bound, 
-			double cte,     // mike
+			double cte,         // mike
+			double gamma_nicp,  // mike
 			double *expo, 
 			int *np,
                         int *ang, 
@@ -94,6 +96,7 @@ extern  int bielectronicas_CPU(char   *using_gamma,
                               gamma_couple,  
                               bound,
 			      u0, 
+			      gamma_nicp, 
                               expo, 
                               np, 
                               mang, 
@@ -217,6 +220,7 @@ extern  int scf(int     nt,
                 double *total_energy, 
                 int     print_vectors, 
                 double  epsilon,
+		double  gamma_nicp,  // mike
                 int     imprime,
                 int     plasma,
                 double *cusp_kato)
@@ -363,6 +367,7 @@ double shannon,
                        int     iter_pol,
                        double  charge_int,
 	               double  U_0,
+	               double  gamma_nicp,
 	               double *NC_minus, 
 	               double *NC_plus, 
 	               double *arreglo_factorial,
@@ -745,6 +750,7 @@ extern int ep2_cpu(char   *espin,
                                char   *bound,
 			       double  u0,
                                double  Rc, 
+                               double  gamma_nicp, 
                                double  gamma_couple, 
                                double *integrales_bie,
                                double *zeta, 
@@ -1245,7 +1251,7 @@ extern int ep2_cpu(char   *espin,
    sprintf(bound_pol,"%s", bound);
  }
 
- if (strcmp(bound,"debye") == 0) {  // here we are mike
+ if (strcmp(bound,"debye") == 0) {  
    sprintf(bound_pol,"%s", bound);
 //   strcpy(bound,"free");
  }
@@ -1253,6 +1259,10 @@ extern int ep2_cpu(char   *espin,
   if (strcmp(bound,"yukawa") == 0) {  // here we are mike
    sprintf(bound_pol,"%s", bound);
 //   strcpy(bound,"free");
+  }
+
+  if (strcmp(bound,"baimbetov") == 0) {  // here we are mike
+   sprintf(bound_pol,"%s", bound);
   }
 
 
@@ -1336,6 +1346,7 @@ extern int ep2_cpu(char   *espin,
            iter_pol,
            charge_int,
            epsilon,
+	   gamma_nicp,
            NC_minus,
            NC_plus,
            arreglo_factorial,
@@ -1360,6 +1371,7 @@ extern int ep2_cpu(char   *espin,
                           bound, 
 			  epsilon,     // mike
                           Rc, 
+                          gamma_nicp,  // mike 
                           gamma_couple,
                           integrales_bie,
                           zetas, 
@@ -1476,6 +1488,7 @@ extern int ep2_cpu(char   *espin,
                          iter_pol,
                          charge_int,
                          epsilon,
+			 gamma_nicp,
                          NC_minus,
                          NC_plus,
                          arreglo_factorial,
@@ -1706,6 +1719,7 @@ extern int ep2_cpu(char   *espin,
                          iter_pol,
                          charge_int,
                          epsilon,
+			 gamma_nicp,
                          NC_minus,
                          NC_plus,
                          arreglo_factorial,
@@ -2100,7 +2114,7 @@ extern int ep2_cpu(char   *espin,
 //              printf("Var Energy                           = %15.5f\n", e_kin - e_v - 2.f*e_coul - 2.f*v_e);
 //           }
 
-             if(strcmp(bound,"free") == 0 || strcmp(bound,"debye") == 0 ||  strcmp(bound,"yukawa") == 0){
+             if(strcmp(bound,"free") == 0 || strcmp(bound,"debye") == 0 ||  strcmp(bound,"yukawa") == 0 ||  strcmp(bound,"baimbetov") == 0){
                 printf("Kinetic energy                       = %15.5f\n", e_kin);
                 printf("Nuc-elec energy                      = %15.5f\n", e_v);
              }
@@ -2174,7 +2188,7 @@ extern int ep2_cpu(char   *espin,
              printf("------------------- EIGENVALUES -------------------\n");
              if( compara == 0 ) { // begins closed shell
                 for(i = 0; i < nt; i++) 
-                   printf("Eigenvalue %d: %8.5f\n", i, valores[i]);
+                   printf("Eigenvalue %d: %10.8f\n", i, valores[i]);
 		grid_rhorad(z,
                             using_gamma,
                             compara,
@@ -2320,7 +2334,7 @@ extern int ep2_cpu(char   *espin,
 				if(strcmp(bound,"finite") == 0)
 					printf("%s Shannon entropy_(%s, U0 = %3.3lf, Rc = %3.3lf) = %5.4lf\n", tipo, bound, epsilon, Rc, SHAN);
 				else
-					if(strcmp(bound,"debye") == 0 || strcmp(bound,"yukawa") == 0)
+					if(strcmp(bound,"debye") == 0 || strcmp(bound,"yukawa") == 0 || strcmp(bound,"baimbetov") == 0)
 						printf("%s Shannon entropy_(%s, lambda = %3.3lf) = %5.4lf \n", tipo, bound, epsilon, SHAN);
 			printf("---------------------------\n");
                 	for(h = 0; h < n_points; h++) {
@@ -2341,7 +2355,7 @@ extern int ep2_cpu(char   *espin,
 				if(strcmp(bound,"finite") == 0)
 					sprintf(nameout, "%3.3f_%3.3f_%s_%s_rho_drho_+drho_rdf_divdrhorho", Rc, epsilon, bound, tipo);
 				else
-					if(strcmp(bound,"debye") == 0 || strcmp(bound,"yukawa") == 0)
+					if(strcmp(bound,"debye") == 0 || strcmp(bound,"yukawa") == 0 || strcmp(bound,"baimbetov") == 0)
 						sprintf(nameout, "%3.3f_%s_%s_rho_drho_+drho_rdf_divdrhorho", epsilon, bound, tipo);
 
 			workout = fopen(nameout, "w");
@@ -2367,7 +2381,7 @@ extern int ep2_cpu(char   *espin,
              } // ends close shell
              else { // begins open-shell atoms
                 for(i = 0; i < nt; i++) 
-                   printf("Eigenvalue %d: alpha | beta = %8.5f  %8.5f\n", i, valoresalfa[i], valoresbeta[i]);
+                   printf("Eigenvalue %d: alpha | beta = %10.8f  %10.8f\n", i, valoresalfa[i], valoresbeta[i]);
                 grid_rhorad(z,
                             using_gamma,
                             compara,

@@ -119,7 +119,7 @@
  double p1;
 
  if(strcmp(basis,"stos") == 0){     /* begins stos */
-   if (strcmp(bound,"free") == 0 || strcmp(bound,"debye") == 0 || strcmp(bound,"yukawa") == 0) {
+   if (strcmp(bound,"free") == 0 || strcmp(bound,"debye") == 0 || strcmp(bound,"yukawa") == 0 || strcmp(bound,"baimbetov") == 0) {
      for (i = 0; i < n_points; i++) { //for save_temp
         p1 = grid[i];
         if (compara == 0) {

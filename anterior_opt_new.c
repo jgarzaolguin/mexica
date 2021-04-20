@@ -39,6 +39,7 @@
                   double  step,
                   int    *opt_flag,
                   double  epsilon,
+                  double  gamma_nicp,
                   int     imprime,
                   int     plasma) {
 

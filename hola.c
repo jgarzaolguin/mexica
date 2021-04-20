@@ -27,6 +27,7 @@
                   double  step,
                   int    *opt_flag,
                   double  epsilon,
+                  double  gamma_nicp,
                   int     imprime,
                   int     plasma,
                   int     ident) {
@@ -75,6 +76,7 @@
                 double *total_energy,
                 int     print_vects,
                 double  epsilon,
+                double  gamma_nicp,
                 int     imprime,
                 int plasma);
 
@@ -105,6 +107,7 @@
 
  double energia_0;
  int    step_work2;
+ double gamma_nicp; // mike, nicp --> nonideal classical plasma
 
   for (j = 0; j < nt; j++)
      expo_opt[j] = 0.f;
@@ -228,6 +231,7 @@
                                    &energia,
                                    0,
                                    epsilon,
+				   gamma_nicp,
                                    0,
                                    plasma);
                      else
@@ -509,6 +513,7 @@
                                    &energia,
                                    0,
                                    epsilon,
+				   gamma_nicp,
                                    0,
                                    plasma);
                      else

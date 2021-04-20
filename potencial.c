@@ -185,7 +185,7 @@ void expected_value_r(int     nt,
  }  // ends gtos
  else{     
 //    if(strcmp(basis,"stos") == 0){  // begins stos
-       if(strcmp(bound,"free") == 0 || strcmp(bound,"debye") == 0 || strcmp(bound,"yukawa") == 0) {
+       if(strcmp(bound,"free") == 0 || strcmp(bound,"debye") == 0 || strcmp(bound,"yukawa") == 0 || strcmp(bound,"baimbetov") == 0) {
 ///   #pragma omp for
           for(orbital = 0; orbital < elecalfa; orbital++) {
              suma = 0.f;
@@ -288,6 +288,25 @@ void expected_value_r(int     nt,
          return(partial);
  }
 
+ double correcion_coef(double gamma_nicp){  // mike 
+	 // This is the correction coefficient for different values of gamma
+	 // nonideal classical plasmas (nicp)
+	 double c0, c1, c2, c3, result;
+	 double g1, g2, g3;
+
+	 c0 = (double) -0.008617;
+	 c1 = (double)  0.455861;
+	 c2 = (double) -0.108389;
+	 c3 = (double)  0.009377;
+
+	 g1 = gamma_nicp;
+	 g2 = pow(gamma_nicp,2.f);
+	 g3 = pow(gamma_nicp,3.f);
+
+	 result = c0 + c1*g1 + c2*g2 + c3*g3;
+	 return(result);
+ }
+
 void potencial(char   *using_gamma,
                int     nt, 
 	       double  z, 
@@ -303,6 +322,7 @@ void potencial(char   *using_gamma,
                int     iter_pol,
                double  charge_int,
 	       double  U_0,
+	       double  gamma_nicp,
                double *NC_minus, 
 	       double *NC_plus, 
 	       double *arreglo_factorial,
@@ -321,7 +341,7 @@ void potencial(char   *using_gamma,
  int n_mu, n_nu;                                                   // mike
  double n_gto_mu, n_gto_nu, n_gto_imp_mu, n_gto_imp_nu, limit;     // mike
  double num2, num3, num4, num5, num6, y, n_sto_mu, n_sto_nu;       // mike
- double num0, num1, pi;                                            // mike
+ double num0, num1, pi, b0, b1, b2, b3, d10, d1, d3, rgam, kne;    // mike
  double alphas, zetas;
  double result1, result2;
 // double *array_temp, *array_temp_2;
@@ -523,7 +543,57 @@ void potencial(char   *using_gamma,
                               }
                       }
               }  // ends yukawa
-              else	      
+              else
+		      if(strcmp(bound,"baimbetov") == 0){
+		        for(k = 0; k < total_elements; k++) { // begins for
+		           indexes(nt, k, &index_i, &index_j);
+			   index_i = index_i - 1;
+			   index_j = index_j - 1;
+			   i = index_i;
+			   j = index_j;
+			   n_mu =np[i];
+			   n_nu =np[j];
+			   ang_i = mang[i];
+			   ang_j = mang[j];
+			   delta_kro_(&ang_i, &ang_j, &delta);
+			   ncm_i = ncm[i];
+			   ncm_j = ncm[j];
+			   delta_kro_(&ncm_i, &ncm_j, &delta1);
+			   delta = delta*delta1;
+			   if(delta == (double)0)
+				   matv[k] = (double)0;
+			   else{
+			       constant_normalization_sto(i, n_mu, expo[i], &n_sto_mu);
+			       constant_normalization_sto(j, n_nu, expo[j], &n_sto_nu);
+			       // elementals
+			       rgam = sqrt(gamma_nicp);
+			       d1 = (double) 1;
+			       d3 = (double) 3;
+			       d10 = (double) 10;
+
+			       b0 = d1/U_0;           // 1/lambda_d
+			       b1 = (rgam + d1)/U_0;  
+			       b2 = d3/U_0;
+			       b3 = (rgam + d3)/U_0;
+
+			       num0 = n_mu + n_nu;
+			       num1 = expo[i] + expo[j];
+
+			       num2 = pow(num1 + b0, num0);
+			       num3 = pow(num1 + b1, num0);
+			       num4 = pow(num1 + b2, num0);
+			       num5 = pow(num1 + b3, num0);
+
+			       kne = d10*(d1 + correcion_coef(gamma_nicp)); 
+			       kne = -z/kne;
+
+			       matv[k] = kne*n_sto_mu*n_sto_nu*factorial_mike(n_mu + n_nu - 1)*( (d10 - gamma_nicp)/num2 + gamma_nicp*(d1/num3 + d1/num4 - d1/num5) );
+
+			   //    printf("V_baimbetov[%d,%d] = %f \n", i,j, matv[k]); // mike
+			   }
+			}// ends for 
+		      }
+		      else 
  if (strcmp(bound,"dielectricnc") == 0) {
 //   #pragma omp for
    for (k = 0; k < total_elements; k++) {

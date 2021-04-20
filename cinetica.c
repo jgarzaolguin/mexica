@@ -168,7 +168,7 @@ void cinetica(char   *using_gamma,
 
 //{ // begins omp
 // int TID = omp_get_thread_num();
- if (strcmp(bound,"free") == 0 || strcmp(bound,"debye") == 0 || strcmp(bound,"yukawa") == 0) {
+ if (strcmp(bound,"free") == 0 || strcmp(bound,"debye") == 0 || strcmp(bound,"yukawa") == 0 || strcmp(bound,"baimbetov") == 0) {
 //   #pragma omp for
    for (k = 0; k < total_elements; k++) {
      indexes(nt, k, &index_i, &index_j);

@@ -68,6 +68,7 @@ void optimiza(int     nt,
 	      double  step,
               int    *opt_flag, 
 	      double  epsilon, 
+	      double  gamma_nicp, 
 	      int     imprime,
               int plasma)
 {
@@ -125,6 +126,7 @@ void optimiza(int     nt,
                 double *total_energy, 
                 int     print_vects, 
                 double  epsilon, 
+                double  gamma_nicp, 
                 int     imprime,
                 int plasma);
 
@@ -142,6 +144,8 @@ void optimiza(int     nt,
  int a, 
      total;
  double *p;
+
+ double gamma_nicp; // mike, nicp --> nonideal classical plasma
 
  a = 500;
 
@@ -263,6 +267,7 @@ void optimiza(int     nt,
                    &energia,
                    0,
                    epsilon,
+                   gamma_nicp,
                    0,
                    plasma);
     
@@ -437,6 +442,7 @@ void optimiza(int     nt,
                                        &energia, 
                                        0, 
                                        epsilon, 
+                                       gamma_nicp, 
                                        0,
                                        plasma);
            
@@ -518,6 +524,7 @@ void optimiza(int     nt,
                                        &energia, 
                                        0,
                                        epsilon, 
+                                       gamma_nicp, 
                                        0,
                                        plasma);
            
@@ -595,6 +602,7 @@ void optimiza(int     nt,
                                        &energia, 
                                        0,
                                        epsilon, 
+                                       gamma_nicp, 
                                        0,
                                        plasma);
            
@@ -717,6 +725,7 @@ void optimiza(int     nt,
                                                              &energia, 
                                                              0,
                                                              epsilon, 
+                                                             gamma_nicp, 
                                                              0,
                                                              plasma);
                                         if (test_scf == 0) {
@@ -797,6 +806,7 @@ void optimiza(int     nt,
                                                              &energia, 
                                                              0,
                                                              epsilon, 
+                                                             gamma_nicp, 
                                                              0,
                                                              plasma);
                                         if (test_scf == 0) {
@@ -873,6 +883,7 @@ void optimiza(int     nt,
                                                                      &energia, 
                                                                      0, 
                                                                      epsilon, 
+                                                                     gamma_nicp, 
                                                                      0,
                                                                      plasma);
                                                 if (test_scf == 0) {
@@ -950,6 +961,7 @@ void optimiza(int     nt,
                                                                            &energia,
                                                                            0, 
                                                                            epsilon, 
+                                                                           gamma_nicp, 
                                                                            0,
                                                                            plasma);
                                                           if (test_scf == 0) {

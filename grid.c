@@ -41,7 +41,8 @@
     if (save_temp == 0) // Ya definiste save_temp = 0 va a entrar este cíclo
 //      if (strcmp(bound,"polarization") == 0 || strcmp(bound,"finite") == 0 || strcmp(bound,"dielectricc") == 0 || strcmp(bound,"confined") == 0) { //if finite confined
       if (strcmp(bound,"free") == 0 ||  strcmp(bound,"polarization") == 0 || strcmp(bound,"finite") == 0 || 
-		      strcmp(bound,"dielectricc") == 0 || strcmp(bound,"confined") == 0 || strcmp(bound,"debye") == 0 || strcmp(bound,"yukawa") == 0) { //if finite confined
+		      strcmp(bound,"dielectricc") == 0 || strcmp(bound,"confined") == 0 || strcmp(bound,"debye") == 0 || strcmp(bound,"yukawa") == 0 
+		      || strcmp(bound,"baimbetov") == 0) { //if finite confined
         if (p1 > Rc) {   //este if sólo se cumple en cuanto p1 es mayor que R_{c} 
           if (i%2 != 0) {  //Acuerdate que el % es el operador de módulo o resto de una división (i/2) en este caso para i impar
              i = i + 1;    //reasignación

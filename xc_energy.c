@@ -474,7 +474,7 @@ double xc_energy(double *correlationc,
             }
           } else
 //LIBRE    
-           if(strcmp(bound,"free") == 0 || strcmp(bound,"debye") == 0 || strcmp(bound,"yukawa") == 0) { // mike
+           if(strcmp(bound,"free") == 0 || strcmp(bound,"debye") == 0 || strcmp(bound,"yukawa") == 0 || strcmp(bound,"baimbetov") == 0) { // mike
 //		   printf("Hi there \n");
               for (i = 0; i < points; i++) {
                             p1 = grid[i];
@@ -595,7 +595,7 @@ double xc_energy(double *correlationc,
                  }
                 } else
          
-               if(strcmp(bound,"free") == 0 || strcmp(bound,"debye") == 0 || strcmp(bound,"yukawa") == 0) { // mike
+               if(strcmp(bound,"free") == 0 || strcmp(bound,"debye") == 0 || strcmp(bound,"yukawa") == 0 || strcmp(bound,"baimbetov") == 0) { // mike
                  for (i = 0; i < points; i++) {
                    p1 = grid[i];
                    msto_all = sto(index_i, p1, expo, np)*sto(index_j, p1, expo, np);

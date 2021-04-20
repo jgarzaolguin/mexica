@@ -43,6 +43,7 @@
                   double  step,
                   int    *opt_flag,
                   double  epsilon,
+                  double  gamma_nicp,
                   int     imprime,
                   int     plasma) {
 
@@ -92,6 +93,7 @@
                 double *total_energy,
                 int     print_vects,
                 double  epsilon,
+                double  gamma_nicp,
                 int     imprime,
                 int     plasma,
                 double *cusp_kato);
@@ -553,6 +555,7 @@
                            &energia,
                            0,
                            epsilon,
+                           gamma_nicp,
                            0,
                            plasma,
                           &cusp_kato);

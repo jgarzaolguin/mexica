@@ -73,6 +73,7 @@ int input(double *z,
           int    *opt_flag, 
           char   *nombre,
           double *epsilon, 
+          double *gamma_nicp, 
           char   *kind_of_cal, 
           double *count_temp, 
           double *count_final, 
@@ -82,6 +83,7 @@ int input(double *z,
  FILE* file_1;
  int i, j, c, d, entero1, entero2, z_temp, charge, mult, alfa, beta, prev, test_input;
  double Rc_temp, temp, epsilon_temp, temp1, temp2, temp_g;
+ double gamma_nicp_temp, kb, te_nicp;  // mike
  int temp3;
 
  int sizeint, sizedouble;
@@ -223,7 +225,7 @@ int input(double *z,
        printf("|----- Free atom calculation -----| \n");
      } 
      else
-	     if(strcmp(bound,"parabolic") == 0){
+	   if(strcmp(bound,"parabolic") == 0){
 		     scanf("%lf %lf", &Rc_temp, &epsilon_temp);
                      *Rc = Rc_temp;
                      *epsilon = epsilon_temp;
@@ -277,8 +279,9 @@ int input(double *z,
                          *Rc = Rc_temp;
                          *epsilon = epsilon_temp;
                          printf("Penetrable walls at Rc= %f and height = Uo = %f\n", *Rc, *epsilon);
-                         strcpy(using_gamma,"NO");
-                         strcpy(kind_of_cal,"NO");
+
+//////                   strcpy(using_gamma,"NO");
+//////                   strcpy(kind_of_cal,"NO");
                          temp_g = 7e-1;
                          *gamma_couple = temp_g;
                          temp1 = 1e-9;
@@ -287,29 +290,30 @@ int input(double *z,
                          *count_temp = temp1; 
                          *count_final = temp2; 
                          *steps = temp3;
-                         printf("Auxiliar function in the basis set? (y/n)\n");
-                         scanf("%s", using_gamma);
-			 if(strcmp(using_gamma,"y") == 0 || strcmp(using_gamma,"yes") == 0 || strcmp(using_gamma,"YES") == 0) {
-				 strcpy(using_gamma,"YES");
-                                 printf("Optimization of gamma in auxiliar function? (y/n)\n");
-                                 scanf("%s", kind_of_cal);
-				 if(strcmp(kind_of_cal,"y") == 0 || strcmp(kind_of_cal,"yes") == 0 || strcmp(kind_of_cal,"YES") == 0) {
-					 strcpy(kind_of_cal,"YES");
-					 temp_g = 5e-01;
-					 *gamma_couple = temp_g;
-					 printf("Gamma optimization\n");
-				 }
-				 else{
-					 printf("No optimization for gamma, please provide its value\n");
-					 scanf("%lf", &temp_g);
-                                         *gamma_couple = temp_g;
-                                         printf("Auxiliar functions without optimization of gamma, gamma=%f\n", *gamma_couple);
-				 }
-			 }
-			 else{
-				 strcpy(using_gamma,"NO");
-				 printf("No auxiliar funtion in the basis set\n");
-			 }
+
+//////// mike            printf("Auxiliar function in the basis set? (y/n)\n");
+////////                 scanf("%s", using_gamma);
+////////		 if(strcmp(using_gamma,"y") == 0 || strcmp(using_gamma,"yes") == 0 || strcmp(using_gamma,"YES") == 0) {
+////////			 strcpy(using_gamma,"YES");
+////////                         printf("Optimization of gamma in auxiliar function? (y/n)\n");
+////////                         scanf("%s", kind_of_cal);
+////////			 if(strcmp(kind_of_cal,"y") == 0 || strcmp(kind_of_cal,"yes") == 0 || strcmp(kind_of_cal,"YES") == 0) {
+////////				 strcpy(kind_of_cal,"YES");
+////////				 temp_g = 5e-01;
+////////				 *gamma_couple = temp_g;
+////////				 printf("Gamma optimization\n");
+////////			 }
+////////			 else{
+////////				 printf("No optimization for gamma, please provide its value\n");
+////////				 scanf("%lf", &temp_g);
+////////                                 *gamma_couple = temp_g;
+////////                                 printf("Auxiliar functions without optimization of gamma, gamma=%f\n", *gamma_couple);
+////////			 }
+////////		 }
+////////		 else{
+////////			 strcpy(using_gamma,"NO");
+////////			 printf("No auxiliar funtion in the basis set\n");
+////////		 }
      } /* Here ends for penetrable walls */ 
      else 
          if (strcmp(bound,"plasma") == 0 || strcmp(bound,"Plasma") == 0 || strcmp(bound,"PLASMA") == 0) {
@@ -341,7 +345,32 @@ int input(double *z,
                                  printf("The Debye screening length is = %f \n", *epsilon);
 			 }
 			 else
-				 printf("I do not have those spatial restrictions");     
+				 if(strcmp(bound,"Baimbetov") == 0 || strcmp(bound,"BAIMBETOV") == 0 || strcmp(bound,"baimbetov") == 0){
+					 // ========== This is for nonideal classical plasmas (nicp) mike 
+					 // Abril 15, 2021 ==========
+					 strcpy(bound,"baimbetov");
+
+					 printf("The atom is immersed in a nonideal classical plasma environment \n");
+					 printf("Please give the Debye screening length ==> lambda in atomic units\n");
+					 scanf("%lf", &epsilon_temp);
+					 *epsilon = epsilon_temp; // here is the asignation of lambda, the Debye screening length.
+					 printf("The Debye screening length is = %f a.u. \n", *epsilon);
+					 
+					 printf("Please give the electron temperature in Kelvin \n");
+					 scanf("%lf", &te_nicp);  // here is the asignation of the temperature
+					 printf("The electron temperature in Kelvin is = %15.4f K \n", te_nicp);
+
+					 kb = 3.166815f/pow(10.f,6.f);   // Boltzmann constant [atomic units/Kelvin]
+					 gamma_nicp_temp = ((double) 1)/(epsilon_temp*kb*te_nicp); // here is the asignation of gamma
+					 *gamma_nicp = gamma_nicp_temp;  // here is the asignation of the nonideal plasma parameter gamma
+					 printf("Therefore, the nonideal plasma parameter gamma is = %8.5f \n", *gamma_nicp);
+					 *Rc = (double) 50; // this is for practical purposes mike
+					 // ======== Important ======================================================
+					 // epsilon -----> lambda
+					 // gamma_nicp -----> gamma
+				 }
+				 else
+					 printf("I do not have those spatial restrictions");     
      
      
 

@@ -36,6 +36,7 @@ void optimiza(int     nt,
 	      double  step,
               int    *opt_flag, 
 	      double  epsilon, 
+	      double  gamma_nicp, 
 	      int     imprime,
               int     plasma)
 {
@@ -69,7 +70,6 @@ void optimiza(int     nt,
     ener_array[i] = 0.f;
 
  double maxdiff;
-
 
  extern	int check_expotents_finite(char   *using_gamma,
                                    double  gamma_couple,
@@ -106,6 +106,7 @@ void optimiza(int     nt,
                 double *total_energy, 
                 int     print_vects, 
                 double  epsilon, 
+                double  gamma_nicp, 
                 int     imprime,
                 int     plasma,
                 double *cusp_kato);
@@ -119,7 +120,7 @@ void optimiza(int     nt,
 
 
 
- int optimiza_new(int     nt,
+ extern int optimiza_new(int     nt,
                   int     elecalfa,
                   int     elecbeta,
                   double  z,
@@ -147,6 +148,7 @@ void optimiza(int     nt,
                   double  step,
                   int    *opt_flag,
                   double  epsilon,
+                  double  gamma_nicp,
                   int     imprime,
                   int     plasma);
 
@@ -180,6 +182,7 @@ void optimiza(int     nt,
                   step,
                   opt_flag,
                   epsilon,
+                  gamma_nicp,
                   imprime,
                   plasma);
 
@@ -264,6 +267,7 @@ void optimiza(int     nt,
                                  &energia,
                                  0,
                                  epsilon,
+				 gamma_nicp,
                                  0,
                                  plasma,
                                  &cusp_kato);
@@ -306,6 +310,7 @@ void optimiza(int     nt,
                                  &energia,
                                  0,
                                  epsilon,
+				 gamma_nicp,
                                  0,
                                  plasma,
                                  &cusp_kato);
@@ -360,6 +365,7 @@ void optimiza(int     nt,
                                           &energia,
                                           0,
                                           epsilon,
+					  gamma_nicp,
                                           0,
                                           plasma,
                                           &cusp_kato);
@@ -457,10 +463,14 @@ void optimiza(int     nt,
 
       remove(nombre_ii);
 
-            if(strcmp(bound,"free") == 0)
-             sprintf(nombre_ii, "basis_opt_%s", bound);
-            else
-             sprintf(nombre_ii, "basis_opt_%s_Rc_%3.4lf", bound, Rc);
+    if(strcmp(bound,"free") == 0)
+	    sprintf(nombre_ii, "basis_opt_%s", bound);
+    else
+	    if(strcmp(bound,"debye") == 0 || strcmp(bound,"yukawa") == 0 || strcmp(bound,"baimbetov") == 0)
+		    sprintf(nombre_ii, "basis_opt_%s_lambda_%3.4lf", bound, epsilon);
+	    else
+		    sprintf(nombre_ii, "basis_opt_%s_Rc_%3.4lf", bound, Rc);
+
 
             file_basis = fopen(nombre_ii,"w");
             archivo_opt = fopen(nombre,"r");

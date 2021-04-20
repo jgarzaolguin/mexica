@@ -49,6 +49,7 @@ int optimiza_main(int     nt,
 		  double  step, 
 		  int    *opt_flag,
                   double  epsilon, 
+                  double  gamma_nicp, 
 		  char   *config,
                   char   *nombre, 
 		  int     imprime,
@@ -89,6 +90,7 @@ int optimiza_main(int     nt,
 		      double  step, 
 		      int    *opt_flag,
                       double  epsilon, 
+                      double  gamma_nicp, 
 		      int     imprime,
                       int plasma);
 
@@ -129,6 +131,7 @@ int optimiza_main(int     nt,
 		   step, 
 	  	   opt_flag,
                    epsilon, 
+                   gamma_nicp, 
 		   imprime,
                    plasma);
 
@@ -163,14 +166,18 @@ int optimiza_main(int     nt,
  return (0);
  }
 
- int main(int argc, char *argv[])
- {//Main function, this functions controls SCF and optimization of exponents
-  //in the basis set
+ // ===========================
+ // ========== MAIN ===========
+ // ===========================
+ int main(int argc, char *argv[]){
+	 //Main function, this functions controls SCF and optimization of exponents
+	 //in the basis set
   int i, j, test_inp;
   int nt, elecalfa, elecbeta, maxiter, orbital;
   int prue1, prue2, prue3, prue4, plasma;
  
   double energia, z, tol, Rc, step, mezcla, maxdiff, epsilon, gamma_couple;
+  double gamma_nicp; // mike, nicp --> nonideal classical plasma 
   double x0, x1, x2, energia_0, energia_1, temp_gam;
   char config[4], read_base[10], bound[15], tipo[16],  opt[10],
        espin[10], nombre[100], correlation[10], propagador[10], using_gamma[10],
@@ -248,6 +255,7 @@ for(i=0 ; i < 80 ; i++){
                             int    *opt_flag,
                             char   *nombre, 
                             double *epsilon, 
+                            double *gamma_nicp, 
                             char   *kind_of_cal, 
                             double *count_temp, 
                             double *count_final, 
@@ -281,6 +289,7 @@ for(i=0 ; i < 80 ; i++){
                            double *total_energy, 
                            int     print_vectors, 
                            double  epsilon,
+                           double  gamma_nicp,  // mike
                            int     imprime,
                            int     plasma,
                            double *cusp_kato);
@@ -313,6 +322,7 @@ for(i=0 ; i < 80 ; i++){
                            double  step, 
                            int    *opt_flag,
                            double  epsilon, 
+                           double  gamma_nicp, 
                            char   *config,
                            char   *nombre, 
                            int     imprime,
@@ -347,6 +357,7 @@ for(i=0 ; i < 80 ; i++){
                                int     *opt_flag,
                                char    *nombre,
                                double   epsilon,
+                               double   gamma_nicp,
                                char    *kind_of_cal,
                                double   count_temp,
                                double   count_final,
@@ -398,6 +409,7 @@ for(i=0 ; i < 80 ; i++){
                    opt_flag, 
   		   nombre, 
  		  &epsilon,
+ 		  &gamma_nicp,
                    kind_of_cal, 
  		  &count_temp, 
   		  &count_final, 
@@ -442,6 +454,7 @@ for(i=0 ; i < 80 ; i++){
                                 opt_flag,
                                 nombre,
                                 epsilon,
+                                gamma_nicp,
                                 kind_of_cal,
                                 count_temp,
                                 count_final,
@@ -478,6 +491,7 @@ for(i=0 ; i < 80 ; i++){
                            step, 
                            opt_flag,
                            epsilon, 
+                           gamma_nicp, 
                            config, 
                            nombre, 
                            0,
@@ -508,7 +522,8 @@ for(i=0 ; i < 80 ; i++){
                  espin,
                  &energia, 
                  1, 
-                 epsilon, 
+                 epsilon,
+		 gamma_nicp, 
                  1,
                  plasma,
                  &cusp_kato);
@@ -544,6 +559,7 @@ for(i=0 ; i < 80 ; i++){
                            step,
                            opt_flag,
                            epsilon,
+                           gamma_nicp,
                            config,
                            nombre,
                            0,
@@ -575,6 +591,7 @@ for(i=0 ; i < 80 ; i++){
                  &energia,
                  1,
                  epsilon,
+		 gamma_nicp,
                  1,
                  plasma,
                  &cusp_kato);
@@ -609,6 +626,7 @@ for(i=0 ; i < 80 ; i++){
            &energia, 
            1, 
            epsilon, 
+	   gamma_nicp,
            1,
            plasma,
            &cusp_kato);

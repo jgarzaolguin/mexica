@@ -91,7 +91,8 @@
 		     double gamma_couple, 
 		     char *bound,
                      double *expo,
-		     double cte,     // mike  
+		     double cte,         // mike  
+		     double gamma_nicp,  // mike  
 		     int *np, 
 		     int *ang, 
 		     int *ncm, 
@@ -107,6 +108,8 @@
       int sumam1, sumam2, compara1, compara2, compara3;
       double prod, sumatot, coef1, coef2, total, sumint, partrad;
       double complex partrad1;    // mike
+      double b0, b1, b2, b3, kee, d1, d3, d10, srgam;   // mike
+      extern double correcion_coef(double gamma_nicp);  // mike
 
       extern double bielectronic_integral_confined(int, int, int, int, int, double, double, double*, int*, double*, double*);
       extern double bielectronic_integral_free(int, int, int, int, int, int*, double*, double*, double*);
@@ -172,6 +175,37 @@
 					          else
 		                                    if(strcmp(bound,"yukawa") == 0)
                                                       partrad = bielectronic_integral_yukawa(l, mu, nu, lam, sig, np, expo, cte);
+						    else
+						      if(strcmp(bound,"baimbetov") == 0){
+							// elementals
+							d1 = (double)  1;
+							d3 = (double)  3;
+							d10 = (double) 10;
+							srgam = sqrt(gamma_nicp);
+
+							kee = d10*(d1 + correcion_coef(gamma_nicp));
+							kee = d1/kee;
+							// convention
+							// b0 = 1.f/cte;
+							b0 = cte;
+							//b1 = (srgam + d1)/cte;
+							b1 = cte/(srgam + d1);
+							//b2 = d3/cte;
+							b2 = cte/d3;
+							//b3 = (srgam + d3)/cte;
+							b3 = cte/(srgam + d3);
+
+						        partrad = kee*((d10 - gamma_nicp)*bielectronic_integral_debye(l, mu, nu, lam, sig, np, expo, b0) + 
+									    gamma_nicp*(
+									                  bielectronic_integral_debye(l, mu, nu, lam, sig, np, expo, b1) 
+									                  +
+									                  bielectronic_integral_debye(l, mu, nu, lam, sig, np, expo, b2)
+								                          -	
+									                  bielectronic_integral_debye(l, mu, nu, lam, sig, np, expo, b3)
+									               )
+								      );
+//							printf("I(%d, %d, %d, %d, %d, %f, %f, %f, %f ) = %f \n", l, mu, nu, lam, sig, b0, b1, b2, b3, partrad);
+						      }
 						    else
 					              if(strcmp(bound,"finite") == 0)
 					                partrad = bielectronic_integral_finite(using_gamma, l, mu, nu, lam, sig, np, ang, expo, zeta, Rc, arreglo_factorial, arreglo_inv_factorial, gamma_couple, N_minus, N_plus);

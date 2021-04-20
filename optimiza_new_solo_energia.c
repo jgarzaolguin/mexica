@@ -39,6 +39,7 @@
                   double  step,
                   int    *opt_flag,
                   double  epsilon,
+                  double  gamma_nicp,
                   int     imprime,
                   int     plasma) {
 
@@ -79,6 +80,7 @@
                 double *total_energy,
                 int     print_vects,
                 double  epsilon,
+                double  gamma_nicp,
                 int     imprime,
                 int     plasma,
                 double *cusp_kato);
@@ -117,6 +119,8 @@
  int    identify;
  double diff_kato_0;
  double diff_kato_1;
+
+ double gamma_nicp; // mike, nicp --> nonideal classical plasma
 
   array_alpha     = (double*)malloc(2000*sizeof(double));
  if (array_alpha == NULL) {
@@ -382,6 +386,7 @@
                             &energia,
                             0,
                             epsilon,
+                            gamma_nicp,
                             0,
                             plasma,
                            &cusp_kato);
